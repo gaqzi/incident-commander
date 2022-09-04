@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Incident Commander</title>
+
+    <style>
+        body {
+            background: black;
+            color: whitesmoke;
+            font-family: Helvetica Neue, Helvetica, sans-serif;
+        }
+
+        li > label {
+            display: block;
+        }
+
+        .incident-summary {
+            border: 1px dashed grey;
+        }
+
+        .incident-summary.closed form {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+
+<section class="incident-summary">
+    <header>
+        <h1>Current Incident</h1>
+
+        <section class="summary">
+            Since <span id="sinceWhenSummary">{time in utc}</span>
+            we are seeing <span id="summarySummary">{summary}</span>
+            in <span id="whereSummary">{where}</span>
+            impacting <span id="impactSummary">{impact}</span>.
+        </section>
+    </header>
+
+    <form>
+        <ol>
+            <li>
+                <label for="summary">What is happening?</label>
+                <input type="text" id="summary"
+                       placeholder="Card processing through Flizzblorp…"
+                       class="update-summary" autofocus>
+            </li>
+            <li>
+                <label for="sinceWhen">Since when? (UTC)</label>
+                <input type="text" id="sinceWhen" class="update-summary">
+            </li>
+            <li>
+                <label for="where">Where?</label>
+                <input type="text" id="where" class="update-summary">
+            </li>
+            <li>
+                <label for="impact">What is the impact?</label>
+                <input type="text" id="impact" placeholder="% of customers…"
+                       class="update-summary">
+            </li>
+        </ol>
+
+        <button type="submit">Start</button>
+    </form>
+</section>
+
+<script>
+  function onElement (el, fn) {
+    if (el == null) return
+
+    fn(el)
+  }
+
+  function set (id, value) {
+    onElement(document.querySelector('#' + id + 'Summary'), el => el.innerHTML = value)
+  }
+
+  function findParentElementWithClass (e, className) {
+    if (e == null) return null
+    if (e.classList.contains(className)) return e
+
+    return findParentElementWithClass(e.parentElement, className)
+  }
+
+  document.querySelectorAll('.update-summary').forEach((el) => {
+    // Whenever the input changes update the summary, using 'input' because seeing the summary change feels worthwhile.
+    el.addEventListener('input', e => set(e.target.id, e.target.value))
+
+    // If we have something set in the browser from a previous instance then set the summary
+    if (el.value !== '') {
+      set(el.id, el.value)
+    }
+  })
+
+  // Hide / show the incident summary
+  document.querySelector('.incident-summary form').addEventListener('submit', e => {
+    e.preventDefault()
+
+    onElement(findParentElementWithClass(e.target, 'incident-summary'), el => el.classList.add('closed'))
+    onElement(e.target.querySelector('[type="submit"]'), el => el.innerHTML = 'Hide')
+  })
+
+  document.querySelector('.incident-summary h1').addEventListener('click', e => {
+    onElement(findParentElementWithClass(e.target, 'incident-summary'), el => el.classList.toggle('closed'))
+  })
+</script>
+</body>
+</html>
