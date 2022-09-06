@@ -17,10 +17,51 @@
 
         .incident-summary {
             border: 1px dashed grey;
+            padding-left: 1em;
         }
 
         .incident-summary.closed form {
             display: none;
+        }
+
+        .actions {
+            display: grid;
+        }
+
+        .actions li {
+            padding-bottom: 0.4em;
+        }
+
+        .actions__add {
+            grid-column: 1/2;
+            padding-left: 1em;
+        }
+
+        .actions__active, .actions__past {
+            grid-column: 2/2;
+            border-left: 1px dashed grey;
+            padding-left: 1em
+        }
+
+        .actions__past {
+            border-top: 1px dashed gray;
+        }
+
+        .actions__past time {
+            font-weight: bold;
+        }
+
+        .actions__active li:hover {
+            background-color: silver;
+            color: black;
+        }
+
+        .actions__active__action-group {
+            float: right;
+        }
+
+        .actions__active__action-group button + button {
+            margin-left: 0.5em;
         }
     </style>
 </head>
@@ -35,6 +76,11 @@
             we are seeing <span id="summarySummary">{summary}</span>
             in <span id="whereSummary">{where}</span>
             impacting <span id="impactSummary">{impact}</span>.
+        </section>
+
+        <section class="incident-summary__actions">
+            <button>📋 Business update</button>
+            <button>📋 Tech update</button>
         </section>
     </header>
 
@@ -63,6 +109,52 @@
 
         <button type="submit">Start</button>
     </form>
+</section>
+
+<section class="actions">
+    <section class="actions__add">
+        <h1>New action</h1>
+        <form>
+            <ul>
+                <li>
+                    <label for="newActionWhat">What are we trying?</label>
+                    <input type="text" id="newActionWhat" name="actionWhat">
+                </li>
+                <li>
+                    <label for="newActionWho">Who is doing it?</label>
+                    <input type="text" id="newActionWho" name="actionWho">
+                </li>
+                <li>
+                    <label for="newActionWhen">Minutes between updates?</label>
+                    <input type="number" id="newActionWhen" min="5" max="30" value="10">
+                </li>
+            </ul>
+
+            <button type="submit">Add</button>
+        </form>
+    </section>
+
+    <section class="actions__active">
+        <h1>Active actions</h1>
+        <ul>
+            <li>
+                Escalating to CTO
+                <span class="actions__active__action-group"><button>⏰ <time
+                        datetime="2022-09-06T11:42:00Z">-8:43</time></button><button>✅️</button><button>❌</button></span>
+            </li>
+        </ul>
+    </section>
+
+    <section class="actions__past">
+        <h1>Past actions</h1>
+        <ul>
+            <li>
+                <time datetime="2022-09-06T11:35:00Z">11:35</time>
+                Is there a related infrastructure change? <br>
+                <span>❌ No new infrastructure changes applied in the last 4 hours.</span>
+            </li>
+        </ul>
+    </section>
 </section>
 
 <script>
@@ -99,6 +191,7 @@
 
     onElement(findParentElementWithClass(e.target, 'incident-summary'), el => el.classList.add('closed'))
     onElement(e.target.querySelector('[type="submit"]'), el => el.innerHTML = 'Hide')
+    onElement(document.querySelector('#newActionWhat'), el => el.focus())
   })
 
   document.querySelector('.incident-summary h1').addEventListener('click', e => {
