@@ -71,9 +71,9 @@
     <header>
         <h1>Current Incident</h1>
 
-        <section class="summary">
+        <section>
             Since <span id="sinceWhenSummary">{time in utc}</span>
-            we are seeing <span id="summarySummary">{summary}</span>
+            we are seeing <span id="whatSummary">{what}</span>
             in <span id="whereSummary">{where}</span>
             impacting <span id="impactSummary">{impact}</span>.
         </section>
@@ -87,22 +87,22 @@
     <form>
         <ol>
             <li>
-                <label for="summary">What is happening?</label>
-                <input type="text" id="summary"
+                <label for="what">What is happening?</label>
+                <input type="text" id="what" name="what"
                        placeholder="Card processing through Flizzblorp…"
                        class="update-summary" autofocus>
             </li>
             <li>
                 <label for="sinceWhen">Since when? (UTC)</label>
-                <input type="text" id="sinceWhen" class="update-summary">
+                <input type="text" id="sinceWhen" name="when" class="update-summary">
             </li>
             <li>
                 <label for="where">Where?</label>
-                <input type="text" id="where" class="update-summary">
+                <input type="text" id="where" name="where" class="update-summary">
             </li>
             <li>
                 <label for="impact">What is the impact?</label>
-                <input type="text" id="impact" placeholder="% of customers…"
+                <input type="text" id="impact" name="impact" placeholder="% of customers…"
                        class="update-summary">
             </li>
         </ol>
