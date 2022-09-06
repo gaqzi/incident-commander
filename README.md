@@ -32,6 +32,8 @@ UI with clear operations and template outputs I could:
 - Provide consistency across  commanders
 - Simplify onboarding of new commanders
 
+[incident commander]: https://www.atlassian.com/incident-management/incident-response/incident-commander
+
 ## MVP
 
 ![Mockup](docs/images/incident-commander-mockup.light.excalidraw.png#gh-light-mode-only)
