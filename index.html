@@ -175,6 +175,32 @@
     return findParentElementWithClass(e.parentElement, className)
   }
 
+  function objectFromForm (form) {
+    let data = {}
+    for (let en of form) {
+      data[en[0]] = en[1]
+    }
+
+    return data
+  }
+
+  let emitEvent = (function() {
+    let eventBus = document.body
+    if(eventBus == null) {
+      console.error('failed to create event bus on "body"')
+      return
+    }
+
+    return function(name, details) {
+      eventBus.dispatchEvent(new CustomEvent(name, {
+        detail: details,
+        bubbles: false, // bubbles to parent DOM elements?
+        cancelable: true,
+        composed: false // bubbles out of the shadow DOM?
+      }))
+    }
+  })()
+
   document.querySelectorAll('.update-summary').forEach((el) => {
     // Whenever the input changes update the summary, using 'input' because seeing the summary change feels worthwhile.
     el.addEventListener('input', e => set(e.target.id, e.target.value))
@@ -189,6 +215,11 @@
   document.querySelector('.incident-summary form').addEventListener('submit', e => {
     e.preventDefault()
 
+    emitEvent('CreateIncident', {
+      recordedAt: new Date(),
+      details: objectFromForm(new FormData(e.currentTarget)),
+    })
+
     onElement(findParentElementWithClass(e.target, 'incident-summary'), el => el.classList.add('closed'))
     onElement(e.target.querySelector('[type="submit"]'), el => el.innerHTML = 'Hide')
     onElement(document.querySelector('#newActionWhat'), el => el.focus())
@@ -196,6 +227,10 @@
 
   document.querySelector('.incident-summary h1').addEventListener('click', e => {
     onElement(findParentElementWithClass(e.target, 'incident-summary'), el => el.classList.toggle('closed'))
+  })
+
+  document.body.addEventListener('CreateIncident', e => {
+    console.log(e)
   })
 </script>
 </body>
