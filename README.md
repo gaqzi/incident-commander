@@ -3,6 +3,8 @@ Incident Commander
 _Helps you manage your incident by showing what's going on and helping you
 summarize for updates_
 
+[Demo](https://gaqzi.github.io/incident-commander/)
+
 # Goals
 
 When I end up being an [incident commander] I need to:
