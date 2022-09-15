@@ -332,7 +332,7 @@
     }
 
     isFinished (tick) {
-      return tick.minutes === tick.seconds
+      return tick.minutes === 0 && tick.seconds === 0
     }
 
     stop () {
