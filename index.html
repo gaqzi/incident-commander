@@ -171,7 +171,7 @@
 </section>
 
 <template id="countdown-display">
-    <span class="minutes">00</span>:<span class="seconds">00</span>
+    -<span class="minutes">00</span>:<span class="seconds">00</span>
 </template>
 
 <script>
@@ -284,14 +284,15 @@
     constructor () {
       super()
 
-      let el = document.getElementById('countdown-display').content
-      this.appendChild(el.cloneNode(true))
+      this.appendChild(document.getElementById('countdown-display').content.cloneNode(true))
     }
 
     static get observedAttributes () { return ['minutes', 'seconds']}
 
-    attributeChangedCallback (name, _, newValue) {
-      this.querySelector(`span.${name}`).innerHTML = this.pad(newValue)
+    attributeChangedCallback (name, oldValue, newValue) {
+      if (oldValue === newValue) return
+
+      this.querySelector(`span.${name}`).innerText = this.pad(newValue)
     }
 
     pad (s) {
@@ -302,12 +303,43 @@
 
   customElements.define('countdown-display', CountdownDisplay)
 
-  class CountdownTimer extends HTMLElement {
-    constructor () {
-      super()
+  class CountdownTimer {
+    cb
+    timeout
+    _expiresAt
 
-      this.time = new CountdownDisplay()
-      this.appendChild(this.time)
+    constructor (cb) {
+      this.cb = (tick) => {
+        cb(tick)
+        this.isFinished(tick) && this.stop()
+      }
+      this.timeout = false
+    }
+
+    get expiresAt () { return this._expiresAt }
+
+    set expiresAt (v) {
+      this._expiresAt = v
+
+      this.start()
+    }
+
+    start () {
+      this.cb(this.countDown())
+
+      this.stop()
+      this.timeout = setInterval(() => this.cb(this.countDown()), 1000)
+    }
+
+    isFinished (tick) {
+      return tick.minutes === tick.seconds
+    }
+
+    stop () {
+      if (!this.timeout) return
+
+      clearInterval(this.timeout)
+      this.timeout = false
     }
 
     countDown () {
@@ -317,27 +349,37 @@
       let seconds = timeLeft % 60,
         minutes = (timeLeft - seconds) / 60
 
-      this.time.setAttribute('minutes', minutes.toString(10))
-      this.time.setAttribute('seconds', seconds.toString(10))
+      return { minutes: minutes, seconds: seconds }
+    }
+  }
+
+  class Countdown extends HTMLElement {
+    timer
+
+    constructor () {
+      super()
+
+      let display = new CountdownDisplay()
+      this.appendChild(display)
+
+      this.timer = new CountdownTimer(tick => {
+        display.setAttribute('minutes', tick.minutes)
+        display.setAttribute('seconds', tick.seconds)
+      })
     }
 
     static get observedAttributes () { return ['to'] }
 
     attributeChangedCallback (name, _, newValue) {
-      this.expiresAt = Date.parse(newValue) / 1000 // TODO: make this robust
+      this.timer.expiresAt = Date.parse(newValue) / 1000
     }
 
-    connectedCallback () {
-      this.intervalId = setInterval(this.countDown.bind(this), 1000, this, this.time)
-      this.countDown() // so we don't have to wait a second after adding
-    }
+    connectedCallback () { this.timer.start() }
 
-    disconnectedCallback () {
-      clearInterval(this.intervalId)
-    }
+    disconnectedCallback () { this.timer.stop() }
   }
 
-  customElements.define('countdown-timer', CountdownTimer)
+  customElements.define('countdown-timer', Countdown)
 
   document.body.addEventListener('CreateAction', e => {
     let item = document.createElement('li')
