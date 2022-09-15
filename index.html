@@ -65,20 +65,6 @@
         <h1>Current Incident</h1>
 
         <incident-summary></incident-summary>
-
-        <template id="incident-summary">
-            <div class="message">
-                Since <span class="when">{time in utc}</span>
-                we are seeing <span class="what">{what}</span>
-                in <span class="where">{where}</span>
-                impacting <span class="impact">{impact}</span>.
-            </div>
-
-            <div class="incident-summary__actions">
-                <button>📋 Business update</button>
-                <button>📋 Tech update</button>
-            </div>
-        </template>
     </header>
 
     <form>
@@ -135,31 +121,6 @@
     <section class="actions__active">
         <h1>Active actions</h1>
         <ul></ul>
-
-        <template id="actions__active__item">
-            <style>
-                .action-group {
-                    float: right;
-                }
-
-                .action-group button + button {
-                    margin-left: 0.5em;
-                }
-
-                countdown-display {
-                    font-family: "Source Code Pro", monospace;
-                }
-            </style>
-
-            <span class="description">DESCRIPTION</span>
-            <span class="action-group">
-                    <button name="pushTimer">
-                        ⏰ <countdown-timer to="2022-09-06T11:42:00Z"></countdown-timer>
-                    </button>
-                    <button name="success">✅️</button>
-                    <button name="fail">❌</button>
-                </span>
-        </template>
     </section>
 
     <section class="actions__past">
@@ -173,6 +134,45 @@
         </ul>
     </section>
 </section>
+
+<template id="incident-summary">
+    <div class="message">
+        Since <span class="when">{time in utc}</span>
+        we are seeing <span class="what">{what}</span>
+        in <span class="where">{where}</span>
+        impacting <span class="impact">{impact}</span>.
+    </div>
+
+    <div class="incident-summary__actions">
+        <button>📋 Business update</button>
+        <button>📋 Tech update</button>
+    </div>
+</template>
+
+<template id="actions__active__item">
+    <style>
+        .action-group {
+            float: right;
+        }
+
+        .action-group button + button {
+            margin-left: 0.5em;
+        }
+
+        countdown-display {
+            font-family: "Source Code Pro", monospace;
+        }
+    </style>
+
+    <span class="description">DESCRIPTION</span>
+    <span class="action-group">
+                    <button name="pushTimer">
+                        ⏰ <countdown-timer to="2022-09-06T11:42:00Z"></countdown-timer>
+                    </button>
+                    <button name="success">✅️</button>
+                    <button name="fail">❌</button>
+                </span>
+</template>
 
 <template id="countdown-display">
     -<span class="minutes">00</span>:<span class="seconds">00</span>
