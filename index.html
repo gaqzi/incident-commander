@@ -56,14 +56,6 @@
             background-color: silver;
             color: black;
         }
-
-        .actions__active__action-group {
-            float: right;
-        }
-
-        .actions__active__action-group button + button {
-            margin-left: 0.5em;
-        }
     </style>
 </head>
 <body>
@@ -119,15 +111,16 @@
             <ul>
                 <li>
                     <label for="newActionWhat">What are we trying?</label>
-                    <input type="text" id="newActionWhat" name="actionWhat">
+                    <input type="text" id="newActionWhat" name="what">
                 </li>
                 <li>
                     <label for="newActionWho">Who is doing it?</label>
-                    <input type="text" id="newActionWho" name="actionWho">
+                    <input type="text" id="newActionWho" name="who">
                 </li>
                 <li>
                     <label for="newActionWhen">Minutes between updates?</label>
-                    <input type="number" id="newActionWhen" min="5" max="30" value="10">
+                    <input type="number" id="newActionWhen" name="expiresIntervalMinutes" min="5"
+                           max="30" value="10">
                 </li>
             </ul>
 
@@ -139,11 +132,32 @@
         <h1>Active actions</h1>
         <ul>
             <li>
-                Escalating to CTO
-                <span class="actions__active__action-group"><button>⏰ <time
-                        datetime="2022-09-06T11:42:00Z">-8:43</time></button><button>✅️</button><button>❌</button></span>
+                <active-action who="Björn" what="Escalating to CTO"
+                               createdAt="2022-09-15T23:48:00.000+08:00"
+                               expireIntervalMinutes="10"></active-action>
             </li>
         </ul>
+
+        <template id="actions__active__item">
+            <style>
+                .action-group {
+                    float: right;
+                }
+
+                .action-group button + button {
+                    margin-left: 0.5em;
+                }
+            </style>
+
+            <span class="description">DESCRIPTION</span>
+            <span class="action-group">
+                    <button name="pushTimer">
+                        ⏰ <countdown-timer to="2022-09-06T11:42:00Z"></countdown-timer>
+                    </button>
+                    <button name="success">✅️</button>
+                    <button name="fail">❌</button>
+                </span>
+        </template>
     </section>
 
     <section class="actions__past">
@@ -216,6 +230,10 @@
   document.querySelector('.incident-summary form').addEventListener('submit', e => {
     e.preventDefault()
 
+    onElement(document.querySelector('.incident-summary form'), el => el.addEventListener('change', e => {
+      console.log(`changed summary: ${JSON.stringify(objectFromForm(new FormData(e.currentTarget)))}`)
+    }))
+
     emitEvent('CreateIncident', {
       recordedAt: new Date(),
       details: objectFromForm(new FormData(e.currentTarget)),
@@ -230,8 +248,76 @@
     onElement(findParentElementWithClass(e.target, 'incident-summary'), el => el.classList.toggle('closed'))
   })
 
-  document.body.addEventListener('CreateIncident', e => {
-    console.log(e)
+  // Actions
+  document.querySelector('.actions__add form').addEventListener('submit', e => {
+    e.preventDefault()
+
+    emitEvent('CreateAction', {
+      recordedAt: new Date(),
+      details: objectFromForm(new FormData(e.currentTarget)),
+    })
+    e.currentTarget.reset()
+  })
+
+  Array.of('CreateIncident', 'CreateAction').forEach(eventName => {
+    document.body.addEventListener(eventName, e => {
+      console.log(e)
+    })
+  })
+
+  customElements.define('active-action', class extends HTMLElement {
+    constructor () {
+      super()
+      let template = document.getElementById('actions__active__item').content
+
+      template.querySelector('.description').textContent = `(${this.getAttribute('who')}) ${this.getAttribute('what')}`
+
+      let createdAt = Date.parse(this.getAttribute('createdAt')),
+        interval = parseInt(this.getAttribute('expireIntervalMinutes'), 10),
+        expiresAt = new Date(createdAt + (interval * 60_000))
+
+      template.querySelector('countdown-timer')
+        .setAttribute('to', expiresAt.toISOString())
+
+      let shadowRoot = this.attachShadow({ mode: 'open' })
+      shadowRoot.appendChild(template.cloneNode(true))
+    }
+  })
+
+  class Countdown extends HTMLElement {
+    constructor () {
+      super()
+
+      function countDown (component, el) {
+        let expiresAt = Date.parse(component.getAttribute('to')) / 1000,
+          timeLeft = (expiresAt - (Date.now() / 1000)).toFixed()
+        if (timeLeft < 0) timeLeft = 0
+
+        let seconds = timeLeft % 60,
+          minutes = (timeLeft - seconds) / 60
+        el.innerText = `-${minutes}:${seconds}`
+      }
+
+      // TODO: figure out how to cancel this timer when the element is removed
+      let time = document.createElement('time')
+      setInterval(countDown, 1000, this, time)
+      countDown(this, time) // so we don't have to wait a second after adding
+
+      this.attachShadow({ mode: 'open' }).appendChild(time)
+    }
+  }
+
+  customElements.define('countdown-timer', Countdown)
+
+  document.body.addEventListener('CreateAction', e => {
+    let item = document.createElement('li')
+    item.innerHTML = `<active-action
+        what="${e.detail.details.what}"
+        who="${e.detail.details.who}"
+        createdAt="${e.detail.recordedAt}"
+        expireIntervalMinutes="${e.detail.details.expiresIntervalMinutes}"></active-action>`
+
+    document.querySelector('.actions__active ul').appendChild(item)
   })
 </script>
 
