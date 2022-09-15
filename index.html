@@ -130,13 +130,7 @@
 
     <section class="actions__active">
         <h1>Active actions</h1>
-        <ul>
-            <li>
-                <active-action who="Björn" what="Escalating to CTO"
-                               createdAt="2022-09-15T23:48:00.000+08:00"
-                               expireIntervalMinutes="10"></active-action>
-            </li>
-        </ul>
+        <ul></ul>
 
         <template id="actions__active__item">
             <style>
@@ -259,12 +253,6 @@
     e.currentTarget.reset()
   })
 
-  Array.of('CreateIncident', 'CreateAction').forEach(eventName => {
-    document.body.addEventListener(eventName, e => {
-      console.log(e)
-    })
-  })
-
   customElements.define('active-action', class extends HTMLElement {
     constructor () {
       super()
@@ -318,6 +306,21 @@
         expireIntervalMinutes="${e.detail.details.expireIntervalMinutes}"></active-action>`
 
     document.querySelector('.actions__active ul').appendChild(item)
+  })
+</script>
+
+<script>
+  // Debug & bootstrap
+  Array.of('CreateIncident', 'CreateAction').forEach(eventName => {
+    document.body.addEventListener(eventName, e => {
+      console.log(e)
+    })
+  })
+
+  // Populate some example data
+  emitEvent('CreateAction', {
+    recordedAt: new Date(),
+    details: { what: 'Escalating to CTO', who: 'Björn', expireIntervalMinutes: '10' },
   })
 </script>
 
