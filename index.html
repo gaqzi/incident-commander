@@ -185,14 +185,14 @@
     return data
   }
 
-  let emitEvent = (function() {
+  let emitEvent = (function () {
     let eventBus = document.body
-    if(eventBus == null) {
+    if (eventBus == null) {
       console.error('failed to create event bus on "body"')
       return
     }
 
-    return function(name, details) {
+    return function (name, details) {
       eventBus.dispatchEvent(new CustomEvent(name, {
         detail: details,
         bubbles: false, // bubbles to parent DOM elements?
