@@ -119,7 +119,7 @@
                 </li>
                 <li>
                     <label for="newActionWhen">Minutes between updates?</label>
-                    <input type="number" id="newActionWhen" name="expiresIntervalMinutes" min="5"
+                    <input type="number" id="newActionWhen" name="expireIntervalMinutes" min="5"
                            max="30" value="10">
                 </li>
             </ul>
@@ -315,7 +315,7 @@
         what="${e.detail.details.what}"
         who="${e.detail.details.who}"
         createdAt="${e.detail.recordedAt}"
-        expireIntervalMinutes="${e.detail.details.expiresIntervalMinutes}"></active-action>`
+        expireIntervalMinutes="${e.detail.details.expireIntervalMinutes}"></active-action>`
 
     document.querySelector('.actions__active ul').appendChild(item)
   })
