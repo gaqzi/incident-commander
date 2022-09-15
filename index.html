@@ -64,17 +64,21 @@
     <header>
         <h1>Current Incident</h1>
 
-        <section>
-            Since <span id="sinceWhenSummary">{time in utc}</span>
-            we are seeing <span id="whatSummary">{what}</span>
-            in <span id="whereSummary">{where}</span>
-            impacting <span id="impactSummary">{impact}</span>.
-        </section>
+        <incident-summary></incident-summary>
 
-        <section class="incident-summary__actions">
-            <button>📋 Business update</button>
-            <button>📋 Tech update</button>
-        </section>
+        <template id="incident-summary">
+            <div class="message">
+                Since <span class="when">{time in utc}</span>
+                we are seeing <span class="what">{what}</span>
+                in <span class="where">{where}</span>
+                impacting <span class="impact">{impact}</span>.
+            </div>
+
+            <div class="incident-summary__actions">
+                <button>📋 Business update</button>
+                <button>📋 Tech update</button>
+            </div>
+        </template>
     </header>
 
     <form>
@@ -181,10 +185,6 @@
     fn(el)
   }
 
-  function set (id, value) {
-    onElement(document.querySelector('#' + id + 'Summary'), el => el.innerHTML = value)
-  }
-
   function findParentElementWithClass (e, className) {
     if (e == null) return null
     if (e.classList.contains(className)) return e
@@ -220,11 +220,12 @@
 
   document.querySelectorAll('.update-summary').forEach((el) => {
     // Whenever the input changes update the summary, using 'input' because seeing the summary change feels worthwhile.
-    el.addEventListener('input', e => set(e.target.id, e.target.value))
+    let summary = document.querySelector('incident-summary')
+    el.addEventListener('input', e => summary.setAttribute(e.target.name, e.target.value))
 
     // If we have something set in the browser from a previous instance then set the summary
-    if (el.value !== '') {
-      set(el.id, el.value)
+    if (el.value !== '') { // TODO: remove when replaying events for persistence
+      summary.setAttribute(el.name, el.value)
     }
   })
 
@@ -391,6 +392,34 @@
 
     document.querySelector('.actions__active ul').appendChild(item)
   })
+
+  class IncidentSummary extends HTMLElement {
+    constructor () {
+      super()
+
+      this.el = document.getElementById('incident-summary').content.cloneNode(true)
+      this.appendChild(this.el)
+    }
+
+    static get observedAttributes () { return ['what', 'when', 'where', 'impact'] }
+
+    attributeChangedCallback (name, oldValue, newValue) {
+      if (oldValue === newValue) return
+
+      this.querySelector(`.message .${name}`).innerText = newValue
+    }
+  }
+
+  customElements.define('incident-summary', IncidentSummary)
+
+  document.body.addEventListener('CreateIncident', e => {
+    let el = document.querySelector('incident-summary')
+
+    el.setAttribute('what', e.detail.details.what)
+    el.setAttribute('where', e.detail.details.where)
+    el.setAttribute('when', e.detail.details.when)
+    el.setAttribute('impact', e.detail.details.impact)
+  })
 </script>
 
 <script>
@@ -402,6 +431,15 @@
   })
 
   // Populate some example data
+  emitEvent('CreateIncident', { // TODO: turn the summary portion into an element that listens to the update events and update itself
+    recordedAt: new Date(),
+    details: {
+      what: 'Paypal unavailable',
+      where: 'TW',
+      when: '10:00 UTC',
+      impact: '2% of orders 100% of Paypal customers'
+    }
+  })
   emitEvent('CreateAction', {
     recordedAt: new Date(),
     details: { what: 'Escalating to CTO', who: 'Björn', expireIntervalMinutes: '10' },
