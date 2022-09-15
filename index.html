@@ -431,7 +431,7 @@
   })
 
   // Populate some example data
-  emitEvent('CreateIncident', { // TODO: turn the summary portion into an element that listens to the update events and update itself
+  emitEvent('CreateIncident', {
     recordedAt: new Date(),
     details: {
       what: 'Paypal unavailable',
@@ -444,6 +444,15 @@
     recordedAt: new Date(),
     details: { what: 'Escalating to CTO', who: 'Björn', expireIntervalMinutes: '10' },
   })
+
+  // TODO: Implement finish action, two states/types: "success/no info needed" and "info needed", need to write about this to figure out the naming here
+  //       the active actions list should be a component that is responsible for creating the new actions and then removing them as they finish.
+  //       The action item publishes events as there are interactions
+  // TODO: Display finished actions
+  // TODO: turn the summary portion into an element that listens to the update events and update itself
+  // TODO: implement the detailed summary views
+  // TODO: Store the incident and its state in localStorage, under a created incident id
+  // TODO: Rehydrate from localStorage
 </script>
 
 <footer><a href="https://github.com/gaqzi/incident-commander">source</a></footer>
