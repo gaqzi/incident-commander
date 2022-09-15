@@ -141,6 +141,10 @@
                 .action-group button + button {
                     margin-left: 0.5em;
                 }
+
+                time {
+                    font-family: "Source Code Pro", monospace;
+                }
             </style>
 
             <span class="description">DESCRIPTION</span>
@@ -286,7 +290,12 @@
 
       let seconds = timeLeft % 60,
         minutes = (timeLeft - seconds) / 60
-      this.time.innerText = `-${minutes}:${seconds}` // TODO: format this nicer
+      this.time.innerText = `-${this.pad(minutes)}:${this.pad(seconds)}`
+    }
+
+    pad (num) {
+      if (num < 10) return `0${num}`
+      return num
     }
 
     static get observedAttributes () { return ['to'] }
