@@ -142,7 +142,7 @@
                     margin-left: 0.5em;
                 }
 
-                time {
+                countdown-display {
                     font-family: "Source Code Pro", monospace;
                 }
             </style>
@@ -169,6 +169,10 @@
         </ul>
     </section>
 </section>
+
+<template id="countdown-display">
+    <span class="minutes">00</span>:<span class="seconds">00</span>
+</template>
 
 <script>
   function onElement (el, fn) {
@@ -276,11 +280,33 @@
     }
   })
 
-  class Countdown extends HTMLElement {
+  class CountdownDisplay extends HTMLElement {
     constructor () {
       super()
 
-      this.time = document.createElement('time')
+      let el = document.getElementById('countdown-display').content
+      this.appendChild(el.cloneNode(true))
+    }
+
+    static get observedAttributes () { return ['minutes', 'seconds']}
+
+    attributeChangedCallback (name, _, newValue) {
+      this.querySelector(`span.${name}`).innerHTML = this.pad(newValue)
+    }
+
+    pad (s) {
+      if (s.length === 1) return `0${s}`
+      return s
+    }
+  }
+
+  customElements.define('countdown-display', CountdownDisplay)
+
+  class CountdownTimer extends HTMLElement {
+    constructor () {
+      super()
+
+      this.time = new CountdownDisplay()
       this.appendChild(this.time)
     }
 
@@ -290,12 +316,9 @@
 
       let seconds = timeLeft % 60,
         minutes = (timeLeft - seconds) / 60
-      this.time.innerText = `-${this.pad(minutes)}:${this.pad(seconds)}`
-    }
 
-    pad (num) {
-      if (num < 10) return `0${num}`
-      return num
+      this.time.setAttribute('minutes', minutes.toString(10))
+      this.time.setAttribute('seconds', seconds.toString(10))
     }
 
     static get observedAttributes () { return ['to'] }
@@ -314,7 +337,7 @@
     }
   }
 
-  customElements.define('countdown-timer', Countdown)
+  customElements.define('countdown-timer', CountdownTimer)
 
   document.body.addEventListener('CreateAction', e => {
     let item = document.createElement('li')
