@@ -163,8 +163,8 @@
                     <button name="pushTimer">
                         ⏰ <countdown-timer to="2022-09-06T11:42:00Z"></countdown-timer>
                     </button>
-                    <button name="success">✅️</button>
-                    <button name="fail">❌</button>
+                    <button class="finish success">✅️</button>
+                    <button class="finish failed">❌</button>
                 </span>
 </template>
 
@@ -288,6 +288,28 @@
 
       let shadowRoot = this.attachShadow({ mode: 'open' })
       shadowRoot.appendChild(template.cloneNode(true))
+
+      shadowRoot.querySelectorAll('button.finish').forEach(el => el.addEventListener('click', e => {
+        // Feels like there's a need for a third button, one for incident mitigated/resolved
+        let finishStatus = 'FAILED'
+        if(e.target.classList.contains('success')) {
+          finishStatus = 'SUCCESS'
+        }
+
+        let reason = undefined
+        if(finishStatus === 'FAILED') {
+          reason = prompt('Why did this action fail?')
+          if (reason === null) reason = undefined
+        }
+
+        events.finishAction(this.getAttribute('id'), {
+          type: 'TASK',
+          resolution: finishStatus,
+          reason: reason
+        })
+        console.log(e)
+        })
+      )
     }
   })
 
