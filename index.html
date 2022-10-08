@@ -125,13 +125,7 @@
 
     <section class="actions__past">
         <h1>Past actions</h1>
-        <ul>
-            <li>
-                <time datetime="2022-09-06T11:35:00Z">11:35</time>
-                Is there a related infrastructure change? <br>
-                <span>❌ No new infrastructure changes applied in the last 4 hours.</span>
-            </li>
-        </ul>
+        <ul></ul>
     </section>
 </section>
 
@@ -232,6 +226,10 @@
     createAction (data) {
       return this._dispatch('CreateAction', { id: this.idCreator('a'), details: data })
     }
+
+    finishAction (id, data) {
+      return this._dispatch('FinishAction', { id: id, details: data })
+    }
   }
 
   const events = new EventDispatcher(document.body, uniqueishId)
@@ -299,7 +297,7 @@
         what="${e.detail.details.what}"
         who="${e.detail.details.who}"
         createdAt="${e.detail.recordedAt}"
-        expireIntervalMinutes="${e.detail.details.expireIntervalMinutes}"></active-action>`
+        expireIntervalMinutes="${e.detail.details.expireIntervalMinutes}" id="${e.detail.id}"></active-action>`
 
     document.querySelector('.actions__active ul').appendChild(item)
   })
@@ -331,11 +329,36 @@
     el.setAttribute('when', e.detail.details.when)
     el.setAttribute('impact', e.detail.details.impact)
   })
+
+  document.body.addEventListener('FinishAction', e => {
+    let recordedAt = e.detail.recordedAt
+    let previousAction = document.querySelector(`.actions__active [id="${e.detail.id}"]`)
+
+    let status = e.detail.details.resolution === 'SUCCESSFUL' ? '✅' : '❌'
+
+    let pastActions = document.querySelector('.actions__past ul')
+    let li = document.createElement('li')
+
+    let hours = recordedAt.getUTCHours()
+    if (hours < 10) hours = `0${hours}`
+
+    let details = e.detail.details.reason || ''
+    if (details) details = `<ul><li>${details}</li></ul>`
+
+    li.innerHTML = `
+        <time datetime="${recordedAt.toISOString()}">${hours}:${recordedAt.getUTCMinutes()}</time>
+        ${status} (${previousAction.attributes.getNamedItem('who').value}) ${previousAction.attributes.getNamedItem('what').value}
+        ${details}
+    `
+    pastActions.appendChild(li)
+
+    previousAction.parentElement.remove()
+  })
 </script>
 
 <script>
   // Debug & bootstrap
-  Array.of('CreateIncident', 'CreateAction').forEach(eventName => {
+  Array.of('CreateIncident', 'CreateAction', 'FinishAction').forEach(eventName => {
     document.body.addEventListener(eventName, e => {
       console.log(e)
     })
@@ -348,10 +371,32 @@
     when: '10:00 UTC',
     impact: '2% of orders 100% of Paypal customers'
   })
-  const action = events.createAction({
+
+  const failedAction = events.createAction({
+    what: 'Is there a related infrastructure change?',
+    who: 'Peter',
+    expireIntervalMinutes: 10
+  })
+  events.finishAction(failedAction.id, {
+    type: 'ACTION',
+    resolution: 'FAILED',
+    reason: 'No new infrastructure changes applied in the last 4 hours.'
+  })
+
+  const successAction = events.createAction({
     what: 'Escalating to CTO',
     who: 'Björn',
     expireIntervalMinutes: '10'
+  })
+  events.finishAction(successAction.id, {
+    type: 'TASK',
+    resolution: 'SUCCESSFUL'
+  })
+
+  const ongoingAction = events.createAction({
+    what: 'Has there been any recent deploys?',
+    who: 'John',
+    expireIntervalMinutes: 10
   })
 
   // TODO: Implement finish action, two states/types: "success/no info needed" and "info needed", need to write about this to figure out the naming here
