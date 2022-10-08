@@ -48,13 +48,13 @@ UI with clear operations and template outputs I could:
     - [X] Specify who is taking an action and how long between updates
     - [ ] Allow actions to have a link to something
 3. [ ] Keep a list of current active
-    - [ ] Finish action and don't provide in summary (escalation successful, for
-      example doesn't need to be mentioned, it will lead to a new action)
+    - [x] Finish action and don't provide in summary (escalation successful,
+      for example doesn't need to be mentioned, it will lead to a new action)
     - [ ] Issue a reminder when checkin time has come to give an update
       - [X] Visually show a countdown
       - [ ] Local notification? Some sound? More of something?
 4. [ ] Keep a list of past actions
-    - [ ] Shown and what resolution they had. Will be part of the big tech
+    - [x] Shown and what resolution they had. Will be part of the big tech
       update but at the bottom of it.
     - [ ] Distinguish between actions and tasks
 5. [ ] Buttons to export (goes into the clipboard)
