@@ -29,8 +29,9 @@
             display: grid;
         }
 
-        .actions li {
-            padding-bottom: 0.4em;
+        /* Important to make the active-action to take up the full <li>, block doesn't work the same way. */
+        .actions li active-action {
+            display: inline-block;
         }
 
         .actions__add {
@@ -156,16 +157,28 @@
         countdown-display {
             font-family: "Source Code Pro", monospace;
         }
+
+        fieldset {
+            display: inline;
+            text-align: center;
+            padding: 0;
+        }
     </style>
 
     <span class="description">DESCRIPTION</span>
     <span class="action-group">
-                    <button name="pushTimer">
-                        ⏰ <countdown-timer to="2022-09-06T11:42:00Z"></countdown-timer>
-                    </button>
-                    <button class="finish success">✅️</button>
-                    <button class="finish failed">❌</button>
-                </span>
+        <button name="pushTimer">
+            ⏰ <countdown-timer to="2022-09-06T11:42:00Z"></countdown-timer>
+        </button>
+
+        <fieldset>
+            <legend>Mitigated?</legend>
+            <button class="finish action success">✅️</button>
+            <button class="finish action failed">❌</button>
+        </fieldset>
+
+        <button class="finish task success">✔️</button>
+    </span>
 </template>
 
 <script type="module" src="main.js"></script>
@@ -291,10 +304,8 @@
 
       shadowRoot.querySelectorAll('button.finish').forEach(el => el.addEventListener('click', e => {
           // Feels like there's a need for a third button, one for incident mitigated/resolved
-          let finishStatus = 'FAILED'
-          if (e.target.classList.contains('success')) {
-            finishStatus = 'SUCCESS'
-          }
+          let finishStatus = e.target.classList.contains('success') ? 'SUCCESS' : 'FAILED'
+          let type = e.target.classList.contains('action') ? 'ACTION' : 'TASK'
 
           let reason = undefined
           if (finishStatus === 'FAILED') {
@@ -303,7 +314,7 @@
           }
 
           events.finishAction(this.getAttribute('id'), {
-            type: 'TASK',
+            type: type,
             resolution: finishStatus,
             reason: reason
           })
@@ -355,7 +366,10 @@
     let recordedAt = e.detail.recordedAt
     let previousAction = document.querySelector(`.actions__active [id="${e.detail.id}"]`)
 
-    let status = e.detail.details.resolution === 'SUCCESSFUL' ? '✅' : '❌'
+    let status = '❌'
+    if (e.detail.details.resolution === 'SUCCESSFUL') {
+      status = e.detail.details.type === 'ACTION' ? '✅' : '✔️'
+    }
 
     let pastActions = document.querySelector('.actions__past ul')
     let li = document.createElement('li')
