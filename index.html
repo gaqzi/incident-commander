@@ -299,7 +299,7 @@
         let reason = undefined
         if(finishStatus === 'FAILED') {
           reason = prompt('Why did this action fail?')
-          if (reason === null) reason = undefined
+          if(reason === null) return
         }
 
         events.finishAction(this.getAttribute('id'), {
