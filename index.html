@@ -290,24 +290,23 @@
       shadowRoot.appendChild(template.cloneNode(true))
 
       shadowRoot.querySelectorAll('button.finish').forEach(el => el.addEventListener('click', e => {
-        // Feels like there's a need for a third button, one for incident mitigated/resolved
-        let finishStatus = 'FAILED'
-        if(e.target.classList.contains('success')) {
-          finishStatus = 'SUCCESS'
-        }
+          // Feels like there's a need for a third button, one for incident mitigated/resolved
+          let finishStatus = 'FAILED'
+          if (e.target.classList.contains('success')) {
+            finishStatus = 'SUCCESS'
+          }
 
-        let reason = undefined
-        if(finishStatus === 'FAILED') {
-          reason = prompt('Why did this action fail?')
-          if(reason === null) return
-        }
+          let reason = undefined
+          if (finishStatus === 'FAILED') {
+            reason = prompt('Why did this action fail?')
+            if (reason === null) return
+          }
 
-        events.finishAction(this.getAttribute('id'), {
-          type: 'TASK',
-          resolution: finishStatus,
-          reason: reason
-        })
-        console.log(e)
+          events.finishAction(this.getAttribute('id'), {
+            type: 'TASK',
+            resolution: finishStatus,
+            reason: reason
+          })
         })
       )
     }
