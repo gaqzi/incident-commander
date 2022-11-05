@@ -1,6 +1,7 @@
 class CountdownTimer {
   cb
   timeout
+  active
   _expiresAt
 
   constructor (cb) {
@@ -9,6 +10,7 @@ class CountdownTimer {
       this.isFinished(tick) && this.stop()
     }
     this.timeout = false
+    this.active = false
   }
 
   get expiresAt () { return this._expiresAt }
@@ -24,6 +26,7 @@ class CountdownTimer {
 
     this.stop()
     this.timeout = setInterval(() => this.cb(this.countDown()), 1000)
+    this.active = true
   }
 
   isFinished (tick) {
@@ -35,6 +38,7 @@ class CountdownTimer {
 
     clearInterval(this.timeout)
     this.timeout = false
+    this.active = false
   }
 
   countDown () {
@@ -85,6 +89,17 @@ export class Countdown extends HTMLElement {
       display.setAttribute('minutes', tick.minutes)
       display.setAttribute('seconds', tick.seconds)
     })
+  }
+
+  restart () {
+    if (this.timer.active) {
+      if (!window.confirm('The timer has not finished yet, are you sure?')) return
+    }
+
+    let minutesIntoFuture = parseInt(this.getAttribute('interval-minutes'), 10)
+    let now = Date.now(),
+      future = new Date(now + minutesIntoFuture * 60 * 1_000)
+    this.setAttribute('to', future.toISOString())
   }
 
   static get observedAttributes () { return ['to'] }

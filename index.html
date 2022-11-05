@@ -300,8 +300,9 @@
         interval = parseInt(this.getAttribute('expireIntervalMinutes'), 10),
         expiresAt = new Date(createdAt + (interval * 60_000))
 
-      template.querySelector('countdown-timer')
-        .setAttribute('to', expiresAt.toISOString())
+      let countdown = template.querySelector('countdown-timer')
+      countdown.setAttribute('to', expiresAt.toISOString())
+      countdown.setAttribute('interval-minutes', interval)
 
       template.querySelector('input[name="is_action"]').checked = this.getAttribute('type') === 'ACTION'
       template.querySelector('input[name="is_action"]').addEventListener('change', e => {
@@ -332,6 +333,10 @@
           })
         })
       )
+
+      shadowRoot.querySelector('button[name="pushTimer"]').addEventListener('click', e => {
+        shadowRoot.querySelector('countdown-timer').restart()
+      })
     }
   })
 
