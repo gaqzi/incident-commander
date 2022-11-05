@@ -1,13 +1,17 @@
 class CountdownTimer {
-  cb
+  perTickCb
   timeout
   active
   _expiresAt
 
-  constructor (cb) {
-    this.cb = (tick) => {
-      cb(tick)
+  constructor (perTickCb, onStartStopCb) {
+    this.perTickCb = (tick) => {
+      perTickCb(tick)
       this.isFinished(tick) && this.stop()
+    }
+    this.isStartCb = (isStart) => {
+      if (typeof onStartStopCb !== 'function') return
+      onStartStopCb(isStart)
     }
     this.timeout = false
     this.active = false
@@ -22,11 +26,12 @@ class CountdownTimer {
   }
 
   start () {
-    this.cb(this.countDown())
+    this.perTickCb(this.countDown())
 
     this.stop()
-    this.timeout = setInterval(() => this.cb(this.countDown()), 1000)
+    this.timeout = setInterval(() => this.perTickCb(this.countDown()), 1000)
     this.active = true
+    this.isStartCb(true)
   }
 
   isFinished (tick) {
@@ -39,6 +44,7 @@ class CountdownTimer {
     clearInterval(this.timeout)
     this.timeout = false
     this.active = false
+    this.isStartCb(false)
   }
 
   countDown () {
@@ -85,10 +91,15 @@ export class Countdown extends HTMLElement {
     let display = new CountdownDisplay()
     this.appendChild(display)
 
-    this.timer = new CountdownTimer(tick => {
-      display.setAttribute('minutes', tick.minutes)
-      display.setAttribute('seconds', tick.seconds)
-    })
+    this.timer = new CountdownTimer(
+      tick => {
+        display.setAttribute('minutes', tick.minutes)
+        display.setAttribute('seconds', tick.seconds)
+      },
+      (isStart) => {
+        this.classList.toggle('finished', !isStart)
+      }
+    )
   }
 
   restart () {
