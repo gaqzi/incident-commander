@@ -107,16 +107,27 @@ export class Countdown extends HTMLElement {
       if (!window.confirm('The timer has not finished yet, are you sure?')) return
     }
 
+    this._restartTimer()
+  }
+
+  _restartTimer () {
     let minutesIntoFuture = parseInt(this.getAttribute('interval-minutes'), 10)
     let now = Date.now(),
       future = new Date(now + minutesIntoFuture * 60 * 1_000)
     this.setAttribute('to', future.toISOString())
   }
 
-  static get observedAttributes () { return ['to'] }
+  static get observedAttributes () { return ['to', 'interval-minutes'] }
 
   attributeChangedCallback (name, _, newValue) {
-    this.timer.expiresAt = Date.parse(newValue) / 1000
+    switch (name) {
+      case 'to':
+        this.timer.expiresAt = Date.parse(newValue) / 1000
+        break
+      case 'interval-minutes':
+        this._restartTimer()
+        break
+    }
   }
 
   connectedCallback () { this.timer.start() }

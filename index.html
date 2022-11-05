@@ -345,6 +345,24 @@
       shadowRoot.querySelector('button[name="pushTimer"]').addEventListener('click', e => {
         shadowRoot.querySelector('countdown-timer').restart()
       })
+      shadowRoot.querySelector('button[name="pushTimer"]').addEventListener('contextmenu', e => {
+        e.preventDefault()
+
+        let interval = prompt('How many minutes do you want to count down to instead?', '20')
+        if (interval === null) return
+
+        let newInterval = Number.parseInt(interval, 10)
+        if (Number.isNaN(newInterval)) {
+          alert('Failed to parse "' + interval + '" into a number')
+          return
+        }
+        if (newInterval < 1) {
+          alert('Expected to count down at least 1 minute, got: "' + interval + '"')
+          return
+        }
+
+        shadowRoot.querySelector('countdown-timer').setAttribute('interval-minutes', interval)
+      })
     }
   })
 
