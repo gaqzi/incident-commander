@@ -42,7 +42,8 @@ UI with clear operations and template outputs I could:
 ![Mockup](docs/images/incident-commander-mockup.dark.excalidraw.png#gh-dark-mode-only)
 
 1. [ ] Specify what the incident is about
-    - [X] Since 00:00 UTC we are seeing [problem] in [impacted area] with [impact]
+    - [X] Since 00:00 UTC we are seeing [problem] in [impacted area]
+      with [impact]
     - [ ] Update the state (Investigating / Identified / Monitoring / Resolved)
 2. [ ] Add actions that we are taking
     - [X] Specify who is taking an action and how long between updates
@@ -51,9 +52,8 @@ UI with clear operations and template outputs I could:
     - [x] Finish action and don't provide in summary (escalation successful,
       for example doesn't need to be mentioned, it will lead to a new action)
     - [ ] Issue a reminder when checkin time has come to give an update
-      - [X] Visually show a countdown
-      - [ ] Local notification? Some sound? More of something?
-4. [ ] Keep a list of past actions
+        - [X] Visually show a countdown
+        - [ ] Local notification? Some sound? More of something?
 4. [X] Keep a list of past actions
     - [x] Shown and what resolution they had. Will be part of the big tech
       update but at the bottom of it.
