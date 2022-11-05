@@ -64,6 +64,11 @@
 <section class="incident-summary">
     <header>
         <h1>Current Incident</h1>
+        <ul>
+            <li>
+                <label>Notifications? <input type="checkbox" id="notificationsEnabled"></label>
+            </li>
+        </ul>
 
         <incident-summary></incident-summary>
     </header>
@@ -432,6 +437,23 @@
     pastActions.appendChild(li)
 
     previousAction.parentElement.remove()
+  })
+
+  let notificationToggle = document.querySelector('#notificationsEnabled')
+  notificationToggle.checked = Notification.permission === 'granted'
+  notificationToggle.addEventListener('change', e => {
+    if (e.target.checked) {
+      switch (Notification.permission) {
+        case 'granted':
+          return
+        default:
+          Notification.requestPermission().then(newPermission => {
+            e.target.checked = newPermission === 'granted'
+          })
+      }
+    }
+
+    e.target.checked = false
   })
 </script>
 

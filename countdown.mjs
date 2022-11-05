@@ -7,7 +7,7 @@ class CountdownTimer {
   constructor (perTickCb, onStartStopCb) {
     this.perTickCb = (tick) => {
       perTickCb(tick)
-      this.isFinished(tick) && this.stop()
+      this.isFinished(tick) && this._stopNaturally()
     }
     this.isStartCb = (isStart) => {
       if (typeof onStartStopCb !== 'function') return
@@ -39,12 +39,23 @@ class CountdownTimer {
   }
 
   stop () {
-    if (!this.timeout) return
+    if (!this.timeout) return false
 
     clearInterval(this.timeout)
     this.timeout = false
     this.active = false
-    this.isStartCb(false)
+    return true
+  }
+
+  /**
+   * This uses the normal stop under the hood, but it's intended to only be used when we finish
+   * the countdown as intended. We also stop the countdown when removed from the DOM, when changing
+   * the interval, and when restarting the timer. This so that we only mark the countdown as
+   * finished when it truly has.
+   * @private
+   */
+  _stopNaturally () {
+    if (this.stop()) this.isStartCb(false)
   }
 
   countDown () {
@@ -98,6 +109,12 @@ export class Countdown extends HTMLElement {
       },
       (isStart) => {
         this.classList.toggle('finished', !isStart)
+
+        if (!isStart) {
+          if (Notification.permission === 'granted') {
+            new Notification('Countdown finished!')
+          }
+        }
       }
     )
   }
