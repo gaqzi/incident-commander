@@ -54,9 +54,10 @@ UI with clear operations and template outputs I could:
       - [X] Visually show a countdown
       - [ ] Local notification? Some sound? More of something?
 4. [ ] Keep a list of past actions
+4. [X] Keep a list of past actions
     - [x] Shown and what resolution they had. Will be part of the big tech
       update but at the bottom of it.
-    - [ ] Distinguish between actions and tasks
+    - [x] Distinguish between actions and tasks
 5. [ ] Buttons to export (goes into the clipboard)
     - [ ] Business update: Doesn't have any formatting
     - [ ] Business + Text Update: Uses Slack formatting

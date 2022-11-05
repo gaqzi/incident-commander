@@ -11,7 +11,7 @@
             font-family: Helvetica Neue, Helvetica, sans-serif;
         }
 
-        li > label {
+        li > label + :not(input[type="checkbox"]) {
             display: block;
         }
 
@@ -113,6 +113,12 @@
                     <input type="number" id="newActionWhen" name="expireIntervalMinutes" min="5"
                            max="30" value="10">
                 </li>
+                <li>
+                    <label>
+                        Is mitigating?
+                        <input type="checkbox" name="isAction" checked>
+                    </label>
+                </li>
             </ul>
 
             <button type="submit">Add</button>
@@ -157,12 +163,6 @@
         countdown-display {
             font-family: "Source Code Pro", monospace;
         }
-
-        fieldset {
-            display: inline;
-            text-align: center;
-            padding: 0;
-        }
     </style>
 
     <span class="description">DESCRIPTION</span>
@@ -171,13 +171,13 @@
             ⏰ <countdown-timer to="2022-09-06T11:42:00Z"></countdown-timer>
         </button>
 
-        <fieldset>
-            <legend>Mitigated?</legend>
-            <button class="finish action success">✅️</button>
-            <button class="finish action failed">❌</button>
-        </fieldset>
+        <label>
+            Mitigating?
+            <input type="checkbox" name="is_action">
+        </label>
 
-        <button class="finish task success">✔️</button>
+        <button class="finish action success">✅️</button>
+        <button class="finish action failed">❌</button>
     </span>
 </template>
 
@@ -281,7 +281,11 @@
   document.querySelector('.actions__add form').addEventListener('submit', e => {
     e.preventDefault()
 
-    events.createAction(objectFromForm(new FormData(e.currentTarget)))
+    let data = objectFromForm(new FormData(e.currentTarget))
+    data.type = data.isAction ? 'ACTION' : 'TASK'
+    delete data.isAction
+    events.createAction(data)
+
     e.currentTarget.reset()
   })
 
@@ -299,13 +303,21 @@
       template.querySelector('countdown-timer')
         .setAttribute('to', expiresAt.toISOString())
 
+      template.querySelector('input[name="is_action"]').checked = this.getAttribute('type') === 'ACTION'
+      template.querySelector('input[name="is_action"]').addEventListener('change', e => {
+        if (e.target.checked)
+          this.setAttribute('type', 'ACTION')
+        else
+          this.setAttribute('type', 'TASK')
+      })
+
       let shadowRoot = this.attachShadow({ mode: 'open' })
       shadowRoot.appendChild(template.cloneNode(true))
 
       shadowRoot.querySelectorAll('button.finish').forEach(el => el.addEventListener('click', e => {
           // Feels like there's a need for a third button, one for incident mitigated/resolved
-          let finishStatus = e.target.classList.contains('success') ? 'SUCCESS' : 'FAILED'
-          let type = e.target.classList.contains('action') ? 'ACTION' : 'TASK'
+          let finishStatus = e.target.classList.contains('success') ? 'SUCCESSFUL' : 'FAILED'
+          let type = shadowRoot.querySelector('input[name="is_action"]').checked ? 'ACTION' : 'TASK'
 
           let reason = undefined
           if (finishStatus === 'FAILED') {
@@ -326,6 +338,7 @@
   document.body.addEventListener('CreateAction', e => {
     let item = document.createElement('li')
     item.innerHTML = `<active-action
+        type="${e.detail.details.type}"
         what="${e.detail.details.what}"
         who="${e.detail.details.who}"
         createdAt="${e.detail.recordedAt}"
@@ -408,6 +421,7 @@
   })
 
   const failedAction = events.createAction({
+    type: 'ACTION',
     what: 'Is there a related infrastructure change?',
     who: 'Peter',
     expireIntervalMinutes: 10
@@ -419,6 +433,7 @@
   })
 
   const successAction = events.createAction({
+    type: 'TASK',
     what: 'Escalating to CTO',
     who: 'Björn',
     expireIntervalMinutes: '10'
@@ -429,6 +444,7 @@
   })
 
   const ongoingAction = events.createAction({
+    type: 'ACTION',
     what: 'Has there been any recent deploys?',
     who: 'John',
     expireIntervalMinutes: 10
