@@ -44,6 +44,10 @@ export class EventDispatcher {
     return this._dispatch('CreateAction', { id: this.idCreator('a'), details: data })
   }
 
+  updateAction (id, data) {
+    return this._dispatch('UpdateAction', { id, details: data })
+  }
+
   finishAction (id, data) {
     return this._dispatch('FinishAction', { id: id, details: data })
   }

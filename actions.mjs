@@ -1,28 +1,37 @@
 export class ActiveActions extends HTMLElement {
   constructor () {
     super()
+    this.id = this.getAttribute('id')
     let template = document.getElementById('actions__active__item').content
 
-    template.querySelector('.description').textContent = `(${this.getAttribute('who')}) ${this.getAttribute('what')}`
+    let expiresAt = this.getAttribute('expiresAt'),
+      interval = parseInt(this.getAttribute('expireIntervalMinutes'), 10)
+    if (expiresAt === null) {
+      let createdAt = Date.parse(this.getAttribute('createdAt'))
 
-    let createdAt = Date.parse(this.getAttribute('createdAt')),
-      interval = parseInt(this.getAttribute('expireIntervalMinutes'), 10),
-      expiresAt = new Date(createdAt + (interval * 60_000))
-
-    let countdown = template.querySelector('countdown-timer')
-    countdown.setAttribute('to', expiresAt.toISOString())
-    countdown.setAttribute('interval-minutes', interval)
-
-    template.querySelector('input[name="is_action"]').checked = this.getAttribute('type') === 'ACTION'
-    template.querySelector('input[name="is_action"]').addEventListener('change', e => {
-      if (e.target.checked)
-        this.setAttribute('type', 'ACTION')
-      else
-        this.setAttribute('type', 'TASK')
-    })
+      expiresAt = new Date(createdAt + (interval * 60_000)).toISOString()
+      this.setAttribute('expiresAt', expiresAt)
+    }
 
     let shadowRoot = this.attachShadow({ mode: 'open' })
     shadowRoot.appendChild(template.cloneNode(true))
+
+    this.countdown = shadowRoot.querySelector('countdown-timer')
+
+    for (let el of ['who', 'what']) {
+      shadowRoot.querySelector('.description').querySelector(`.${el}`).addEventListener('contextmenu', e => {
+        e.preventDefault()
+        let value = prompt('What do you want to change to?', this.getAttribute(el))
+
+        let data = {}
+        data[el] = value
+        this.eventDispatcher.updateAction(this.id, data)
+      })
+    }
+
+    shadowRoot.querySelector('input[name="is_action"]').addEventListener('change', e => {
+      this.eventDispatcher.updateAction(this.id, { type: e.target.checked ? 'ACTION' : 'TASK' })
+    })
 
     shadowRoot.querySelectorAll('button.finish').forEach(el => el.addEventListener('click', e => {
         // Feels like there's a need for a third button, one for incident mitigated/resolved
@@ -35,7 +44,7 @@ export class ActiveActions extends HTMLElement {
           if (reason === null) return
         }
 
-        events.finishAction(this.getAttribute('id'), {
+        this.eventDispatcher.finishAction(this.id, {
           type: type,
           resolution: finishStatus,
           reason: reason
@@ -44,7 +53,9 @@ export class ActiveActions extends HTMLElement {
     )
 
     shadowRoot.querySelector('button[name="pushTimer"]').addEventListener('click', e => {
-      shadowRoot.querySelector('countdown-timer').restart()
+      // let countdown = shadowRoot.querySelector('countdown-timer')
+      this.countdown.restart()
+      this.eventDispatcher.updateAction(this.id, { expiresAt: this.countdown.getAttribute('to') })
     })
     shadowRoot.querySelector('button[name="pushTimer"]').addEventListener('contextmenu', e => {
       e.preventDefault()
@@ -62,7 +73,60 @@ export class ActiveActions extends HTMLElement {
         return
       }
 
-      shadowRoot.querySelector('countdown-timer').setAttribute('interval-minutes', interval)
+      this.countdown.setAttribute('interval-minutes', interval)
+      this.eventDispatcher.updateAction(this.id, {
+        expireIntervalMinutes: interval.toString(),
+        expiresAt: this.countdown.getAttribute('to'),
+      })
     })
+  }
+
+  /** @param {EventDispatcher} v */
+  set eventDispatcher (v) {
+    if (this._eventDispatcher !== undefined) return
+
+    this._eventDispatcher = v
+
+    let that = this
+    this._updateEventDispatcher = e => {
+      if (e.detail.id !== that.id) return
+
+      for (let item of Object.entries(e.detail.details)) {
+        that.setAttribute(item[0], item[1])
+      }
+    }
+
+    this._eventDispatcher.eventTarget.addEventListener('UpdateAction', this._updateEventDispatcher)
+  }
+
+  /** @return EventDispatcher */
+  get eventDispatcher () { return this._eventDispatcher }
+
+  /* To remove all the callback listeners when the action is inactive to avoid pointless work */
+  connectedCallback () { this._eventDispatcher.eventTarget.addEventListener('UpdateAction', this._updateEventDispatcher)}
+
+  disconnectedCallback () { this.eventDispatcher.eventTarget.removeEventListener('UpdateAction', this._updateEventDispatcher) }
+
+  static get observedAttributes () { return ['who', 'what', 'type', 'expiresat', 'expireintervalminutes'] }
+
+  attributeChangedCallback (name, _, newValue) {
+    switch (name) {
+      case 'type':
+        this.shadowRoot.querySelector('input[name="is_action"]').checked = newValue === 'ACTION'
+        break
+
+      case 'what':
+      case 'who':
+        this.shadowRoot.querySelector(`.description .${name}`).innerText = newValue
+        break
+
+      // Countdown stuff
+      case 'expiresat':
+        this.countdown.setAttribute('expiresAt', newValue)
+        break
+      case 'expireintervalminutes':
+        this.countdown.setAttribute('interval-minutes', newValue)
+        break
+    }
   }
 }

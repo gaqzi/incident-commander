@@ -90,6 +90,7 @@ document.body.addEventListener('CreateAction', e => {
         who="${e.detail.details.who}"
         createdAt="${e.detail.recordedAt}"
         expireIntervalMinutes="${e.detail.details.expireIntervalMinutes}" id="${e.detail.id}"></active-action>`
+  item.children[0].eventDispatcher = events
 
   document.querySelector('.actions__active ul').appendChild(item)
 })
@@ -173,7 +174,8 @@ document.querySelector('.affected-systems')
   .appendChild(new AffectedSystems(events))
 
 Array.of(
-  'CreateIncident', 'CreateAction', 'FinishAction',
+  'CreateIncident',
+  'CreateAction', 'UpdateAction', 'FinishAction',
   'NewAffectedSystem', 'ResolvedAffectedSystem',
 ).forEach(eventName => {
   document.body.addEventListener(eventName, e => {
