@@ -1,6 +1,7 @@
 import { Countdown, CountdownDisplay } from './countdown.mjs'
 import { AffectedSystems } from './affected-systems.mjs'
 import { ActiveActions } from './actions.mjs'
+import { EventDispatcher, uniqueishId } from './events.mjs'
 
 // No idea what the practice here is, do we put in the definition in the
 // module or in main? I'm going with main for now so all the custom
@@ -31,53 +32,6 @@ function objectFromForm (form) {
   }
 
   return data
-}
-
-// It's not perfect, ideally it'd just be a UUID but until this thing becomes more production it'll do for a single user's need.
-function uniqueishId (prefix) {
-  prefix = prefix ? `${prefix}:` : ''
-  return prefix + (Date.now() + Math.random()).toString(36)
-}
-
-class EventDispatcher {
-  constructor (eventTarget, idCreator) {
-    this.eventTarget = eventTarget || document.body
-    this.idCreator = idCreator
-  }
-
-  _dispatch (name, detail) {
-    detail.name = name
-    detail.recordedAt = detail.recordedAt || new Date()
-
-    this.eventTarget.dispatchEvent(new CustomEvent(name, {
-      detail: detail,
-      bubbles: false, // bubbles to parent DOM elements?
-      cancelable: true,
-      composed: false // bubbles out of the shadow DOM?
-    }))
-
-    return detail
-  }
-
-  createIncident (data) {
-    return this._dispatch('CreateIncident', { id: this.idCreator('i'), details: data })
-  }
-
-  createAction (data) {
-    return this._dispatch('CreateAction', { id: this.idCreator('a'), details: data })
-  }
-
-  finishAction (id, data) {
-    return this._dispatch('FinishAction', { id: id, details: data })
-  }
-
-  newAffectedSystem (data) {
-    return this._dispatch('NewAffectedSystem', { id: this.idCreator('s'), details: data })
-  }
-
-  resolveAffectedSystem (id, data) {
-    return this._dispatch('ResolveAffectedSystem', { id: id, details: data })
-  }
 }
 
 const events = new EventDispatcher(document.body, uniqueishId)
