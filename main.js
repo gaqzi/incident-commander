@@ -1,10 +1,13 @@
 import { Countdown, CountdownDisplay } from './countdown.mjs'
+import { AffectedSystems } from './affected-systems.mjs'
 
 // No idea what the practice here is, do we put in the definition in the
 // module or in main? I'm going with main for now so all the custom
 // components are declared in one place, but it feels weird
 customElements.define('countdown-display', CountdownDisplay)
 customElements.define('countdown-timer', Countdown)
+
+customElements.define('affected-systems', AffectedSystems)
 
 /******* The stuff from index.html unchanged *******/
 function onElement (el, fn) {
@@ -66,6 +69,14 @@ class EventDispatcher {
   finishAction (id, data) {
     return this._dispatch('FinishAction', { id: id, details: data })
   }
+
+  newAffectedSystem (data) {
+    return this._dispatch('NewAffectedSystem', { id: this.idCreator('s'), details: data })
+  }
+
+  resolveAffectedSystem (id, data) {
+    return this._dispatch('ResolveAffectedSystem', { id: id, details: data })
+  }
 }
 
 const events = new EventDispatcher(document.body, uniqueishId)
@@ -89,7 +100,9 @@ document.querySelector('.incident-summary form').addEventListener('submit', e =>
     console.log(`changed summary: ${JSON.stringify(objectFromForm(new FormData(e.currentTarget)))}`)
   }))
 
-  events.createIncident(objectFromForm(new FormData(e.currentTarget)))
+  let data = objectFromForm(new FormData(e.currentTarget))
+  events.createIncident(data)
+  events.newAffectedSystem({ name: data.what })
 
   onElement(findParentElementWithClass(e.target, 'incident-summary'), el => el.classList.add('closed'))
   onElement(e.target.querySelector('[type="submit"]'), el => el.innerHTML = 'Hide')
@@ -267,7 +280,14 @@ notificationToggle.addEventListener('change', e => {
 })
 
 /********* Debug & bootstrap *********/
-Array.of('CreateIncident', 'CreateAction', 'FinishAction').forEach(eventName => {
+
+document.querySelector('.affected-systems')
+  .appendChild(new AffectedSystems(events))
+
+Array.of(
+  'CreateIncident', 'CreateAction', 'FinishAction',
+  'NewAffectedSystem', 'ResolvedAffectedSystem',
+).forEach(eventName => {
   document.body.addEventListener(eventName, e => {
     console.log(e)
   })
@@ -279,6 +299,10 @@ events.createIncident({
   where: 'TW',
   when: '10:00 UTC',
   impact: '2% of orders 100% of Paypal customers'
+})
+
+const paypalUnavailableSystem = events.newAffectedSystem({
+  name: 'Paypal unavailable',
 })
 
 const failedAction = events.createAction({
@@ -310,6 +334,9 @@ const ongoingAction = events.createAction({
   who: 'John',
   expireIntervalMinutes: 10
 })
+
+const resolvedSystem = events.newAffectedSystem({ name: 'Peering with Comcast' })
+events.resolveAffectedSystem(resolvedSystem.id, { type: 'SUCCESS' })
 
 // TODO: Implement finish action, two states/types: "success/no info needed" and "info needed", need to write about this to figure out the naming here
 //       the active actions list should be a component that is responsible for creating the new actions and then removing them as they finish.

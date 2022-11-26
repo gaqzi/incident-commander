@@ -18,15 +18,36 @@
         .incident-summary {
             border-bottom: 1px dashed grey;
             padding-left: 1em;
-            padding-bottom: 1em;
         }
 
-        .incident-summary.closed form {
+        .incident-summary__form {
+            margin-bottom: 1em;
+        }
+
+        .incident-summary.closed .incident-summary__form {
             display: none;
+        }
+
+        affected-systems {
+            display: grid;
+            grid-template-columns: 33% 64%;
+            border-bottom: 1px dashed gray;
+        }
+
+        .affected-systems__new {
+            grid-column: 1/2;
+            padding-left: 1em;
+        }
+
+        .affected-systems__listing {
+            grid-column: 2/2;
+            border-left: 1px dashed gray;
+            padding-left: 1em
         }
 
         .actions {
             display: grid;
+            grid-template-columns: 33% 64%;
         }
 
         /* Important to make the active-action to take up the full <li>, block doesn't work the same way. */
@@ -73,7 +94,7 @@
         <incident-summary></incident-summary>
     </header>
 
-    <form>
+    <form class="incident-summary__form">
         <ol>
             <li>
                 <label for="what">What is happening?</label>
@@ -98,6 +119,9 @@
 
         <button type="submit">Start</button>
     </form>
+</section>
+
+<section class="affected-systems">
 </section>
 
 <section class="actions">
