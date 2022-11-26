@@ -1,6 +1,6 @@
-import { Countdown, CountdownDisplay } from './countdown.mjs'
-import { AffectedSystems } from './affected-systems.mjs'
 import { ActiveActions } from './actions.mjs'
+import { AffectedSystems } from './affected-systems.mjs'
+import { Countdown, CountdownDisplay } from './countdown.mjs'
 import { EventDispatcher, uniqueishId } from './events.mjs'
 
 // No idea what the practice here is, do we put in the definition in the
