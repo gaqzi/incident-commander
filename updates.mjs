@@ -38,9 +38,11 @@ class ActionReporter extends Reporter {
   type = 'Action'
 
   slack () {
-    let resolution = '❌'
+    let resolution = ''
     if (this.details.resolution === 'SUCCESSFUL') {
       resolution = this.details.type === 'ACTION' ? '✅' : '✔️'
+    } else if (this.details.resolution === 'FAILED') {
+      resolution = '❌'
     }
 
     let link = ''
