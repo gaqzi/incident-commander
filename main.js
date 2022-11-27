@@ -41,11 +41,6 @@ document.querySelectorAll('.update-summary').forEach((el) => {
   // Whenever the input changes update the summary, using 'input' because seeing the summary change feels worthwhile.
   let summary = document.querySelector('incident-summary')
   el.addEventListener('input', e => summary.setAttribute(e.target.name, e.target.value))
-
-  // If we have something set in the browser from a previous instance then set the summary
-  if (el.value !== '') { // TODO: remove when replaying events for persistence
-    summary.setAttribute(el.name, el.value)
-  }
 })
 
 // Hide / show the incident summary
@@ -57,6 +52,7 @@ document.querySelector('.incident-summary form').addEventListener('submit', e =>
   }))
 
   let data = objectFromForm(new FormData(e.currentTarget))
+  data.status = config.statuses[0]
   events.createIncident(data)
   events.newAffectedSystem({ name: data.what })
 })
@@ -111,14 +107,53 @@ document.body.addEventListener('CreateAction', e => {
 })
 
 class IncidentSummary extends HTMLElement {
-  constructor () {
+  /**
+   *
+   * @param {string} id
+   * @param {EventDispatcher} eventDispatcher
+   */
+  constructor (id, eventDispatcher) {
     super()
+    this.id = id
+    this.eventDispatcher = eventDispatcher
 
     this.el = document.getElementById('incident-summary').content.cloneNode(true)
     this.appendChild(this.el)
+
+    for (let attr of IncidentSummary.observedAttributes) {
+      this.querySelector(`.${attr}`).addEventListener('contextmenu', e => {
+        e.preventDefault()
+
+        let currentVal = this.getAttribute(attr)
+        let newVal = null
+        if (attr === 'status') { // XXX: blergh, but making nicer later!
+          currentVal = config.statuses.map(s => s === currentVal ? `[${s}]` : s).join(' / ')
+          let first = true
+          do {
+            newVal = prompt('New value' + first ? '' : ', need to pick a valid status', currentVal)
+            first = false
+            if (newVal === null) continue
+            newVal = newVal.trim()
+          } while (!config.statuses.includes(newVal))
+        } else {
+          newVal = prompt('New value', currentVal)
+          if (newVal === null) return
+        }
+
+        let data = {}
+        data[attr] = newVal
+        this.eventDispatcher.updateIncident(this.id, data)
+      })
+    }
+
+    this.eventDispatcher.eventTarget.addEventListener('UpdateIncident', e => {
+      for (let kv of Object.entries(e.detail.details)) {
+        this.setAttribute(kv[0], kv[1])
+      }
+    })
   }
 
-  static get observedAttributes () { return ['what', 'when', 'where', 'impact'] }
+  static get observedAttributes () { return ['what', 'when', 'where', 'impact', 'status'] }
 
   attributeChangedCallback (name, oldValue, newValue) {
     if (oldValue === newValue) return
@@ -129,14 +164,15 @@ class IncidentSummary extends HTMLElement {
 
 customElements.define('incident-summary', IncidentSummary)
 
-document.body.addEventListener('CreateIncident', e => {
-  let el = document.querySelector('incident-summary')
-
-  el.setAttribute('what', e.detail.details.what)
-  el.setAttribute('where', e.detail.details.where)
-  el.setAttribute('when', e.detail.details.when)
-  el.setAttribute('impact', e.detail.details.impact)
-})
+let createIncidentHandler = e => {
+  let is = new IncidentSummary(e.detail.id, events)
+  for (let kv of Object.entries(e.detail.details)) {
+    is.setAttribute(kv[0], kv[1])
+  }
+  document.querySelector('.incident-summary header').append(is)
+  document.body.removeEventListener('CreateIncident', createIncidentHandler)
+}
+document.body.addEventListener('CreateIncident', createIncidentHandler)
 
 document.body.addEventListener('FinishAction', e => {
   let recordedAt = e.detail.recordedAt
@@ -196,7 +232,7 @@ document.querySelector('.affected-systems')
   .appendChild(new AffectedSystems(events))
 
 Array.of(
-  'CreateIncident',
+  'CreateIncident', 'UpdateIncident',
   'CreateAction', 'UpdateAction', 'FinishAction',
   'NewAffectedSystem', 'ResolvedAffectedSystem',
 ).forEach(eventName => {
@@ -210,7 +246,8 @@ events.createIncident({
   what: 'Paypal unavailable',
   where: 'TW',
   when: '10:00 UTC',
-  impact: '2% of orders 100% of Paypal customers'
+  impact: '2% of orders 100% of Paypal customers',
+  status: 'Investigating',
 })
 
 const paypalUnavailableSystem = events.newAffectedSystem({

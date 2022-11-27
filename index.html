@@ -94,8 +94,6 @@
                 <label>Notifications? <input type="checkbox" id="notificationsEnabled"></label>
             </li>
         </ul>
-
-        <incident-summary></incident-summary>
     </header>
 
     <form class="incident-summary__form">
@@ -180,6 +178,7 @@
 
 <template id="incident-summary">
     <div class="message">
+        <strong class="status">{status}</strong>
         Since <span class="when">{time in utc}</span>
         we are seeing <span class="what">{what}</span>
         in <span class="where">{where}</span>
