@@ -48,6 +48,31 @@ function reporterFactory (e) {
   throw `Unknown event looking for reporter: ${e.name}`
 }
 
+/**
+ * Combines events into a single reporter per event category
+ * @param events
+ * @return Object<string,Reporter> where the string is the type of reporter
+ */
+function flattenEvents (events) {
+  let finalEvents = {} /** @type Object<string,Reporter> */
+  for (let e of events) {
+    if (finalEvents[e.id] === undefined) {
+      finalEvents[e.id] = reporterFactory(e)
+      continue
+    }
+
+    finalEvents[e.id].process(e)
+  }
+
+  return Object.values(finalEvents)
+    .sort((a, b) => a.recordedAt - b.recordedAt)
+    .reduce((all, e) => {
+      if (all[e.type] === undefined) all[e.type] = []
+      all[e.type].push(e)
+      return all
+    }, {})
+}
+
 class BusinessUpdate {
   EVENTS = [
     'CreateIncident', 'UpdateIncident', 'ResolveIncident',
@@ -55,24 +80,7 @@ class BusinessUpdate {
   ]
 
   report (events) {
-    events = events.filter(e => this.EVENTS.includes(e.name))
-    let finalEvents = {} /** @type Object<string,Reporter> */
-    for (let e of events) {
-      if (finalEvents[e.id] === undefined) {
-        finalEvents[e.id] = reporterFactory(e)
-        continue
-      }
-
-      finalEvents[e.id].process(e)
-    }
-
-    finalEvents = Object.values(finalEvents)
-      .sort((a, b) => a.recordedAt - b.recordedAt)
-      .reduce((all, e) => {
-        if (all[e.type] === undefined) all[e.type] = []
-        all[e.type].push(e)
-        return all
-      }, {})
+    let finalEvents = flattenEvents(events.filter(e => this.EVENTS.includes(e.name)))
 
     let output = [
       finalEvents['Incident'][0].slack(),
