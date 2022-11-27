@@ -18,7 +18,7 @@ export class ActiveActions extends HTMLElement {
 
     this.countdown = shadowRoot.querySelector('countdown-timer')
 
-    for (let el of ['who', 'what']) {
+    for (let el of ['link', 'who', 'what']) {
       shadowRoot.querySelector('.description').querySelector(`.${el}`).addEventListener('contextmenu', e => {
         e.preventDefault()
         let value = prompt('What do you want to change to?', this.getAttribute(el))
@@ -107,12 +107,27 @@ export class ActiveActions extends HTMLElement {
 
   disconnectedCallback () { this.eventDispatcher.eventTarget.removeEventListener('UpdateAction', this._updateEventDispatcher) }
 
-  static get observedAttributes () { return ['who', 'what', 'type', 'expiresat', 'expireintervalminutes'] }
+  static get observedAttributes () {
+    return [
+      'who', 'what', 'type',
+      'link',
+      'expiresat', 'expireintervalminutes',
+    ]
+  }
 
   attributeChangedCallback (name, _, newValue) {
     switch (name) {
       case 'type':
         this.shadowRoot.querySelector('input[name="is_action"]').checked = newValue === 'ACTION'
+        break
+
+      case 'link':
+        let link = this.shadowRoot.querySelector('.description .link')
+        if (newValue === '') {
+          link.innerText = 'Link missing'
+          break
+        }
+        link.innerHTML = `<a href="${newValue}" class="external" target="_blank">More information</a>`
         break
 
       case 'what':

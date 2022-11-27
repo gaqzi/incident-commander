@@ -11,6 +11,10 @@
             font-family: Helvetica Neue, Helvetica, sans-serif;
         }
 
+        a.external:after {
+            content: '↗';
+        }
+
         li > label + :not(input[type="checkbox"]) {
             display: block;
         }
@@ -138,6 +142,11 @@
                     <input type="text" id="newActionWho" name="who">
                 </li>
                 <li>
+                    <label for="newActionLink">Do you have a link for more information?</label>
+                    <input type="url" id="newActionLink" name="link"
+                           placeholder="https://company.slack.com/archive/…">
+                </li>
+                <li>
                     <label for="newActionWhen">Minutes between updates?</label>
                     <input type="number" id="newActionWhen" name="expireIntervalMinutes" min="5"
                            max="30" value="10">
@@ -181,6 +190,10 @@
 
 <template id="actions__active__item">
     <style>
+        a.external:after {
+            content: '↗';
+        }
+
         .action-group {
             float: right;
         }
@@ -203,8 +216,10 @@
     </style>
 
     <span class="description">
-        (<span class="who" contenteditable="true">WHO</span>)
-        <span class="what" contenteditable="true">DESCRIPTION</span></span>
+        (<span class="who">WHO</span>)
+        <span class="what">DESCRIPTION</span>
+        [<span class="link">MORE INFORMATION</span>]
+    </span>
     <span class="action-group">
         <button name="pushTimer">
             ⏰ <countdown-timer to="2022-09-06T11:42:00Z"></countdown-timer>

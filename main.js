@@ -88,6 +88,7 @@ document.body.addEventListener('CreateAction', e => {
         type="${e.detail.details.type}"
         what="${e.detail.details.what}"
         who="${e.detail.details.who}"
+        link="${e.detail.details.link || ''}"
         createdAt="${e.detail.recordedAt}"
         expireIntervalMinutes="${e.detail.details.expireIntervalMinutes}" id="${e.detail.id}"></active-action>`
   item.children[0].eventDispatcher = events
@@ -138,13 +139,20 @@ document.body.addEventListener('FinishAction', e => {
   let hours = recordedAt.getUTCHours()
   if (hours < 10) hours = `0${hours}`
 
+  let moreDetails = '<ul>'
   let details = e.detail.details.reason || ''
-  if (details) details = `<ul><li>${details}</li></ul>`
+  if (details) moreDetails += `<li>${details}</li>`
+
+  let link = previousAction.attributes.getNamedItem('link').value
+  if (link !== '') moreDetails += `<li><a href="${link}" class="external" target="_blank">More information</a></li>`
+  moreDetails += '</ul>'
+
+  if (moreDetails.length <= 9) moreDetails = ''
 
   li.innerHTML = `
         <time datetime="${recordedAt.toISOString()}">${hours}:${recordedAt.getUTCMinutes()}</time>
         ${status} (${previousAction.attributes.getNamedItem('who').value}) ${previousAction.attributes.getNamedItem('what').value}
-        ${details}
+        ${moreDetails}
     `
   pastActions.appendChild(li)
 
