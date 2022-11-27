@@ -3,6 +3,7 @@ import { AffectedSystems } from './affected-systems.mjs'
 import { config } from './config.mjs'
 import { Countdown, CountdownDisplay } from './countdown.mjs'
 import { EventDispatcher, uniqueishId } from './events.mjs'
+import { UpdatesSection } from './updates.mjs'
 
 // No idea what the practice here is, do we put in the definition in the
 // module or in main? I'm going with main for now so all the custom
@@ -11,6 +12,7 @@ customElements.define('countdown-display', CountdownDisplay)
 customElements.define('countdown-timer', Countdown)
 
 customElements.define('affected-systems', AffectedSystems)
+customElements.define('updates-section', UpdatesSection)
 
 /******* The stuff from index.html unchanged *******/
 function onElement (el, fn) {
@@ -170,6 +172,9 @@ let createIncidentHandler = e => {
     is.setAttribute(kv[0], kv[1])
   }
   document.querySelector('.incident-summary header').append(is)
+  // XXX: This structure is not nice, maybe I should be instantiating this inside?
+  //  The code layout here isn't nice.
+  is.querySelector('.incident-summary__actions').appendChild(new UpdatesSection(events))
   document.body.removeEventListener('CreateIncident', createIncidentHandler)
 }
 document.body.addEventListener('CreateIncident', createIncidentHandler)
@@ -234,7 +239,7 @@ document.querySelector('.affected-systems')
 Array.of(
   'CreateIncident', 'UpdateIncident',
   'CreateAction', 'UpdateAction', 'FinishAction',
-  'NewAffectedSystem', 'ResolvedAffectedSystem',
+  'NewAffectedSystem', 'ResolveAffectedSystem',
 ).forEach(eventName => {
   document.body.addEventListener(eventName, e => {
     console.log(e)

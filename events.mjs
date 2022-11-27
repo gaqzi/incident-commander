@@ -20,12 +20,14 @@ export class EventDispatcher {
   constructor (eventTarget, idCreator) {
     this.eventTarget = eventTarget || document.body
     this.idCreator = idCreator
+    this.allEvents = []
   }
 
   _dispatch (name, detail) {
     detail.name = name
     detail.recordedAt = detail.recordedAt || new Date()
 
+    this.allEvents.push(detail)
     this.eventTarget.dispatchEvent(new CustomEvent(name, {
       detail: detail,
       bubbles: false, // bubbles to parent DOM elements?
