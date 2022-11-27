@@ -93,6 +93,26 @@ function flattenEvents (events) {
     }, {})
 }
 
+function affectedSystemOutput (events) {
+  let output = []
+
+  let stillAffectedSystems = events
+    .filter(r => r.details.type !== 'RESOLVED')
+    .map(r => r.slack())
+  if (stillAffectedSystems.length > 0) {
+    output.push('- ' + stillAffectedSystems.join('\n- '))
+  }
+
+  let resolvedAffectedSystems = events
+    .filter(r => r.details.type === 'RESOLVED')
+    .map(r => r.slack())
+  if (resolvedAffectedSystems.length > 0) {
+    output.push('- ' + resolvedAffectedSystems.join('\n- '))
+  }
+
+  return output
+}
+
 class BusinessUpdate {
   EVENTS = [
     'CreateIncident', 'UpdateIncident', 'ResolveIncident',
@@ -106,21 +126,7 @@ class BusinessUpdate {
       finalEvents['Incident'][0].slack(),
       '\n',
       '*Current status:*',
-    ]
-
-    let stillAffectedSystems = finalEvents['AffectedSystem']
-      .filter(r => r.details.type !== 'RESOLVED')
-      .map(r => r.slack())
-    if (stillAffectedSystems.length > 0) {
-      output.push('- ' + stillAffectedSystems.join('\n- '))
-    }
-
-    let resolvedAffectedSystems = finalEvents['AffectedSystem']
-      .filter(r => r.details.type === 'RESOLVED')
-      .map(r => r.slack())
-    if (resolvedAffectedSystems.length > 0) {
-      output.push('- ' + resolvedAffectedSystems.join('\n- '))
-    }
+    ].concat(affectedSystemOutput(finalEvents['AffectedSystem']))
 
     return output.join('\n')
   }
@@ -133,21 +139,7 @@ class TechUpdate {
     let output = [
       finalEvents['Incident'][0].slack(),
       '\n*Current status:*'
-    ]
-
-    let stillAffectedSystems = finalEvents['AffectedSystem']
-      .filter(r => r.details.type !== 'RESOLVED')
-      .map(r => r.slack())
-    if (stillAffectedSystems.length > 0) {
-      output.push('- ' + stillAffectedSystems.join('\n- '))
-    }
-
-    let resolvedAffectedSystems = finalEvents['AffectedSystem']
-      .filter(r => r.details.type === 'RESOLVED')
-      .map(r => r.slack())
-    if (resolvedAffectedSystems.length > 0) {
-      output.push('- ' + resolvedAffectedSystems.join('\n- '))
-    }
+    ].concat(affectedSystemOutput(finalEvents['AffectedSystem']))
 
     let openActions = finalEvents['Action']
       .filter(r => !r.details.resolution)
