@@ -34,6 +34,22 @@ class AffectedSystemReporter extends Reporter {
   }
 }
 
+class ActionReporter extends Reporter {
+  type = 'Action'
+
+  slack () {
+    let resolution = '❌'
+    if (this.details.resolution === 'SUCCESSFUL') {
+      resolution = this.details.type === 'ACTION' ? '✅' : '✔️'
+    }
+
+    let link = ''
+    if (this.details.link) link = `[More info](${this.details.link})`
+
+    return `${resolution} ${this.details.what} (${this.details.who}) ${link}`
+  }
+}
+
 function reporterFactory (e) {
   switch (e.name) {
     case 'CreateIncident':
@@ -44,6 +60,10 @@ function reporterFactory (e) {
     case'UpdateAffectedSystem':
     case 'ResolveAffectedSystem':
       return new AffectedSystemReporter(e)
+    case 'CreateAction':
+    case 'UpdateAction':
+    case 'FinishAction':
+      return new ActionReporter(e)
   }
   throw `Unknown event looking for reporter: ${e.name}`
 }
@@ -85,13 +105,13 @@ class BusinessUpdate {
     let output = [
       finalEvents['Incident'][0].slack(),
       '\n',
+      '*Current status:*',
     ]
 
     let stillAffectedSystems = finalEvents['AffectedSystem']
       .filter(r => r.details.type !== 'RESOLVED')
       .map(r => r.slack())
     if (stillAffectedSystems.length > 0) {
-      output.push('*Current status:*')
       output.push('- ' + stillAffectedSystems.join('\n- '))
     }
 
@@ -100,6 +120,49 @@ class BusinessUpdate {
       .map(r => r.slack())
     if (resolvedAffectedSystems.length > 0) {
       output.push('- ' + resolvedAffectedSystems.join('\n- '))
+    }
+
+    return output.join('\n')
+  }
+}
+
+class TechUpdate {
+  report (events) {
+    let finalEvents = flattenEvents(events)
+
+    let output = [
+      finalEvents['Incident'][0].slack(),
+      '\n*Current status:*'
+    ]
+
+    let stillAffectedSystems = finalEvents['AffectedSystem']
+      .filter(r => r.details.type !== 'RESOLVED')
+      .map(r => r.slack())
+    if (stillAffectedSystems.length > 0) {
+      output.push('- ' + stillAffectedSystems.join('\n- '))
+    }
+
+    let resolvedAffectedSystems = finalEvents['AffectedSystem']
+      .filter(r => r.details.type === 'RESOLVED')
+      .map(r => r.slack())
+    if (resolvedAffectedSystems.length > 0) {
+      output.push('- ' + resolvedAffectedSystems.join('\n- '))
+    }
+
+    let openActions = finalEvents['Action']
+      .filter(r => !r.details.resolution)
+      .map(r => r.slack())
+    if (openActions.length > 0) {
+      output.push('\n*Actions:*')
+      output.push('- ' + openActions.join('\n- '))
+    }
+
+    let finishedActions = finalEvents['Action']
+      .filter(r => !!r.details.resolution)
+      .map(r => r.slack())
+    if (finishedActions.length > 0) {
+      output.push('\n*Past actions:*')
+      output.push('- ' + finishedActions.join('\n- '))
     }
 
     return output.join('\n')
@@ -125,21 +188,28 @@ export class UpdatesSection extends HTMLElement {
   }
 
   async _clickHandler (e) {
+    let update = null
     switch (e.target.dataset.type) {
       case 'business-update':
-        let update = new BusinessUpdate()
-        let report = update.report(this.eventDispatcher.allEvents)
-        await navigator.clipboard.writeText(report)
-
-        // XXX: make nicer, like so many other things, but it works :p
-        let oldVal = e.target.innerText
-        let copiedMsg = 'Copied!'
-        if (copiedMsg.length < oldVal.length) copiedMsg += ' '.repeat(oldVal.length - copiedMsg.length)
-        e.target.innerText = copiedMsg
-        setTimeout(() => e.target.innerText = oldVal, 500)
+        update = new BusinessUpdate()
         break
       case 'tech-update':
+        update = new TechUpdate()
         break
+      default:
+        return
     }
+    if (update === null) throw 'Failed to find update class from update button click'
+
+    let report = update.report(this.eventDispatcher.allEvents)
+    console.log(report)
+    await navigator.clipboard.writeText(report)
+
+    // XXX: make nicer, like so many other things, but it works :p
+    let oldVal = e.target.innerText
+    let copiedMsg = 'Copied!'
+    if (copiedMsg.length < oldVal.length) copiedMsg += ' '.repeat(oldVal.length - copiedMsg.length)
+    e.target.innerText = copiedMsg
+    setTimeout(() => e.target.innerText = oldVal, 500)
   }
 }
