@@ -1,5 +1,6 @@
 import { ActiveActions } from './actions.mjs'
 import { AffectedSystems } from './affected-systems.mjs'
+import { config } from './config.mjs'
 import { Countdown, CountdownDisplay } from './countdown.mjs'
 import { EventDispatcher, uniqueishId } from './events.mjs'
 
@@ -65,6 +66,16 @@ events.eventTarget.addEventListener('CreateIncident', e => {
   onElement(summary, el => el.classList.add('closed'))
   onElement(summary.querySelector('[type="submit"]'), el => el.innerHTML = 'Hide')
   onElement(document.querySelector('#newActionWhat'), el => el.focus())
+
+  let useDefaultActions = summary.querySelector('#use_default_actions').checked
+  if (!useDefaultActions) return
+
+  config.defaultActions.forEach(action => events.createAction({
+    type: 'ACTION',
+    what: action,
+    who: 'TBD',
+    expireIntervalMinutes: '10',
+  }))
 })
 
 document.querySelector('.incident-summary h1').addEventListener('click', e => {
@@ -208,14 +219,14 @@ const paypalUnavailableSystem = events.newAffectedSystem({
 
 const failedAction = events.createAction({
   type: 'ACTION',
-  what: 'Is there a related infrastructure change?',
+  what: 'Has there been a rip in spacetime?',
   who: 'Peter',
   expireIntervalMinutes: 10
 })
 events.finishAction(failedAction.id, {
   type: 'ACTION',
   resolution: 'FAILED',
-  reason: 'No new infrastructure changes applied in the last 4 hours.'
+  reason: 'No recent Dalek or Cybermen activity, and no signs of a blue box.'
 })
 
 const successAction = events.createAction({
@@ -227,13 +238,6 @@ const successAction = events.createAction({
 events.finishAction(successAction.id, {
   type: 'TASK',
   resolution: 'SUCCESSFUL'
-})
-
-const ongoingAction = events.createAction({
-  type: 'ACTION',
-  what: 'Has there been any recent deploys?',
-  who: 'John',
-  expireIntervalMinutes: 10
 })
 
 const resolvedSystem = events.newAffectedSystem({ name: 'Peering with Comcast' })
