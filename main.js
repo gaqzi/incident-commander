@@ -58,9 +58,12 @@ document.querySelector('.incident-summary form').addEventListener('submit', e =>
   let data = objectFromForm(new FormData(e.currentTarget))
   events.createIncident(data)
   events.newAffectedSystem({ name: data.what })
+})
 
-  onElement(findParentElementWithClass(e.target, 'incident-summary'), el => el.classList.add('closed'))
-  onElement(e.target.querySelector('[type="submit"]'), el => el.innerHTML = 'Hide')
+events.eventTarget.addEventListener('CreateIncident', e => {
+  let summary = document.querySelector('section.incident-summary')
+  onElement(summary, el => el.classList.add('closed'))
+  onElement(summary.querySelector('[type="submit"]'), el => el.innerHTML = 'Hide')
   onElement(document.querySelector('#newActionWhat'), el => el.focus())
 })
 
