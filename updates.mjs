@@ -126,8 +126,7 @@ class BusinessUpdate {
 
     let output = [
       finalEvents['Incident'][0].slack(),
-      '\n',
-      '*Current status:*',
+      '\n*Current status:*',
     ].concat(affectedSystemOutput(finalEvents['AffectedSystem']))
 
     return output.join('\n')
