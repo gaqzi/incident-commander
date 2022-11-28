@@ -185,6 +185,27 @@
         impacting <span class="impact">{impact}</span>.
     </div>
 
+    <div class="incident-summary__links">
+        <button class="add-link">Add link to resources</button>
+
+        <dialog id="new-link">
+            <h1>Add link to resource</h1>
+            <form>
+                <ul>
+                    <li><label for="newLinkDescription">Link description</label></li>
+                    <li><input type="text" id="newLinkDescription" name="description"></li>
+                    <li><label for="newLinkUrl">Address</label></li>
+                    <li><input type="url" id="newLinkUrl" name="url"></li>
+                </ul>
+                <input type="hidden" name="id" value="">
+                <button type="submit">Add</button>
+                <button type="reset" class="cancel">Cancel</button>
+            </form>
+        </dialog>
+
+        <ul class="incident-summary__links__list"></ul>
+    </div>
+
     <div class="incident-summary__actions"></div>
 </template>
 

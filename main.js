@@ -153,6 +153,70 @@ class IncidentSummary extends HTMLElement {
         this.setAttribute(kv[0], kv[1])
       }
     })
+
+    this.querySelector('dialog form').addEventListener('submit', e => {
+      e.preventDefault()
+      let data = objectFromForm(new FormData(e.currentTarget))
+      if (data.id === '') {
+        delete data.id
+        this.eventDispatcher.addResourceLink(data)
+      } else {
+        let id = data.id
+        delete data.id
+        this.eventDispatcher.updateResourceLink(id, data)
+      }
+
+      e.currentTarget.reset()
+      e.currentTarget.querySelector('input[name="id"]').value = ''
+      this.querySelector('dialog').close()
+    })
+
+    this.querySelector('.add-link').addEventListener('click', e => {
+      e.preventDefault()
+      let dialog = document.querySelector('dialog')
+      dialog.showModal()
+    })
+    this.querySelector('dialog button[type="reset"]')
+      .addEventListener('click', e => {
+        this.querySelector('dialog input[name="id"]').value = ''
+        this.querySelector('dialog').close(null)
+      })
+
+    for (let eventName of ['AddResourceLink', 'UpdateResourceLink']) {
+      this.eventDispatcher.eventTarget.addEventListener(eventName, this._handleLinkEvents.bind(this))
+    }
+  }
+
+  _handleLinkEvents (e) {
+    let el = null
+    switch (e.detail.name) {
+      case 'AddResourceLink':
+        let list = this.querySelector('.incident-summary__links__list')
+        el = document.createElement('li')
+        el.innerHTML = `<a href="${e.detail.details.url}" target="_blank" class="external" data-id="${e.detail.id}">${e.detail.details.description}</a>`
+        el.addEventListener('contextmenu', this._showUpdateLinkDialog.bind(this))
+        list.appendChild(el)
+        break
+      case 'UpdateResourceLink':
+        el = this.querySelector(`.incident-summary__links__list a[data-id="${e.detail.id}"]`)
+        if (el === null) throw `Unable to find link to update: ${e.detail.id}, ${JSON.stringify(e.detail.details)}`
+
+        el.setAttribute('href', e.detail.details.url)
+        el.innerHTML = e.detail.details.description
+        break
+      default:
+        throw `Unable to handle link event: ${e.detail.name}`
+    }
+  }
+
+  _showUpdateLinkDialog (e) {
+    e.preventDefault()
+
+    let dialog = this.querySelector('dialog')
+    dialog.querySelector('input[name="description"]').value = e.target.innerHTML
+    dialog.querySelector('input[name="url"]').value = e.target.getAttribute('href')
+    dialog.querySelector('input[name="id"]').value = e.target.dataset.id
+    dialog.showModal()
   }
 
   static get observedAttributes () { return ['what', 'when', 'where', 'impact', 'status'] }
@@ -238,6 +302,7 @@ document.querySelector('.affected-systems')
 
 Array.of(
   'CreateIncident', 'UpdateIncident',
+  'AddResourceLink', 'UpdateResourceLink',
   'CreateAction', 'UpdateAction', 'FinishAction',
   'NewAffectedSystem', 'ResolveAffectedSystem',
 ).forEach(eventName => {

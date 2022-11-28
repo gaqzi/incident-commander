@@ -46,6 +46,14 @@ export class EventDispatcher {
     return this._dispatch('UpdateIncident', { id: id, details: data })
   }
 
+  addResourceLink (data) {
+    return this._dispatch('AddResourceLink', { id: this.idCreator('l'), details: data })
+  }
+
+  updateResourceLink (id, data) {
+    return this._dispatch('UpdateResourceLink', { id, details: data })
+  }
+
   createAction (data) {
     return this._dispatch('CreateAction', { id: this.idCreator('a'), details: data })
   }
