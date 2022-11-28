@@ -41,26 +41,30 @@ UI with clear operations and template outputs I could:
 ![Mockup](docs/images/incident-commander-mockup.light.excalidraw.png#gh-light-mode-only)
 ![Mockup](docs/images/incident-commander-mockup.dark.excalidraw.png#gh-dark-mode-only)
 
-1. [ ] Specify what the incident is about
+1. [x] Specify what the incident is about
     - [X] Since 00:00 UTC we are seeing [problem] in [impacted area]
       with [impact]
-    - [ ] Update the state (Investigating / Identified / Monitoring / Resolved)
-2. [ ] Add actions that we are taking
+    - [x] Update the state (Investigating / Identified / Monitoring / Resolved)
+2. [x] Add actions that we are taking
     - [X] Specify who is taking an action and how long between updates
-    - [ ] Allow actions to have a link to something
-3. [ ] Keep a list of current active
+    - [x] Allow actions to have a link to something
+3. [x] Keep a list of current active
     - [x] Finish action and don't provide in summary (escalation successful,
       for example doesn't need to be mentioned, it will lead to a new action)
-    - [ ] Issue a reminder when checkin time has come to give an update
+    - [x] Issue a reminder when checkin time has come to give an update
         - [X] Visually show a countdown
-        - [ ] Local notification? Some sound? More of something?
+        - [x] Local notification? Some sound? More of something?
 4. [X] Keep a list of past actions
     - [x] Shown and what resolution they had. Will be part of the big tech
       update but at the bottom of it.
     - [x] Distinguish between actions and tasks
-5. [ ] Buttons to export (goes into the clipboard)
-    - [ ] Business update: Doesn't have any formatting
-    - [ ] Business + Text Update: Uses Slack formatting
+5. [x] Buttons to export (goes into the clipboard)
+    - [x] Business update: Doesn't have any formatting
+    - [x] Business + Text Update: Uses Slack formatting
+6. [ ] Store the incident locally
+    - [ ] Restore the current incident on page reload
+    - [ ] List all local incidents and select another one
+    - [ ] Create a new incident
 
 Post MVP:
 
