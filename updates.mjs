@@ -25,6 +25,14 @@ class IncidentReporter extends Reporter {
   }
 }
 
+class ResourceLinkReporter extends Reporter {
+  type = 'ResourceLink'
+
+  slack () {
+    return `[${this.details.description}](${this.details.url})`
+  }
+}
+
 class AffectedSystemReporter extends Reporter {
   type = 'AffectedSystem'
 
@@ -58,6 +66,9 @@ function reporterFactory (e) {
     case 'UpdateIncident':
     case 'ResolveIncident':
       return new IncidentReporter(e)
+    case 'AddResourceLink':
+    case 'UpdateResourceLink':
+      return new ResourceLinkReporter(e)
     case 'NewAffectedSystem':
     case'UpdateAffectedSystem':
     case 'ResolveAffectedSystem':
@@ -115,9 +126,17 @@ function affectedSystemOutput (events) {
   return output
 }
 
+function resourceLinksOutput (events) {
+  if (events.length === 0) return []
+
+  return ['\n*Links:*']
+    .concat('- ' + events.map(r => r.slack()).join('\n - '))
+}
+
 class BusinessUpdate {
   EVENTS = [
     'CreateIncident', 'UpdateIncident', 'ResolveIncident',
+    'AddResourceLink', 'UpdateResourceLink',
     'NewAffectedSystem', 'UpdateAffectedSystem', 'ResolveAffectedSystem',
   ]
 
@@ -127,9 +146,11 @@ class BusinessUpdate {
     let output = [
       finalEvents['Incident'][0].slack(),
       '\n*Current status:*',
-    ].concat(affectedSystemOutput(finalEvents['AffectedSystem']))
+    ]
+      .concat(affectedSystemOutput(finalEvents['AffectedSystem']))
+      .concat(resourceLinksOutput(finalEvents['ResourceLink']))
 
-    return output.join('\n')
+    return output.join('\n').trim()
   }
 }
 
@@ -158,7 +179,9 @@ class TechUpdate {
       output.push('- ' + finishedActions.join('\n- '))
     }
 
-    return output.join('\n')
+    output = output.concat(resourceLinksOutput(finalEvents['ResourceLink']))
+
+    return output.join('\n').trim()
   }
 }
 
