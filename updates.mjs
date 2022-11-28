@@ -56,7 +56,10 @@ class ActionReporter extends Reporter {
     let link = ''
     if (this.details.link) link = `[More info](${this.details.link})`
 
-    return `${resolution} ${this.details.what} (${this.details.who}) ${link}`
+    let finishReason = ''
+    if (this.details.reason !== undefined) finishReason = `\n    - ${this.details.reason}`
+
+    return `${resolution} ${this.details.what} (${this.details.who}) ${link}${finishReason}`
   }
 }
 
@@ -127,7 +130,7 @@ function affectedSystemOutput (events) {
 }
 
 function resourceLinksOutput (events) {
-  if (events.length === 0) return []
+  if (events === undefined || events.length === 0) return []
 
   return ['\n*Links:*']
     .concat('- ' + events.map(r => r.slack()).join('\n - '))
