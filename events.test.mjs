@@ -3,22 +3,10 @@ import * as td from 'testdouble'
 import { EventDispatcher, EventListeners, uniqueishId } from './events.mjs'
 
 describe('EventDispatcher', () => {
-  // This is old behavior we want to refactor away, but to finish it we need to introduce a new
-  // way of operating. But we need to start documenting somewhere.
-  it('dispatches to event target', () => {
-    let htmlElement = td.object(['dispatchEvent'])
-    let events = new EventDispatcher(htmlElement, uniqueishId)
-
-    events.createIncident({})
-
-    td.verify(htmlElement.dispatchEvent(td.matchers.isA(Object)))
-  })
-
   it('notifies the EventListeners when dispatching an event', () => {
-    let htmlElement = td.object(['dispatchEvent'])
     let listeners = td.instance(EventListeners)
 
-    let events = new EventDispatcher(htmlElement, uniqueishId, listeners)
+    let events = new EventDispatcher(uniqueishId, listeners)
     events.addListener(EventDispatcher.ALL_EVENTS, (_) => {})
     td.verify(listeners.add([EventDispatcher.ALL_EVENTS], td.matchers.isA(Function)))
 
@@ -27,10 +15,9 @@ describe('EventDispatcher', () => {
   })
 
   it('supports adding a listener to multiple events', () => {
-    let htmlElement = td.object(['dispatchEvent'])
     let listeners = td.instance(EventListeners)
 
-    let events = new EventDispatcher(htmlElement, uniqueishId, listeners)
+    let events = new EventDispatcher(uniqueishId, listeners)
     events.addListener(['CreateIncident', 'UpdateIncident'], (_) => {})
     td.verify(listeners.add(['CreateIncident', 'UpdateIncident'], td.matchers.isA(Function)))
 
@@ -41,18 +28,16 @@ describe('EventDispatcher', () => {
   })
 
   it('delegates the removal of a listener', () => {
-    let htmlElement = td.object(['dispatchEvent'])
     let listeners = td.instance(EventListeners)
-    let events = new EventDispatcher(htmlElement, uniqueishId, listeners)
+    let events = new EventDispatcher(uniqueishId, listeners)
 
     events.removeListener('CreateIncident', (e) => {})
     td.verify(listeners.remove(['CreateIncident'], td.matchers.isA(Function)))
   })
 
   it('delegates the removal of multiple listeners', () => {
-    let htmlElement = td.object(['dispatchEvent'])
     let listeners = td.instance(EventListeners)
-    let events = new EventDispatcher(htmlElement, uniqueishId, listeners)
+    let events = new EventDispatcher(uniqueishId, listeners)
 
     events.removeListener(['CreateIncident', 'UpdateIncident'], (e) => {})
     td.verify(listeners.remove(['CreateIncident', 'UpdateIncident'], td.matchers.isA(Function)))
