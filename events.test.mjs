@@ -1,12 +1,12 @@
 import * as td from 'testdouble'
 
-import { EventDispatcher, EventListeners, uniqueishId } from './events.mjs'
+import { EventDispatcher, EventListeners } from './events.mjs'
 
 describe('EventDispatcher', () => {
   it('notifies the EventListeners when dispatching an event', () => {
     let listeners = td.instance(EventListeners)
 
-    let events = new EventDispatcher(uniqueishId, listeners)
+    let events = new EventDispatcher(listeners)
     events.addListener(EventDispatcher.ALL_EVENTS, (_) => {})
     td.verify(listeners.add([EventDispatcher.ALL_EVENTS], td.matchers.isA(Function)))
 
@@ -17,7 +17,7 @@ describe('EventDispatcher', () => {
   it('supports adding a listener to multiple events', () => {
     let listeners = td.instance(EventListeners)
 
-    let events = new EventDispatcher(uniqueishId, listeners)
+    let events = new EventDispatcher(listeners)
     events.addListener(['CreateIncident', 'UpdateIncident'], (_) => {})
     td.verify(listeners.add(['CreateIncident', 'UpdateIncident'], td.matchers.isA(Function)))
 
@@ -29,7 +29,7 @@ describe('EventDispatcher', () => {
 
   it('delegates the removal of a listener', () => {
     let listeners = td.instance(EventListeners)
-    let events = new EventDispatcher(uniqueishId, listeners)
+    let events = new EventDispatcher(listeners)
 
     events.removeListener('CreateIncident', (e) => {})
     td.verify(listeners.remove(['CreateIncident'], td.matchers.isA(Function)))
@@ -37,7 +37,7 @@ describe('EventDispatcher', () => {
 
   it('delegates the removal of multiple listeners', () => {
     let listeners = td.instance(EventListeners)
-    let events = new EventDispatcher(uniqueishId, listeners)
+    let events = new EventDispatcher(listeners)
 
     events.removeListener(['CreateIncident', 'UpdateIncident'], (e) => {})
     td.verify(listeners.remove(['CreateIncident', 'UpdateIncident'], td.matchers.isA(Function)))
