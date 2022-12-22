@@ -1,6 +1,5 @@
 /**
- * @typedef idCreator
- * @type {function}
+ * @callback idCreator
  * @param {string} prefix
  * @return {string} A unique ID
  */
