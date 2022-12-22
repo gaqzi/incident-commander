@@ -89,23 +89,23 @@ export class ActiveActions extends HTMLElement {
 
     let that = this
     this._updateEventDispatcher = e => {
-      if (e.detail.id !== that.id) return
+      if (e.id !== that.id) return
 
-      for (let item of Object.entries(e.detail.details)) {
+      for (let item of Object.entries(e.details)) {
         that.setAttribute(item[0], item[1])
       }
     }
 
-    this._eventDispatcher.eventTarget.addEventListener('UpdateAction', this._updateEventDispatcher)
+    this._eventDispatcher.addListener('UpdateAction', this._updateEventDispatcher)
   }
 
   /** @return EventDispatcher */
   get eventDispatcher () { return this._eventDispatcher }
 
   /* To remove all the callback listeners when the action is inactive to avoid pointless work */
-  connectedCallback () { this._eventDispatcher.eventTarget.addEventListener('UpdateAction', this._updateEventDispatcher)}
+  connectedCallback () { this._eventDispatcher.addListener('UpdateAction', this._updateEventDispatcher) }
 
-  disconnectedCallback () { this.eventDispatcher.eventTarget.removeEventListener('UpdateAction', this._updateEventDispatcher) }
+  disconnectedCallback () { this.eventDispatcher.removeListener('UpdateAction', this._updateEventDispatcher) }
 
   static get observedAttributes () {
     return [

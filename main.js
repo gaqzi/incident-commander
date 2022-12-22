@@ -59,7 +59,7 @@ document.querySelector('.incident-summary form').addEventListener('submit', e =>
   events.newAffectedSystem({ name: data.what })
 })
 
-events.eventTarget.addEventListener('CreateIncident', e => {
+events.addListener('CreateIncident', e => {
   let summary = document.querySelector('section.incident-summary')
   onElement(summary, el => el.classList.add('closed'))
   onElement(summary.querySelector('[type="submit"]'), el => el.innerHTML = 'Hide')
@@ -94,15 +94,15 @@ document.querySelector('.actions__add form').addEventListener('submit', e => {
 
 customElements.define('active-action', ActiveActions)
 
-document.body.addEventListener('CreateAction', e => {
+events.addListener('CreateAction', e => {
   let item = document.createElement('li')
   item.innerHTML = `<active-action
-        type="${e.detail.details.type}"
-        what="${e.detail.details.what}"
-        who="${e.detail.details.who}"
-        link="${e.detail.details.link || ''}"
-        createdAt="${e.detail.recordedAt}"
-        expireIntervalMinutes="${e.detail.details.expireIntervalMinutes}" id="${e.detail.id}"></active-action>`
+        type="${e.details.type}"
+        what="${e.details.what}"
+        who="${e.details.who}"
+        link="${e.details.link || ''}"
+        createdAt="${e.recordedAt}"
+        expireIntervalMinutes="${e.details.expireIntervalMinutes}" id="${e.id}"></active-action>`
   item.children[0].eventDispatcher = events
 
   document.querySelector('.actions__active ul').appendChild(item)
@@ -148,8 +148,8 @@ class IncidentSummary extends HTMLElement {
       })
     }
 
-    this.eventDispatcher.eventTarget.addEventListener('UpdateIncident', e => {
-      for (let kv of Object.entries(e.detail.details)) {
+    this.eventDispatcher.addListener('UpdateIncident', e => {
+      for (let kv of Object.entries(e.details)) {
         this.setAttribute(kv[0], kv[1])
       }
     })
@@ -183,29 +183,29 @@ class IncidentSummary extends HTMLElement {
       })
 
     for (let eventName of ['AddResourceLink', 'UpdateResourceLink']) {
-      this.eventDispatcher.eventTarget.addEventListener(eventName, this._handleLinkEvents.bind(this))
+      this.eventDispatcher.addListener(eventName, this._handleLinkEvents.bind(this))
     }
   }
 
   _handleLinkEvents (e) {
     let el = null
-    switch (e.detail.name) {
+    switch (e.name) {
       case 'AddResourceLink':
         let list = this.querySelector('.incident-summary__links__list')
         el = document.createElement('li')
-        el.innerHTML = `<a href="${e.detail.details.url}" target="_blank" class="external" data-id="${e.detail.id}">${e.detail.details.description}</a>`
+        el.innerHTML = `<a href="${e.details.url}" target="_blank" class="external" data-id="${e.id}">${e.details.description}</a>`
         el.addEventListener('contextmenu', this._showUpdateLinkDialog.bind(this))
         list.appendChild(el)
         break
       case 'UpdateResourceLink':
-        el = this.querySelector(`.incident-summary__links__list a[data-id="${e.detail.id}"]`)
-        if (el === null) throw `Unable to find link to update: ${e.detail.id}, ${JSON.stringify(e.detail.details)}`
+        el = this.querySelector(`.incident-summary__links__list a[data-id="${e.id}"]`)
+        if (el === null) throw `Unable to find link to update: ${e.id}, ${JSON.stringify(e.details)}`
 
-        el.setAttribute('href', e.detail.details.url)
-        el.innerHTML = e.detail.details.description
+        el.setAttribute('href', e.details.url)
+        el.innerHTML = e.details.description
         break
       default:
-        throw `Unable to handle link event: ${e.detail.name}`
+        throw `Unable to handle link event: ${e.name}`
     }
   }
 
@@ -231,8 +231,8 @@ class IncidentSummary extends HTMLElement {
 customElements.define('incident-summary', IncidentSummary)
 
 let createIncidentHandler = e => {
-  let is = new IncidentSummary(e.detail.id, events)
-  for (let kv of Object.entries(e.detail.details)) {
+  let is = new IncidentSummary(e.id, events)
+  for (let kv of Object.entries(e.details)) {
     is.setAttribute(kv[0], kv[1])
   }
   document.querySelector('.incident-summary header').append(is)
@@ -241,15 +241,15 @@ let createIncidentHandler = e => {
   is.querySelector('.incident-summary__actions').appendChild(new UpdatesSection(events))
   document.body.removeEventListener('CreateIncident', createIncidentHandler)
 }
-document.body.addEventListener('CreateIncident', createIncidentHandler)
+events.addListener('CreateIncident', createIncidentHandler)
 
-document.body.addEventListener('FinishAction', e => {
-  let recordedAt = e.detail.recordedAt
-  let previousAction = document.querySelector(`.actions__active [id="${e.detail.id}"]`)
+events.addListener('FinishAction', e => {
+  let recordedAt = e.recordedAt
+  let previousAction = document.querySelector(`.actions__active [id="${e.id}"]`)
 
   let status = '❌'
-  if (e.detail.details.resolution === 'SUCCESSFUL') {
-    status = e.detail.details.type === 'ACTION' ? '✅' : '✔️'
+  if (e.details.resolution === 'SUCCESSFUL') {
+    status = e.details.type === 'ACTION' ? '✅' : '✔️'
   }
 
   let pastActions = document.querySelector('.actions__past ul')
@@ -259,7 +259,7 @@ document.body.addEventListener('FinishAction', e => {
   if (hours < 10) hours = `0${hours}`
 
   let moreDetails = '<ul>'
-  let details = e.detail.details.reason || ''
+  let details = e.details.reason || ''
   if (details) moreDetails += `<li>${details}</li>`
 
   let link = previousAction.attributes.getNamedItem('link').value
@@ -300,16 +300,7 @@ notificationToggle.addEventListener('change', e => {
 document.querySelector('.affected-systems')
   .appendChild(new AffectedSystems(events))
 
-Array.of(
-  'CreateIncident', 'UpdateIncident',
-  'AddResourceLink', 'UpdateResourceLink',
-  'CreateAction', 'UpdateAction', 'FinishAction',
-  'NewAffectedSystem', 'ResolveAffectedSystem',
-).forEach(eventName => {
-  document.body.addEventListener(eventName, e => {
-    console.log(e)
-  })
-})
+events.addListener(EventDispatcher.ALL_EVENTS, e => console.log(e))
 
 // Populate some example data
 events.createIncident({

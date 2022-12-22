@@ -52,24 +52,24 @@ export class AffectedSystems extends HTMLElement {
       'ResolveAffectedSystem': this._resolve,
     }
     for (let item of Object.entries(this.subscribedEvents)) {
-      this.eventDispatcher.eventTarget.addEventListener(item[0], item[1].bind(this))
+      this.eventDispatcher.addListener(item[0], item[1].bind(this))
     }
   }
 
   _new (e) {
     let li = document.createElement('li')
-    li.setAttribute('data-id', e.detail.id)
-    li.innerHTML = `${e.detail.details.name} <button>✅</button>`
+    li.setAttribute('data-id', e.id)
+    li.innerHTML = `${e.details.name} <button>✅</button>`
 
     li.querySelector('button')
-      .addEventListener('click', (_) => this.eventDispatcher.resolveAffectedSystem(e.detail.id, { type: 'SUCCESS' }))
+      .addEventListener('click', (_) => this.eventDispatcher.resolveAffectedSystem(e.id, { type: 'SUCCESS' }))
 
     this.querySelector('.affected-systems__listing__active ul')
       .appendChild(li)
   }
 
   _resolve (e) {
-    let li = this.querySelector(`.affected-systems__listing__active li[data-id="${e.detail.id}"]`)
+    let li = this.querySelector(`.affected-systems__listing__active li[data-id="${e.id}"]`)
     li.remove()
     li.querySelector('button').remove()
 
