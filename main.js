@@ -37,7 +37,7 @@ function objectFromForm (form) {
   return data
 }
 
-const events = new EventDispatcher(document.body, uniqueishId)
+const events = new EventDispatcher(uniqueishId)
 
 document.querySelectorAll('.update-summary').forEach((el) => {
   // Whenever the input changes update the summary, using 'input' because seeing the summary change feels worthwhile.

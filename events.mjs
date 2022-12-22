@@ -69,12 +69,10 @@ export class EventDispatcher {
 
   /**
    *
-   * @param {HTMLElement} eventTarget
    * @param {idCreator} idCreator
-   * @param listeners
+   * @param {EventListeners} [listeners]
    */
-  constructor (eventTarget, idCreator, listeners) {
-    this.eventTarget = eventTarget || document.body
+  constructor (idCreator, listeners) {
     this.idCreator = idCreator
     this.allEvents = []
     this.listeners = listeners || new EventListeners()
@@ -105,12 +103,6 @@ export class EventDispatcher {
     detail.recordedAt = detail.recordedAt || new Date()
 
     this.allEvents.push(detail)
-    this.eventTarget.dispatchEvent(new CustomEvent(name, {
-      detail: detail,
-      bubbles: false, // bubbles to parent DOM elements?
-      cancelable: true,
-      composed: false // bubbles out of the shadow DOM?
-    }))
     this.listeners.notify(detail)
 
     return detail
