@@ -69,13 +69,13 @@ export class EventDispatcher {
 
   /**
    *
-   * @param {idCreator} idCreator
    * @param {EventListeners} [listeners]
+   * @param {idCreator} [idCreator=uniqueishId]
    */
-  constructor (idCreator, listeners) {
-    this.idCreator = idCreator
-    this.allEvents = []
+  constructor (listeners, idCreator) {
     this.listeners = listeners || new EventListeners()
+    this.idCreator = idCreator || uniqueishId
+    this.allEvents = []
   }
 
   /**
