@@ -10,16 +10,94 @@ export function uniqueishId (prefix) {
   return prefix + (Date.now() + Math.random()).toString(36)
 }
 
+/**
+ * Any function that takes a single argument can be passed as an event listener.
+ * @callback eventListener
+ * @param {Object} event
+ */
+
+export class EventListeners {
+  static ALL_EVENTS = '__ALL_EVENTS__'
+
+  constructor () {
+    this._listeners = {}
+  }
+
+  /**
+   * Add a listener for the passed list of events.
+   * @param {Array<string>} events
+   * @param {eventListener} listener
+   */
+  add(events, listener) {
+    events.forEach(e => {
+      this._listeners[e] = this._listeners[e] || []
+      this._listeners[e].push(listener)
+    })
+  }
+
+  /**
+   * Removes the listener from the named events.
+   * If the special EventListeners.ALL_EVENTS is used then it will be removed from everything
+   * and not just the single all events dispatch.
+   * @param {Array<string>} events
+   * @param {eventListener} listener
+   */
+  remove(events, listener) {
+    let removeListener = (l) => l !== listener
+
+    for(let event of events) {
+      if(event === EventListeners.ALL_EVENTS) {
+        for(let kv of Object.entries(this._listeners)) {
+          this._listeners[kv[0]] = kv[1].filter(removeListener)
+        }
+
+        return // no need to continue since we're already cleared all others
+      }
+
+      this._listeners[event] = this._listeners[event].filter(removeListener)
+    }
+  }
+
+  notify(event) {
+    for(let cb of this._listeners[EventListeners.ALL_EVENTS] || []) cb(event)
+    for(let cb of this._listeners[event.name] || []) cb(event)
+  }
+}
+
 export class EventDispatcher {
+  static ALL_EVENTS = EventListeners.ALL_EVENTS
+
   /**
    *
    * @param {HTMLElement} eventTarget
    * @param {idCreator} idCreator
+   * @param listeners
    */
-  constructor (eventTarget, idCreator) {
+  constructor (eventTarget, idCreator, listeners) {
     this.eventTarget = eventTarget || document.body
     this.idCreator = idCreator
     this.allEvents = []
+    this.listeners = listeners || new EventListeners()
+  }
+
+  /**
+   *
+   * @param {string|Array<string>} events
+   * @param {eventListener} listener
+   */
+  addListener (events, listener) {
+    if(typeof events === 'string') events = [events]
+    this.listeners.add(events, listener)
+  }
+
+  /**
+   *
+   * @param {string|Array<string>} events
+   * @param {eventListener} listener
+   */
+  removeListener(events, listener) {
+    if(typeof events === 'string') events = [events]
+    this.listeners.remove(events, listener)
   }
 
   _dispatch (name, detail) {
@@ -33,6 +111,7 @@ export class EventDispatcher {
       cancelable: true,
       composed: false // bubbles out of the shadow DOM?
     }))
+    this.listeners.notify(detail)
 
     return detail
   }
