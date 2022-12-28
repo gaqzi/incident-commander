@@ -4,6 +4,7 @@ import { config } from './config.mjs'
 import { Countdown, CountdownDisplay } from './countdown.mjs'
 import { EventDispatcher, uniqueishId } from './events.mjs'
 import { UpdatesSection } from './updates.mjs'
+import { NewIndexedDB } from './storage.mjs'
 
 // No idea what the practice here is, do we put in the definition in the
 // module or in main? I'm going with main for now so all the custom
@@ -37,7 +38,28 @@ function objectFromForm (form) {
   return data
 }
 
+/**
+ * Registers the listener for all events for the EventDispatcher so all events can be stored.
+ * @param {EventDispatcher} events
+ * @param {Storage} storage
+ */
+function StoreEvents (events, storage) {
+  events.addListener(EventDispatcher.ALL_EVENTS, (e) => {
+    // XXX: this should be on some global object that contains the "live current stuff," but,
+    //  until that's in place, let's just hack it!
+    if(e.name === 'CreateIncident') {
+      window._currentIncidentId = e.id
+    }
+
+    storage.add(window._currentIncidentId, e).catch((reason) => console.log(`failed to store received event: ${JSON.stringify(reason)}`))
+  })
+}
+
+let db = await NewIndexedDB(window.indexedDB)
+window._db = db
+
 const events = new EventDispatcher()
+StoreEvents(events, db)
 
 document.querySelectorAll('.update-summary').forEach((el) => {
   // Whenever the input changes update the summary, using 'input' because seeing the summary change feels worthwhile.
