@@ -113,7 +113,7 @@ export class EventDispatcher {
   }
 
   updateIncident (id, data) {
-    return this._dispatch('UpdateIncident', { id: id, details: data })
+    return this._dispatch('UpdateIncident', { id: this.idCreator('iu'), incidentId: id, details: data })
   }
 
   addResourceLink (data) {
@@ -121,7 +121,7 @@ export class EventDispatcher {
   }
 
   updateResourceLink (id, data) {
-    return this._dispatch('UpdateResourceLink', { id, details: data })
+    return this._dispatch('UpdateResourceLink', { id: this.idCreator('lu'), resourceLinkId: id, details: data })
   }
 
   createAction (data) {
@@ -129,11 +129,11 @@ export class EventDispatcher {
   }
 
   updateAction (id, data) {
-    return this._dispatch('UpdateAction', { id, details: data })
+    return this._dispatch('UpdateAction', { id: this.idCreator('au'), actionId: id, details: data })
   }
 
   finishAction (id, data) {
-    return this._dispatch('FinishAction', { id: id, details: data })
+    return this._dispatch('FinishAction', { id: this.idCreator('af'), actionId: id, details: data })
   }
 
   newAffectedSystem (data) {
@@ -141,6 +141,6 @@ export class EventDispatcher {
   }
 
   resolveAffectedSystem (id, data) {
-    return this._dispatch('ResolveAffectedSystem', { id: id, details: data })
+    return this._dispatch('ResolveAffectedSystem', { id: this.idCreator('sr'), affectedSystemId: id, details: data })
   }
 }
