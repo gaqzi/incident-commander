@@ -1,6 +1,6 @@
 import * as td from 'testdouble'
 
-import { EventDispatcher, EventListeners } from './events.mjs'
+import { EventDispatcher, EventListeners } from './event-bus.mjs'
 
 describe('EventDispatcher', () => {
   it('notifies the EventListeners when dispatching an event', () => {

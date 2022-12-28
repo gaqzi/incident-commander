@@ -2,7 +2,7 @@ import { ActiveActions } from './actions.mjs'
 import { AffectedSystems } from './affected-systems.mjs'
 import { config } from './config.mjs'
 import { Countdown, CountdownDisplay } from './countdown.mjs'
-import { EventDispatcher, uniqueishId } from './events.mjs'
+import { EventDispatcher } from './event-bus.mjs'
 import { UpdatesSection } from './updates.mjs'
 import { NewIndexedDB } from './storage.mjs'
 
