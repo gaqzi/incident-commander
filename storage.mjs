@@ -1,5 +1,3 @@
-import { EventDispatcher } from './events.mjs'
-
 export class Storage {
   /**
    * add stores an event for a particular incident to the store.
