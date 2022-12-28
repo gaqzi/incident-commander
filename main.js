@@ -220,7 +220,7 @@ class IncidentSummary extends HTMLElement {
         list.appendChild(el)
         break
       case 'UpdateResourceLink':
-        el = this.querySelector(`.incident-summary__links__list a[data-id="${e.id}"]`)
+        el = this.querySelector(`.incident-summary__links__list a[data-id="${e.resourceLinkId}"]`)
         if (el === null) throw `Unable to find link to update: ${e.id}, ${JSON.stringify(e.details)}`
 
         el.setAttribute('href', e.details.url)
@@ -267,7 +267,7 @@ events.addListener('CreateIncident', createIncidentHandler)
 
 events.addListener('FinishAction', e => {
   let recordedAt = e.recordedAt
-  let previousAction = document.querySelector(`.actions__active [id="${e.id}"]`)
+  let previousAction = document.querySelector(`.actions__active [id="${e.actionId}"]`)
 
   let status = '❌'
   if (e.details.resolution === 'SUCCESSFUL') {

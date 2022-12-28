@@ -69,7 +69,7 @@ export class AffectedSystems extends HTMLElement {
   }
 
   _resolve (e) {
-    let li = this.querySelector(`.affected-systems__listing__active li[data-id="${e.id}"]`)
+    let li = this.querySelector(`.affected-systems__listing__active li[data-id="${e.affectedSystemId}"]`)
     li.remove()
     li.querySelector('button').remove()
 

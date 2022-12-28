@@ -89,7 +89,7 @@ export class ActiveActions extends HTMLElement {
 
     let that = this
     this._updateEventDispatcher = e => {
-      if (e.id !== that.id) return
+      if (e.actionId !== that.id) return
 
       for (let item of Object.entries(e.details)) {
         that.setAttribute(item[0], item[1])

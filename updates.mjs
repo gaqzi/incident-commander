@@ -85,6 +85,20 @@ function reporterFactory (e) {
 }
 
 /**
+ * parentIdName returns the name of the field that contains the id of the event this event modifies.
+ * @param {Object} e
+ * @returns {string}
+ */
+function parentIdName(e) {
+  if(e.name === 'UpdateIncident') return 'incidentId'
+  if(e.resourceLinkId !== undefined) return 'resourceLinkId'
+  if(e.actionId !== undefined) return 'actionId'
+  if(e.affectedSystemId !== undefined) return 'affectedSystemId'
+
+  return 'id'
+}
+
+/**
  * Combines events into a single reporter per event category
  * @param events
  * @return Object<string,Reporter> where the string is the type of reporter
@@ -92,12 +106,13 @@ function reporterFactory (e) {
 function flattenEvents (events) {
   let finalEvents = {} /** @type Object<string,Reporter> */
   for (let e of events) {
-    if (finalEvents[e.id] === undefined) {
-      finalEvents[e.id] = reporterFactory(e)
+    let id = e[parentIdName(e)]
+    if (finalEvents[id] === undefined) {
+      finalEvents[id] = reporterFactory(e)
       continue
     }
 
-    finalEvents[e.id].process(e)
+    finalEvents[id].process(e)
   }
 
   return Object.values(finalEvents)
