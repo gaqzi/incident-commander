@@ -143,4 +143,8 @@ export class EventDispatcher {
   resolveAffectedSystem (id, data) {
     return this._dispatch('ResolveAffectedSystem', { id: this.idCreator('sr'), affectedSystemId: id, details: data })
   }
+
+  updateAffectedSystem (id, data) {
+    return this._dispatch('UpdateAffectedSystem', { id: this.idCreator('su'), affectedSystemId: id, details: data })
+  }
 }
