@@ -5,6 +5,9 @@ import { Countdown, CountdownDisplay } from './countdown.mjs'
 import { EventDispatcher } from './event-bus.mjs'
 import { UpdatesSection } from './updates.mjs'
 import { NewIndexedDB } from './storage.mjs'
+import * as Y from 'yjs'
+import { WebrtcProvider } from 'y-webrtc'
+
 
 // No idea what the practice here is, do we put in the definition in the
 // module or in main? I'm going with main for now so all the custom
@@ -55,11 +58,26 @@ function StoreEvents (events, storage) {
   })
 }
 
-let db = await NewIndexedDB(window.indexedDB)
-window._db = db
+// Bypass inability for top-level await in Parcel (which we use for bundling YJS)
+(async () => {
+  let db = await NewIndexedDB(window.indexedDB)
+  window._db = db
 
-const events = new EventDispatcher()
-StoreEvents(events, db)
+  // Multi-user collab events with YJS
+  const ydoc = new Y.Doc()
+  const signaling = ["ws://localhost:4444"] // Until we get a signaling server set up, run one locally using: `PORT=4444 npx y-webrtc server` (see below for how we pass this into WebrtcProvider)
+  const room = "InCom-HelloWorld"
+  const password = "funtimes123"
+  const provider = new WebrtcProvider(room, ydoc, { signaling: signaling,  password: password })
+  const yarray = ydoc.get('events', Y.Array) // TODO: figure out why browser seems to somehow be able to save these events between refreshes
+  yarray.observe(event => {
+    // TODO: dispatch the event
+    console.log('yarray was modified', event.changes.delta)
+    console.log(yarray.toArray())
+  })
+
+  let events = new EventDispatcher(null, null, (e) => { yarray.push([e]) })
+  StoreEvents(events, db)
 
 document.querySelectorAll('.update-summary').forEach((el) => {
   // Whenever the input changes update the summary, using 'input' because seeing the summary change feels worthwhile.
@@ -362,6 +380,8 @@ events.finishAction(successAction.id, {
 
 const resolvedSystem = events.newAffectedSystem({ name: 'Peering with Comcast' })
 events.resolveAffectedSystem(resolvedSystem.id, { type: 'SUCCESS' })
+
+})() // ends our top level asyync IIFE
 
 // TODO: Implement finish action, two states/types: "success/no info needed" and "info needed", need to write about this to figure out the naming here
 //       the active actions list should be a component that is responsible for creating the new actions and then removing them as they finish.
