@@ -71,10 +71,12 @@ export class EventDispatcher {
    *
    * @param {EventListeners} [listeners]
    * @param {idCreator} [idCreator=uniqueishId]
+   * @param onDispatch [callbackFunction]
    */
-  constructor (listeners, idCreator) {
+  constructor (listeners, idCreator, onDispatch) {
     this.listeners = listeners || new EventListeners()
     this.idCreator = idCreator || uniqueishId
+    this.onDispatch = onDispatch || ((e) => {})
     this.allEvents = []
   }
 
@@ -104,6 +106,7 @@ export class EventDispatcher {
 
     this.allEvents.push(detail)
     this.listeners.notify(detail)
+    this.onDispatch(detail)
 
     return detail
   }
