@@ -1,3 +1,5 @@
+import * as Y from "yjs";
+
 /**
  * @callback idCreator
  * @param {string} prefix
@@ -71,11 +73,20 @@ export class EventDispatcher {
    *
    * @param {EventListeners} [listeners]
    * @param {idCreator} [idCreator=uniqueishId]
+   * @param {Y.Doc} ydoc - An instance of a YJS Doc e.g. `new Y.Doc()`
    */
-  constructor (listeners, idCreator) {
+  constructor (listeners, idCreator, ydoc) {
     this.listeners = listeners || new EventListeners()
     this.idCreator = idCreator || uniqueishId
-    this.allEvents = []
+    this.allEvents = ydoc.get('events', Y.Array)
+    this.allEvents.observe(yjsChangeEvent => {
+      yjsChangeEvent.changes.delta.forEach(change => {
+        if (!change.insert) return // we only expect `insert` changes because we are only ever pushing new events into the array in append only fashion
+        change.insert.forEach(inserted => {
+          this._dispatch(inserted.name, inserted)
+        })
+      })
+    })
   }
 
   /**
@@ -99,52 +110,54 @@ export class EventDispatcher {
   }
 
   _dispatch (name, detail) {
-    detail.name = name
-    detail.recordedAt = detail.recordedAt || new Date()
-
-    this.allEvents.push(detail)
     this.listeners.notify(detail)
+  }
 
+  _add(name, detail) {
+    detail.name = name
+   detail.recordedAt = detail.recordedAt || new Date().toISOString()
+
+    this.allEvents.push([detail])
     return detail
   }
 
   createIncident (data) {
-    return this._dispatch('CreateIncident', { id: this.idCreator('i'), details: data })
+    return this._add('CreateIncident', { id: this.idCreator('i'), details: data })
   }
 
   updateIncident (id, data) {
-    return this._dispatch('UpdateIncident', { id: this.idCreator('iu'), incidentId: id, details: data })
+    return this._add('UpdateIncident', { id: this.idCreator('iu'), incidentId: id, details: data })
   }
 
   addResourceLink (data) {
-    return this._dispatch('AddResourceLink', { id: this.idCreator('l'), details: data })
+    return this._add('AddResourceLink', { id: this.idCreator('l'), details: data })
   }
 
   updateResourceLink (id, data) {
-    return this._dispatch('UpdateResourceLink', { id: this.idCreator('lu'), resourceLinkId: id, details: data })
+    return this._add('UpdateResourceLink', { id: this.idCreator('lu'), resourceLinkId: id, details: data })
   }
 
   createAction (data) {
-    return this._dispatch('CreateAction', { id: this.idCreator('a'), details: data })
+    return this._add('CreateAction', { id: this.idCreator('a'), details: data })
   }
 
   updateAction (id, data) {
-    return this._dispatch('UpdateAction', { id: this.idCreator('au'), actionId: id, details: data })
+    return this._add('UpdateAction', { id: this.idCreator('au'), actionId: id, details: data })
   }
 
   finishAction (id, data) {
-    return this._dispatch('FinishAction', { id: this.idCreator('af'), actionId: id, details: data })
+    return this._add('FinishAction', { id: this.idCreator('af'), actionId: id, details: data })
   }
 
   newAffectedSystem (data) {
-    return this._dispatch('NewAffectedSystem', { id: this.idCreator('s'), details: data })
+    return this._add('NewAffectedSystem', { id: this.idCreator('s'), details: data })
   }
 
   resolveAffectedSystem (id, data) {
-    return this._dispatch('ResolveAffectedSystem', { id: this.idCreator('sr'), affectedSystemId: id, details: data })
+    return this._add('ResolveAffectedSystem', { id: this.idCreator('sr'), affectedSystemId: id, details: data })
   }
 
   updateAffectedSystem (id, data) {
-    return this._dispatch('UpdateAffectedSystem', { id: this.idCreator('su'), affectedSystemId: id, details: data })
+    return this._add('UpdateAffectedSystem', { id: this.idCreator('su'), affectedSystemId: id, details: data })
   }
 }

@@ -1,41 +1,45 @@
-import { ActiveActions } from './actions.mjs'
-import { AffectedSystems } from './affected-systems.mjs'
-import { config } from './config.mjs'
-import { Countdown, CountdownDisplay } from './countdown.mjs'
-import { EventDispatcher } from './event-bus.mjs'
-import { UpdatesSection } from './updates.mjs'
-import { NewIndexedDB } from './storage.mjs'
+import {ActiveActions} from './actions.mjs'
+import {AffectedSystems} from './affected-systems.mjs'
+import {config} from './config.mjs'
+import {Countdown, CountdownDisplay} from './countdown.mjs'
+import {IncidentSummary} from './incident-summary.mjs'
+import {EventDispatcher} from './event-bus.mjs'
+import {UpdatesSection} from './updates.mjs'
+import {NewIndexedDB} from './storage.mjs'
+import * as Y from 'yjs'
+import {WebrtcProvider} from 'y-webrtc'
+
 
 // No idea what the practice here is, do we put in the definition in the
 // module or in main? I'm going with main for now so all the custom
 // components are declared in one place, but it feels weird
 customElements.define('countdown-display', CountdownDisplay)
 customElements.define('countdown-timer', Countdown)
-
 customElements.define('affected-systems', AffectedSystems)
 customElements.define('updates-section', UpdatesSection)
+customElements.define('incident-summary', IncidentSummary)
 
 /******* The stuff from index.html unchanged *******/
-function onElement (el, fn) {
-  if (el == null) return
+function onElement(el, fn) {
+    if (el == null) return
 
-  fn(el)
+    fn(el)
 }
 
-function findParentElementWithClass (e, className) {
-  if (e == null) return null
-  if (e.classList.contains(className)) return e
+function findParentElementWithClass(e, className) {
+    if (e == null) return null
+    if (e.classList.contains(className)) return e
 
-  return findParentElementWithClass(e.parentElement, className)
+    return findParentElementWithClass(e.parentElement, className)
 }
 
-function objectFromForm (form) {
-  let data = {}
-  for (let en of form) {
-    data[en[0]] = en[1]
-  }
+function objectFromForm(form) {
+    let data = {}
+    for (let en of form) {
+        data[en[0]] = en[1]
+    }
 
-  return data
+    return data
 }
 
 /**
@@ -43,325 +47,261 @@ function objectFromForm (form) {
  * @param {EventDispatcher} events
  * @param {Storage} storage
  */
-function StoreEvents (events, storage) {
-  events.addListener(EventDispatcher.ALL_EVENTS, (e) => {
-    // XXX: this should be on some global object that contains the "live current stuff," but,
-    //  until that's in place, let's just hack it!
-    if(e.name === 'CreateIncident') {
-      window._currentIncidentId = e.id
-    }
+function StoreEvents(events, storage) {
+    events.addListener(EventDispatcher.ALL_EVENTS, (e) => {
+        // XXX: this should be on some global object that contains the "live current stuff," but,
+        //  until that's in place, let's just hack it!
+        if (e.name === 'CreateIncident') {
+            window._currentIncidentId = e.id
+        }
 
-    storage.add(window._currentIncidentId, e).catch((reason) => console.log(`failed to store received event: ${JSON.stringify(reason)}`))
-  })
+        storage.add(window._currentIncidentId, e).catch((reason) => console.log(`failed to store received event: ${JSON.stringify(reason)}`))
+    })
 }
 
-let db = await NewIndexedDB(window.indexedDB)
-window._db = db
+function setupMultiplayer(ydoc) {
+    const signaling = [process.env.WEBRTC_SIGNALING_SERVER] // injected via parcel. see README for more info
 
-const events = new EventDispatcher()
-StoreEvents(events, db)
+    // If we don't have a room and password, create them and refresh window so they're on the query string
+    let params = new URLSearchParams(window.location.search)
+    if (!params.get('room')) {
+        params.set('room', new Date().valueOf())
+    }
+    if (!params.get('password')) {
+        params.set('password', parseInt(Math.random() * 10e5, 10))
+    }
+    if ((new URLSearchParams(window.location.search)).toString() !== params.toString()) {
+        window.location.search = params.toString()
+    }
 
-document.querySelectorAll('.update-summary').forEach((el) => {
-  // Whenever the input changes update the summary, using 'input' because seeing the summary change feels worthwhile.
-  let summary = document.querySelector('incident-summary')
-  el.addEventListener('input', e => summary.setAttribute(e.target.name, e.target.value))
-})
+    const room = params.get('room')
+    const password = params.get('password')
+    const provider = new WebrtcProvider(room, ydoc, {signaling: signaling, password: password})
 
-// Hide / show the incident summary
-document.querySelector('.incident-summary form').addEventListener('submit', e => {
-  e.preventDefault()
+    const sc = provider.signalingConns[0]
+    const ws = sc.ws
+    ws.addEventListener('open', (event) => {
+        console.info('Connected to signaling server.', event)
+    })
+    // If we can't connect to the signaling server, show an error dialog for now I guess?
+    // Note: websocket errors are super useless, see https://stackoverflow.com/questions/18803971/websocket-onerror-how-to-read-error-description
+    ws.addEventListener('close', (event) => {
+        window.alert(`Failed to get/stay connected to peers.\nMaybe the signaling server (${signaling}) is down?`)
+    })
+}
 
-  onElement(document.querySelector('.incident-summary form'), el => el.addEventListener('change', e => {
-    console.log(`changed summary: ${JSON.stringify(objectFromForm(new FormData(e.currentTarget)))}`)
-  }))
+// Bypass inability for top-level await in Parcel (which we use for bundling YJS) by wrapping all our top-level await usage in an async IIFE
+(async () => {
+    let db = await NewIndexedDB(window.indexedDB)
+    window._db = db
 
-  let data = objectFromForm(new FormData(e.currentTarget))
-  data.status = config.statuses[0]
-  events.createIncident(data)
-  events.newAffectedSystem({ name: data.what })
-})
+    // Multi-user collab events with YJS
+    const ydoc = new Y.Doc()
+    setupMultiplayer(ydoc)
 
-events.addListener('CreateIncident', e => {
-  let summary = document.querySelector('section.incident-summary')
-  onElement(summary, el => el.classList.add('closed'))
-  onElement(summary.querySelector('[type="submit"]'), el => el.innerHTML = 'Hide')
-  onElement(document.querySelector('#newActionWhat'), el => el.focus())
+    let events = new EventDispatcher(null, null, ydoc)
+    StoreEvents(events, db)
 
-  let useDefaultActions = summary.querySelector('#use_default_actions').checked
-  if (!useDefaultActions) return
+    // DEBUG
+    // events.addListener(EventDispatcher.ALL_EVENTS, e => console.log(e))
 
-  config.defaultActions.forEach(action => events.createAction({
-    type: 'ACTION',
-    what: action,
-    who: 'TBD',
-    expireIntervalMinutes: '10',
-  }))
-})
+    document.querySelectorAll('.update-summary').forEach((el) => {
+        // Whenever the input changes update the summary, using 'input' because seeing the summary change feels worthwhile.
+        let summary = document.querySelector('incident-summary')
+        el.addEventListener('input', e => summary.setAttribute(e.target.name, e.target.value))
+    })
 
-document.querySelector('.incident-summary h1').addEventListener('click', e => {
-  onElement(findParentElementWithClass(e.target, 'incident-summary'), el => el.classList.toggle('closed'))
-})
+    // Hide / show the incident summary
+    document.querySelector('.incident-summary form').addEventListener('submit', e => {
+        e.preventDefault()
 
-// Actions
-document.querySelector('.actions__add form').addEventListener('submit', e => {
-  e.preventDefault()
+        onElement(document.querySelector('.incident-summary form'), el => el.addEventListener('change', e => {
+            console.log(`changed summary: ${JSON.stringify(objectFromForm(new FormData(e.currentTarget)))}`)
+        }))
 
-  let data = objectFromForm(new FormData(e.currentTarget))
-  data.type = data.isAction ? 'ACTION' : 'TASK'
-  delete data.isAction
-  events.createAction(data)
+        let data = objectFromForm(new FormData(e.currentTarget))
+        data.status = config.statuses[0]
+        events.createIncident(data)
 
-  e.currentTarget.reset()
-})
+        if (data.use_default_actions) {
+            config.defaultActions.forEach(action => {
+                events.createAction({
+                    type: 'ACTION',
+                    what: action,
+                    who: 'TBD',
+                    expireIntervalMinutes: '10',
+                })
+            })
+        }
 
-customElements.define('active-action', ActiveActions)
+        events.newAffectedSystem({name: data.what})
+    })
 
-events.addListener('CreateAction', e => {
-  let item = document.createElement('li')
-  item.innerHTML = `<active-action
+    customElements.define('active-action', ActiveActions)
+
+    events.addListener('CreateAction', e => {
+        let item = document.createElement('li')
+        item.innerHTML = `<active-action
         type="${e.details.type}"
         what="${e.details.what}"
         who="${e.details.who}"
         link="${e.details.link || ''}"
         createdAt="${e.recordedAt}"
         expireIntervalMinutes="${e.details.expireIntervalMinutes}" id="${e.id}"></active-action>`
-  item.children[0].eventDispatcher = events
+        item.children[0].eventDispatcher = events
 
-  document.querySelector('.actions__active ul').appendChild(item)
-})
+        document.querySelector('.actions__active ul').appendChild(item)
+    })
 
-class IncidentSummary extends HTMLElement {
-  /**
-   *
-   * @param {string} id
-   * @param {EventDispatcher} eventDispatcher
-   */
-  constructor (id, eventDispatcher) {
-    super()
-    this.id = id
-    this.eventDispatcher = eventDispatcher
+    events.addListener('CreateIncident', e => {
+        let summary = document.querySelector('section.incident-summary')
+        onElement(summary, el => el.classList.add('closed'))
+        onElement(summary.querySelector('[type="submit"]'), el => el.innerHTML = 'Hide')
+        onElement(document.querySelector('#newActionWhat'), el => el.focus())
 
-    this.el = document.getElementById('incident-summary').content.cloneNode(true)
-    this.appendChild(this.el)
+    })
 
-    for (let attr of IncidentSummary.observedAttributes) {
-      this.querySelector(`.${attr}`).addEventListener('contextmenu', e => {
+    document.querySelector('.incident-summary h1').addEventListener('click', e => {
+        onElement(findParentElementWithClass(e.target, 'incident-summary'), el => el.classList.toggle('closed'))
+    })
+
+    // Actions
+    document.querySelector('.actions__add form').addEventListener('submit', e => {
         e.preventDefault()
 
-        let currentVal = this.getAttribute(attr)
-        let newVal = null
-        if (attr === 'status') { // XXX: blergh, but making nicer later!
-          currentVal = config.statuses.map(s => s === currentVal ? `[${s}]` : s).join(' / ')
-          let first = true
-          do {
-            newVal = prompt('New value' + first ? '' : ', need to pick a valid status', currentVal)
-            first = false
-            if (newVal === null) continue
-            newVal = newVal.trim()
-          } while (!config.statuses.includes(newVal))
-        } else {
-          newVal = prompt('New value', currentVal)
-          if (newVal === null) return
+        let data = objectFromForm(new FormData(e.currentTarget))
+        data.type = data.isAction ? 'ACTION' : 'TASK'
+        delete data.isAction
+        events.createAction(data)
+
+        e.currentTarget.reset()
+    })
+
+    let createIncidentHandler = e => {
+        let is = new IncidentSummary(e.id, events)
+        for (let kv of Object.entries(e.details)) {
+            is.setAttribute(kv[0], kv[1])
+        }
+        document.querySelector('.incident-summary header').append(is)
+        // XXX: This structure is not nice, maybe I should be instantiating this inside?
+        //  The code layout here isn't nice.
+        is.querySelector('.incident-summary__actions').appendChild(new UpdatesSection(events))
+        document.body.removeEventListener('CreateIncident', createIncidentHandler)
+    }
+    events.addListener('CreateIncident', createIncidentHandler)
+
+    events.addListener('FinishAction', e => {
+        let recordedAt = new Date(e.recordedAt)
+        let previousAction = document.querySelector(`.actions__active [id="${e.actionId}"]`)
+
+        let status = '❌'
+        if (e.details.resolution === 'SUCCESSFUL') {
+            status = e.details.type === 'ACTION' ? '✅' : '✔️'
         }
 
-        let data = {}
-        data[attr] = newVal
-        this.eventDispatcher.updateIncident(this.id, data)
-      })
-    }
+        let pastActions = document.querySelector('.actions__past ul')
+        let li = document.createElement('li')
 
-    this.eventDispatcher.addListener('UpdateIncident', e => {
-      for (let kv of Object.entries(e.details)) {
-        this.setAttribute(kv[0], kv[1])
-      }
-    })
+        let hours = recordedAt.getUTCHours()
+        if (hours < 10) hours = `0${hours}`
 
-    this.querySelector('dialog form').addEventListener('submit', e => {
-      e.preventDefault()
-      let data = objectFromForm(new FormData(e.currentTarget))
-      if (data.id === '') {
-        delete data.id
-        this.eventDispatcher.addResourceLink(data)
-      } else {
-        let id = data.id
-        delete data.id
-        this.eventDispatcher.updateResourceLink(id, data)
-      }
+        let moreDetails = '<ul>'
+        let details = e.details.reason || ''
+        if (details) moreDetails += `<li>${details}</li>`
 
-      e.currentTarget.reset()
-      e.currentTarget.querySelector('input[name="id"]').value = ''
-      this.querySelector('dialog').close()
-    })
+        let link = previousAction.attributes.getNamedItem('link').value
+        if (link !== '') moreDetails += `<li><a href="${link}" class="external" target="_blank">More information</a></li>`
+        moreDetails += '</ul>'
 
-    this.querySelector('.add-link').addEventListener('click', e => {
-      e.preventDefault()
-      let dialog = document.querySelector('dialog')
-      dialog.showModal()
-    })
-    this.querySelector('dialog button[type="reset"]')
-      .addEventListener('click', e => {
-        this.querySelector('dialog input[name="id"]').value = ''
-        this.querySelector('dialog').close(null)
-      })
+        if (moreDetails.length <= 9) moreDetails = ''
 
-    for (let eventName of ['AddResourceLink', 'UpdateResourceLink']) {
-      this.eventDispatcher.addListener(eventName, this._handleLinkEvents.bind(this))
-    }
-  }
-
-  _handleLinkEvents (e) {
-    let el = null
-    switch (e.name) {
-      case 'AddResourceLink':
-        let list = this.querySelector('.incident-summary__links__list')
-        el = document.createElement('li')
-        el.innerHTML = `<a href="${e.details.url}" target="_blank" class="external" data-id="${e.id}">${e.details.description}</a>`
-        el.addEventListener('contextmenu', this._showUpdateLinkDialog.bind(this))
-        list.appendChild(el)
-        break
-      case 'UpdateResourceLink':
-        el = this.querySelector(`.incident-summary__links__list a[data-id="${e.resourceLinkId}"]`)
-        if (el === null) throw `Unable to find link to update: ${e.id}, ${JSON.stringify(e.details)}`
-
-        el.setAttribute('href', e.details.url)
-        el.innerHTML = e.details.description
-        break
-      default:
-        throw `Unable to handle link event: ${e.name}`
-    }
-  }
-
-  _showUpdateLinkDialog (e) {
-    e.preventDefault()
-
-    let dialog = this.querySelector('dialog')
-    dialog.querySelector('input[name="description"]').value = e.target.innerHTML
-    dialog.querySelector('input[name="url"]').value = e.target.getAttribute('href')
-    dialog.querySelector('input[name="id"]').value = e.target.dataset.id
-    dialog.showModal()
-  }
-
-  static get observedAttributes () { return ['what', 'when', 'where', 'impact', 'status'] }
-
-  attributeChangedCallback (name, oldValue, newValue) {
-    if (oldValue === newValue) return
-
-    this.querySelector(`.message .${name}`).innerText = newValue
-  }
-}
-
-customElements.define('incident-summary', IncidentSummary)
-
-let createIncidentHandler = e => {
-  let is = new IncidentSummary(e.id, events)
-  for (let kv of Object.entries(e.details)) {
-    is.setAttribute(kv[0], kv[1])
-  }
-  document.querySelector('.incident-summary header').append(is)
-  // XXX: This structure is not nice, maybe I should be instantiating this inside?
-  //  The code layout here isn't nice.
-  is.querySelector('.incident-summary__actions').appendChild(new UpdatesSection(events))
-  document.body.removeEventListener('CreateIncident', createIncidentHandler)
-}
-events.addListener('CreateIncident', createIncidentHandler)
-
-events.addListener('FinishAction', e => {
-  let recordedAt = e.recordedAt
-  let previousAction = document.querySelector(`.actions__active [id="${e.actionId}"]`)
-
-  let status = '❌'
-  if (e.details.resolution === 'SUCCESSFUL') {
-    status = e.details.type === 'ACTION' ? '✅' : '✔️'
-  }
-
-  let pastActions = document.querySelector('.actions__past ul')
-  let li = document.createElement('li')
-
-  let hours = recordedAt.getUTCHours()
-  if (hours < 10) hours = `0${hours}`
-
-  let moreDetails = '<ul>'
-  let details = e.details.reason || ''
-  if (details) moreDetails += `<li>${details}</li>`
-
-  let link = previousAction.attributes.getNamedItem('link').value
-  if (link !== '') moreDetails += `<li><a href="${link}" class="external" target="_blank">More information</a></li>`
-  moreDetails += '</ul>'
-
-  if (moreDetails.length <= 9) moreDetails = ''
-
-  li.innerHTML = `
+        li.innerHTML = `
         <time datetime="${recordedAt.toISOString()}">${hours}:${recordedAt.getUTCMinutes()}</time>
         ${status} (${previousAction.attributes.getNamedItem('who').value}) ${previousAction.attributes.getNamedItem('what').value}
         ${moreDetails}
     `
-  pastActions.appendChild(li)
+        pastActions.appendChild(li)
 
-  previousAction.parentElement.remove()
-})
+        previousAction.parentElement.remove()
+    })
 
-let notificationToggle = document.querySelector('#notificationsEnabled')
-notificationToggle.checked = Notification.permission === 'granted'
-notificationToggle.addEventListener('change', e => {
-  if (e.target.checked) {
-    switch (Notification.permission) {
-      case 'granted':
-        return
-      default:
-        Notification.requestPermission().then(newPermission => {
-          e.target.checked = newPermission === 'granted'
+    let notificationToggle = document.querySelector('#notificationsEnabled')
+    notificationToggle.checked = Notification.permission === 'granted'
+    notificationToggle.addEventListener('change', e => {
+        if (e.target.checked) {
+            switch (Notification.permission) {
+                case 'granted':
+                    return
+                default:
+                    Notification.requestPermission().then(newPermission => {
+                        e.target.checked = newPermission === 'granted'
+                    })
+            }
+        }
+
+        e.target.checked = false
+    })
+
+    document.querySelector('.affected-systems')
+        .appendChild(new AffectedSystems(events))
+
+    /********* Debug & bootstrap *********/
+    function createDebugIncident() {
+        // Populate some example data
+        events.createIncident({
+            what: 'Paypal unavailable',
+            where: 'TW',
+            when: '10:00 UTC',
+            impact: '2% of orders 100% of Paypal customers',
+            status: 'Investigating',
         })
+
+        config.defaultActions.forEach(action => {
+            events.createAction({
+                type: 'ACTION',
+                what: action,
+                who: 'TBD',
+                expireIntervalMinutes: '10',
+            })
+        })
+
+        const paypalUnavailableSystem = events.newAffectedSystem({
+            name: 'Paypal unavailable',
+        })
+
+        const failedAction = events.createAction({
+            type: 'ACTION',
+            what: 'Has there been a rip in spacetime?',
+            who: 'Peter',
+            expireIntervalMinutes: 10
+        })
+        events.finishAction(failedAction.id, {
+            type: 'ACTION',
+            resolution: 'FAILED',
+            reason: 'No recent Dalek or Cybermen activity, and no signs of a blue box.'
+        })
+
+        const successAction = events.createAction({
+            type: 'TASK',
+            what: 'Escalating to CTO',
+            who: 'Björn',
+            expireIntervalMinutes: '10'
+        })
+        events.finishAction(successAction.id, {
+            type: 'TASK',
+            resolution: 'SUCCESSFUL'
+        })
+
+        const resolvedSystem = events.newAffectedSystem({name: 'Peering with Comcast'})
+        events.resolveAffectedSystem(resolvedSystem.id, {type: 'SUCCESS'})
     }
-  }
 
-  e.target.checked = false
-})
+    document.querySelector('button#debug-create-incident').addEventListener('click', e => {
+        createDebugIncident()
+    })
 
-/********* Debug & bootstrap *********/
 
-document.querySelector('.affected-systems')
-  .appendChild(new AffectedSystems(events))
-
-events.addListener(EventDispatcher.ALL_EVENTS, e => console.log(e))
-
-// Populate some example data
-events.createIncident({
-  what: 'Paypal unavailable',
-  where: 'TW',
-  when: '10:00 UTC',
-  impact: '2% of orders 100% of Paypal customers',
-  status: 'Investigating',
-})
-
-const paypalUnavailableSystem = events.newAffectedSystem({
-  name: 'Paypal unavailable',
-})
-
-const failedAction = events.createAction({
-  type: 'ACTION',
-  what: 'Has there been a rip in spacetime?',
-  who: 'Peter',
-  expireIntervalMinutes: 10
-})
-events.finishAction(failedAction.id, {
-  type: 'ACTION',
-  resolution: 'FAILED',
-  reason: 'No recent Dalek or Cybermen activity, and no signs of a blue box.'
-})
-
-const successAction = events.createAction({
-  type: 'TASK',
-  what: 'Escalating to CTO',
-  who: 'Björn',
-  expireIntervalMinutes: '10'
-})
-events.finishAction(successAction.id, {
-  type: 'TASK',
-  resolution: 'SUCCESSFUL'
-})
-
-const resolvedSystem = events.newAffectedSystem({ name: 'Peering with Comcast' })
-events.resolveAffectedSystem(resolvedSystem.id, { type: 'SUCCESS' })
+})() // ends our top level asyync IIFE
 
 // TODO: Implement finish action, two states/types: "success/no info needed" and "info needed", need to write about this to figure out the naming here
 //       the active actions list should be a component that is responsible for creating the new actions and then removing them as they finish.
