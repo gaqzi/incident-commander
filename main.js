@@ -58,26 +58,22 @@ function StoreEvents (events, storage) {
   })
 }
 
-// Bypass inability for top-level await in Parcel (which we use for bundling YJS)
+// Bypass inability for top-level await in Parcel (which we use for bundling YJS) by wrapping all our top-level await usage in an async IIFE
 (async () => {
-  let db = await NewIndexedDB(window.indexedDB)
-  window._db = db
+let db = await NewIndexedDB(window.indexedDB)
+window._db = db
 
-  // Multi-user collab events with YJS
-  const ydoc = new Y.Doc()
-  const signaling = ["ws://localhost:4444"] // Until we get a signaling server set up, run one locally using: `PORT=4444 npx y-webrtc server` (see below for how we pass this into WebrtcProvider)
-  const room = "InCom-HelloWorld"
-  const password = "funtimes123"
-  const provider = new WebrtcProvider(room, ydoc, { signaling: signaling,  password: password })
-  const yarray = ydoc.get('events', Y.Array) // TODO: figure out why browser seems to somehow be able to save these events between refreshes
-  yarray.observe(event => {
-    // TODO: dispatch the event
-    console.log('yarray was modified', event.changes.delta)
-    console.log(yarray.toArray())
-  })
+// Multi-user collab events with YJS
+const ydoc = new Y.Doc()
+const signaling = ["ws://localhost:4444"] // Until we get a signaling server set up, run one locally using: `PORT=4444 npx y-webrtc server` (see below for how we pass this into WebrtcProvider)
+const room = "InCom-HelloWorld"
+const password = "funtimes123"
+const provider = new WebrtcProvider(room, ydoc, { signaling: signaling,  password: password })
 
-  let events = new EventDispatcher(null, null, (e) => { yarray.push([e]) })
-  StoreEvents(events, db)
+let events = new EventDispatcher(null, null, ydoc)
+events.addListener(EventDispatcher.ALL_EVENTS, e => console.log(e))
+StoreEvents(events, db)
+
 
 document.querySelectorAll('.update-summary').forEach((el) => {
   // Whenever the input changes update the summary, using 'input' because seeing the summary change feels worthwhile.
@@ -99,6 +95,22 @@ document.querySelector('.incident-summary form').addEventListener('submit', e =>
   events.newAffectedSystem({ name: data.what })
 })
 
+  customElements.define('active-action', ActiveActions)
+
+  events.addListener('CreateAction', e => {
+    let item = document.createElement('li')
+    item.innerHTML = `<active-action
+        type="${e.details.type}"
+        what="${e.details.what}"
+        who="${e.details.who}"
+        link="${e.details.link || ''}"
+        createdAt="${e.recordedAt.toISOString()}"
+        expireIntervalMinutes="${e.details.expireIntervalMinutes}" id="${e.id}"></active-action>`
+    item.children[0].eventDispatcher = events
+
+    document.querySelector('.actions__active ul').appendChild(item)
+  })
+
 events.addListener('CreateIncident', e => {
   let summary = document.querySelector('section.incident-summary')
   onElement(summary, el => el.classList.add('closed'))
@@ -108,12 +120,17 @@ events.addListener('CreateIncident', e => {
   let useDefaultActions = summary.querySelector('#use_default_actions').checked
   if (!useDefaultActions) return
 
-  config.defaultActions.forEach(action => events.createAction({
-    type: 'ACTION',
-    what: action,
-    who: 'TBD',
-    expireIntervalMinutes: '10',
-  }))
+  console.log('creating default actions...')
+  config.defaultActions.forEach(action => {
+    // Don't know why we need to have these fire on the next tick, but if we do then they show up =-)
+    setTimeout(()=>{
+      events.createAction({
+        type: 'ACTION',
+        what: action,
+        who: 'TBD',
+        expireIntervalMinutes: '10',
+      })
+    }, 0)})
 })
 
 document.querySelector('.incident-summary h1').addEventListener('click', e => {
@@ -132,21 +149,6 @@ document.querySelector('.actions__add form').addEventListener('submit', e => {
   e.currentTarget.reset()
 })
 
-customElements.define('active-action', ActiveActions)
-
-events.addListener('CreateAction', e => {
-  let item = document.createElement('li')
-  item.innerHTML = `<active-action
-        type="${e.details.type}"
-        what="${e.details.what}"
-        who="${e.details.who}"
-        link="${e.details.link || ''}"
-        createdAt="${e.recordedAt}"
-        expireIntervalMinutes="${e.details.expireIntervalMinutes}" id="${e.id}"></active-action>`
-  item.children[0].eventDispatcher = events
-
-  document.querySelector('.actions__active ul').appendChild(item)
-})
 
 class IncidentSummary extends HTMLElement {
   /**
@@ -267,7 +269,6 @@ class IncidentSummary extends HTMLElement {
     this.querySelector(`.message .${name}`).innerText = newValue
   }
 }
-
 customElements.define('incident-summary', IncidentSummary)
 
 let createIncidentHandler = e => {
@@ -335,51 +336,56 @@ notificationToggle.addEventListener('change', e => {
   e.target.checked = false
 })
 
-/********* Debug & bootstrap *********/
-
 document.querySelector('.affected-systems')
-  .appendChild(new AffectedSystems(events))
+    .appendChild(new AffectedSystems(events))
 
-events.addListener(EventDispatcher.ALL_EVENTS, e => console.log(e))
-
+/********* Debug & bootstrap *********/
+function createDebugIncident() {
 // Populate some example data
-events.createIncident({
-  what: 'Paypal unavailable',
-  where: 'TW',
-  when: '10:00 UTC',
-  impact: '2% of orders 100% of Paypal customers',
-  status: 'Investigating',
+  events.createIncident({
+    what: 'Paypal unavailable',
+    where: 'TW',
+    when: '10:00 UTC',
+    impact: '2% of orders 100% of Paypal customers',
+    status: 'Investigating',
+  })
+
+  const paypalUnavailableSystem = events.newAffectedSystem({
+    name: 'Paypal unavailable',
+  })
+
+  const failedAction = events.createAction({
+    type: 'ACTION',
+    what: 'Has there been a rip in spacetime?',
+    who: 'Peter',
+    expireIntervalMinutes: 10
+  })
+  events.finishAction(failedAction.id, {
+    type: 'ACTION',
+    resolution: 'FAILED',
+    reason: 'No recent Dalek or Cybermen activity, and no signs of a blue box.'
+  })
+
+  const successAction = events.createAction({
+    type: 'TASK',
+    what: 'Escalating to CTO',
+    who: 'Björn',
+    expireIntervalMinutes: '10'
+  })
+  events.finishAction(successAction.id, {
+    type: 'TASK',
+    resolution: 'SUCCESSFUL'
+  })
+
+  const resolvedSystem = events.newAffectedSystem({ name: 'Peering with Comcast' })
+  events.resolveAffectedSystem(resolvedSystem.id, { type: 'SUCCESS' })
+}
+
+document.querySelector('button#debug-create-incident').addEventListener('click', e => {
+  createDebugIncident()
 })
 
-const paypalUnavailableSystem = events.newAffectedSystem({
-  name: 'Paypal unavailable',
-})
 
-const failedAction = events.createAction({
-  type: 'ACTION',
-  what: 'Has there been a rip in spacetime?',
-  who: 'Peter',
-  expireIntervalMinutes: 10
-})
-events.finishAction(failedAction.id, {
-  type: 'ACTION',
-  resolution: 'FAILED',
-  reason: 'No recent Dalek or Cybermen activity, and no signs of a blue box.'
-})
-
-const successAction = events.createAction({
-  type: 'TASK',
-  what: 'Escalating to CTO',
-  who: 'Björn',
-  expireIntervalMinutes: '10'
-})
-events.finishAction(successAction.id, {
-  type: 'TASK',
-  resolution: 'SUCCESSFUL'
-})
-
-const resolvedSystem = events.newAffectedSystem({ name: 'Peering with Comcast' })
-events.resolveAffectedSystem(resolvedSystem.id, { type: 'SUCCESS' })
 
 })() // ends our top level asyync IIFE
 
