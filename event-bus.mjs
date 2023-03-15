@@ -73,7 +73,7 @@ export class EventDispatcher {
    *
    * @param {EventListeners} [listeners]
    * @param {idCreator} [idCreator=uniqueishId]
-   * @param onDispatch [callbackFunction]
+   * @param {Y.Doc} ydoc - An instance of a YJS Doc e.g. `new Y.Doc()`
    */
   constructor (listeners, idCreator, ydoc) {
     this.listeners = listeners || new EventListeners()

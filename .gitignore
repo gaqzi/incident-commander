@@ -1,1 +1,3 @@
 node_modules/
+signaling_server/fly.toml
+.env

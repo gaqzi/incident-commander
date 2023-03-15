@@ -137,3 +137,11 @@ For example, a successful task for which metric to use to measure could
 include a link to where the to find it. And a failed actions needs to include
 an explanation of why so if we need to later re-examine what we've tried we can
 do so.
+
+## Technical Implementation Notes
+### Multiplayer via Yjs and WebRTC
+This project uses [Yjs](https://github.com/yjs/yjs) and WebRTC (via [y-webrtc provider](https://github.com/yjs/y-webrtc)) to allow for multiple people to participate in updating an Incident in realtime.
+
+`y-webrtc` lets participants communicate in a peer-to-peer fashion, but it requires a WebRTC signaling server for the peers to establish connections with each other. `y-webrtc` comes with a sample signaling server which you can use to deploy easily to a cloud hosting service like [fly.io](https://fly.io). 
+
+Once you have a `y-webrtc` signaling server deployed somewhere, you will need to pass the server's URL as an environment variable to `parcel` via the WEBRTC_SIGNALING_SERVER env var in order to get them inserted into the bundled JavaScript output. Parcel supports `.env` files. So, copy `.env.example` to `.env` and set the value appropriately then run `npx parcel index.html` and you should be all set.
