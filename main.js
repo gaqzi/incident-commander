@@ -84,7 +84,6 @@ function setupMultiplayer(ydoc) {
         console.info('Connected to signaling server.', event)
     })
     // If we can't connect to the signaling server, show an error dialog for now I guess?
-    // If we can't connect to the signaling server, show an error dialog for now I guess?
     // Note: websocket errors are super useless, see https://stackoverflow.com/questions/18803971/websocket-onerror-how-to-read-error-description
     ws.addEventListener('close', (event) => {
         window.alert(`Failed to get/stay connected to peers.\nMaybe the signaling server (${signaling}) is down?`)
