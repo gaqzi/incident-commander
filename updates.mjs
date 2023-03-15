@@ -1,7 +1,7 @@
 class Reporter {
   constructor (e) {
     this.id = e.id
-    this.recordedAt = e.recordedAt
+    this.recordedAt = new Date(e.recordedAt)
     this.lastUpdatedAt = e.lastUpdatedAt
     this.details = e.details
   }

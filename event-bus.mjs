@@ -115,7 +115,7 @@ export class EventDispatcher {
 
   _add(name, detail) {
     detail.name = name
-   detail.recordedAt = detail.recordedAt || new Date()
+   detail.recordedAt = detail.recordedAt || new Date().toISOString()
 
     this.allEvents.push([detail])
     return detail

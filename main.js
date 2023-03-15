@@ -82,7 +82,7 @@ function StoreEvents(events, storage) {
         el.addEventListener('input', e => summary.setAttribute(e.target.name, e.target.value))
     })
 
-// Hide / show the incident summary
+    // Hide / show the incident summary
     document.querySelector('.incident-summary form').addEventListener('submit', e => {
         e.preventDefault()
 
@@ -93,6 +93,18 @@ function StoreEvents(events, storage) {
         let data = objectFromForm(new FormData(e.currentTarget))
         data.status = config.statuses[0]
         events.createIncident(data)
+
+        if (data.use_default_actions) {
+            config.defaultActions.forEach(action => {
+                events.createAction({
+                    type: 'ACTION',
+                    what: action,
+                    who: 'TBD',
+                    expireIntervalMinutes: '10',
+                })
+            })
+        }
+
         events.newAffectedSystem({name: data.what})
     })
 
@@ -105,7 +117,7 @@ function StoreEvents(events, storage) {
         what="${e.details.what}"
         who="${e.details.who}"
         link="${e.details.link || ''}"
-        createdAt="${e.recordedAt.toISOString()}"
+        createdAt="${e.recordedAt}"
         expireIntervalMinutes="${e.details.expireIntervalMinutes}" id="${e.id}"></active-action>`
         item.children[0].eventDispatcher = events
 
@@ -118,21 +130,6 @@ function StoreEvents(events, storage) {
         onElement(summary.querySelector('[type="submit"]'), el => el.innerHTML = 'Hide')
         onElement(document.querySelector('#newActionWhat'), el => el.focus())
 
-        let useDefaultActions = summary.querySelector('#use_default_actions').checked
-        if (!useDefaultActions) return
-
-        console.log('creating default actions...')
-        config.defaultActions.forEach(action => {
-            // Don't know why we need to have these fire on the next tick, but if we do then they show up =-)
-            setTimeout(() => {
-                events.createAction({
-                    type: 'ACTION',
-                    what: action,
-                    who: 'TBD',
-                    expireIntervalMinutes: '10',
-                })
-            }, 0)
-        })
     })
 
     document.querySelector('.incident-summary h1').addEventListener('click', e => {
@@ -290,7 +287,7 @@ function StoreEvents(events, storage) {
     events.addListener('CreateIncident', createIncidentHandler)
 
     events.addListener('FinishAction', e => {
-        let recordedAt = e.recordedAt
+        let recordedAt = new Date(e.recordedAt)
         let previousAction = document.querySelector(`.actions__active [id="${e.actionId}"]`)
 
         let status = '❌'
@@ -346,13 +343,22 @@ function StoreEvents(events, storage) {
 
     /********* Debug & bootstrap *********/
     function createDebugIncident() {
-// Populate some example data
+        // Populate some example data
         events.createIncident({
             what: 'Paypal unavailable',
             where: 'TW',
             when: '10:00 UTC',
             impact: '2% of orders 100% of Paypal customers',
             status: 'Investigating',
+        })
+
+        config.defaultActions.forEach(action => {
+            events.createAction({
+                type: 'ACTION',
+                what: action,
+                who: 'TBD',
+                expireIntervalMinutes: '10',
+            })
         })
 
         const paypalUnavailableSystem = events.newAffectedSystem({
