@@ -59,17 +59,11 @@ function StoreEvents(events, storage) {
     })
 }
 
-// Bypass inability for top-level await in Parcel (which we use for bundling YJS) by wrapping all our top-level await usage in an async IIFE
-(async () => {
-    let db = await NewIndexedDB(window.indexedDB)
-    window._db = db
-
-    // Multi-user collab events with YJS
-    const ydoc = new Y.Doc()
+function setupMultiplayer(ydoc) {
     const signaling = [process.env.WEBRTC_SIGNALING_SERVER] // injected via parcel. see README for more info
 
     // If we don't have a room and password, create them and refresh window so they're on the query string
-    params = new URLSearchParams(window.location.search)
+    let params = new URLSearchParams(window.location.search)
     if (!params.get('room')) {
         params.set('room', new Date().valueOf())
     }
@@ -84,13 +78,27 @@ function StoreEvents(events, storage) {
     const password = params.get('password')
     const provider = new WebrtcProvider(room, ydoc, {signaling: signaling, password: password})
 
-    // If we can't connect to the signaling server, show an error dialog for now I guess?
     const sc = provider.signalingConns[0]
     const ws = sc.ws
+    ws.addEventListener('open', (event) => {
+        console.info('Connected to signaling server.', event)
+    })
+    // If we can't connect to the signaling server, show an error dialog for now I guess?
+    // If we can't connect to the signaling server, show an error dialog for now I guess?
     // Note: websocket errors are super useless, see https://stackoverflow.com/questions/18803971/websocket-onerror-how-to-read-error-description
     ws.addEventListener('close', (event) => {
         window.alert(`Failed to get/stay connected to peers.\nMaybe the signaling server (${signaling}) is down?`)
     })
+}
+
+// Bypass inability for top-level await in Parcel (which we use for bundling YJS) by wrapping all our top-level await usage in an async IIFE
+(async () => {
+    let db = await NewIndexedDB(window.indexedDB)
+    window._db = db
+
+    // Multi-user collab events with YJS
+    const ydoc = new Y.Doc()
+    setupMultiplayer(ydoc)
 
     let events = new EventDispatcher(null, null, ydoc)
     StoreEvents(events, db)
