@@ -145,3 +145,11 @@ This project uses [Yjs](https://github.com/yjs/yjs) and WebRTC (via [y-webrtc pr
 `y-webrtc` lets participants communicate in a peer-to-peer fashion, but it requires a WebRTC signaling server for the peers to establish connections with each other. `y-webrtc` comes with a sample signaling server which you can use to deploy easily to a cloud hosting service like [fly.io](https://fly.io). 
 
 Once you have a `y-webrtc` signaling server deployed somewhere, you will need to pass the server's URL as an environment variable to `parcel` via the WEBRTC_SIGNALING_SERVER env var in order to get them inserted into the bundled JavaScript output. Parcel supports `.env` files. So, copy `.env.example` to `.env` and set the value appropriately then run `npx parcel index.html` and you should be all set.
+
+## Testing
+We use Cypress for browser testing.
+
+```
+npx parcel index.html -p 5432 # runs the hot-reloading app in dev mode
+npx cypress open # stars cypress. then go and click on a test to run it
+```

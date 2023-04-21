@@ -105,12 +105,6 @@ function setupMultiplayer(ydoc) {
     // DEBUG
     // events.addListener(EventDispatcher.ALL_EVENTS, e => console.log(e))
 
-    document.querySelectorAll('.update-summary').forEach((el) => {
-        // Whenever the input changes update the summary, using 'input' because seeing the summary change feels worthwhile.
-        let summary = document.querySelector('incident-summary')
-        el.addEventListener('input', e => summary.setAttribute(e.target.name, e.target.value))
-    })
-
     // Hide / show the incident summary
     document.querySelector('.incident-summary form').addEventListener('submit', e => {
         e.preventDefault()
@@ -159,6 +153,11 @@ function setupMultiplayer(ydoc) {
         onElement(summary.querySelector('[type="submit"]'), el => el.innerHTML = 'Hide')
         onElement(document.querySelector('#newActionWhat'), el => el.focus())
 
+        document.querySelectorAll('.update-summary').forEach((el) => {
+            // Whenever the input changes update the summary, using 'input' because seeing the summary change feels worthwhile.
+            let summary = document.querySelector('incident-summary')
+            el.addEventListener('input', e => summary.setAttribute(e.target.name, e.target.value))
+        })
     })
 
     document.querySelector('.incident-summary h1').addEventListener('click', e => {

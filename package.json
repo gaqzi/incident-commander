@@ -11,6 +11,7 @@
     "test": "mocha **/*.test.mjs"
   },
   "dependencies": {
+    "cypress": "^12.10.0",
     "y-webrtc": "^10.2.4",
     "yjs": "^13.5.49"
   }

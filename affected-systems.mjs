@@ -22,13 +22,13 @@ export class AffectedSystems extends HTMLElement {
       </form>
     </section>
     
-    <section class="affected-systems__listing">
-      <section class="affected-systems__listing__active">
+    <section class="affected-systems__listing" data-test="affected-systems">
+      <section class="affected-systems__listing__active" data-test="affected-systems__active">
           <h1>Ongoing</h1>
           <ul></ul>
       </section>
       
-      <section class="affected-systems__listing__past">
+      <section class="affected-systems__listing__past" data-test="affected-systems__past">
           <h1>Resolved</h1>
           <ul></ul>
       </section>

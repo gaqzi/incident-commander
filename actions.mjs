@@ -13,13 +13,12 @@ export class ActiveActions extends HTMLElement {
       this.setAttribute('expiresAt', expiresAt)
     }
 
-    let shadowRoot = this.attachShadow({ mode: 'open' })
-    shadowRoot.appendChild(template.cloneNode(true))
+    this.appendChild(template.cloneNode(true))
 
-    this.countdown = shadowRoot.querySelector('countdown-timer')
+    this.countdown = this.querySelector('countdown-timer')
 
     for (let el of ['link', 'who', 'what']) {
-      shadowRoot.querySelector('.description').querySelector(`.${el}`).addEventListener('contextmenu', e => {
+      this.querySelector('.description').querySelector(`.${el}`).addEventListener('contextmenu', e => {
         e.preventDefault()
         let value = prompt('What do you want to change to?', this.getAttribute(el))
 
@@ -29,14 +28,14 @@ export class ActiveActions extends HTMLElement {
       })
     }
 
-    shadowRoot.querySelector('input[name="is_action"]').addEventListener('change', e => {
+    this.querySelector('input[name="is_action"]').addEventListener('change', e => {
       this.eventDispatcher.updateAction(this.id, { type: e.target.checked ? 'ACTION' : 'TASK' })
     })
 
-    shadowRoot.querySelectorAll('button.finish').forEach(el => el.addEventListener('click', e => {
+    this.querySelectorAll('button.finish').forEach(el => el.addEventListener('click', e => {
         // Feels like there's a need for a third button, one for incident mitigated/resolved
         let finishStatus = e.target.classList.contains('success') ? 'SUCCESSFUL' : 'FAILED'
-        let type = shadowRoot.querySelector('input[name="is_action"]').checked ? 'ACTION' : 'TASK'
+        let type = this.querySelector('input[name="is_action"]').checked ? 'ACTION' : 'TASK'
 
         let reason = undefined
         if (finishStatus === 'FAILED') {
@@ -52,12 +51,12 @@ export class ActiveActions extends HTMLElement {
       })
     )
 
-    shadowRoot.querySelector('button[name="pushTimer"]').addEventListener('click', e => {
-      // let countdown = shadowRoot.querySelector('countdown-timer')
+    this.querySelector('button[name="pushTimer"]').addEventListener('click', e => {
+      // let countdown = this.querySelector('countdown-timer')
       this.countdown.restart()
       this.eventDispatcher.updateAction(this.id, { expiresAt: this.countdown.getAttribute('to') })
     })
-    shadowRoot.querySelector('button[name="pushTimer"]').addEventListener('contextmenu', e => {
+    this.querySelector('button[name="pushTimer"]').addEventListener('contextmenu', e => {
       e.preventDefault()
 
       let interval = prompt('How many minutes do you want to count down to instead?', '20')
@@ -118,11 +117,11 @@ export class ActiveActions extends HTMLElement {
   attributeChangedCallback (name, _, newValue) {
     switch (name) {
       case 'type':
-        this.shadowRoot.querySelector('input[name="is_action"]').checked = newValue === 'ACTION'
+        this.querySelector('input[name="is_action"]').checked = newValue === 'ACTION'
         break
 
       case 'link':
-        let link = this.shadowRoot.querySelector('.description .link')
+        let link = this.querySelector('.description .link')
         if (newValue === '') {
           link.innerText = 'Link missing'
           break
@@ -132,7 +131,7 @@ export class ActiveActions extends HTMLElement {
 
       case 'what':
       case 'who':
-        this.shadowRoot.querySelector(`.description .${name}`).innerText = newValue
+        this.querySelector(`.description .${name}`).innerText = newValue
         break
 
       // Countdown stuff
