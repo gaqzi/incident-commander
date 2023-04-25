@@ -15,10 +15,10 @@ export class AffectedSystems extends HTMLElement {
           <ul>
             <li>
               <label>What is not working?</label>
-              <input type="text" name="affected_system" placeholder="Payment redirections">
+              <input type="text" name="affected_system" placeholder="Payment redirections" data-test="new-affected-system__what">
             </li>
           </ul>
-          <button type="submit">Add!</button>
+          <button type="submit" data-test="new-affected-system__submit">Add!</button>
       </form>
     </section>
     
@@ -33,13 +33,13 @@ export class AffectedSystems extends HTMLElement {
           <ul></ul>
       </section>
       
-      <dialog>
+      <dialog data-test="update-affected-system__dialog">
             <h1>Update Affected System</h1>
             <form>
-                <input type="text" name="affected_system" value="">
+                <input type="text" name="affected_system" value="" data-test="update-affected-system__what">
                 <input type="hidden" name="id" value="">
-                <button type="submit">Update</button>
-                <button type="reset" class="cancel">Cancel</button>
+                <button type="submit" data-test="update-affected-system__submit">Update</button>
+                <button type="reset" class="cancel" data-test="update-affected-system__cancel">Cancel</button>
             </form>
       </dialog>
     </section>
@@ -84,7 +84,7 @@ export class AffectedSystems extends HTMLElement {
   _templatedHtml (affected_system) {
       const name = affected_system.name
       return `
-          <span>${affected_system.name}</span> <button>✅</button>
+          <span>${affected_system.name}</span> <button data-test="affected-system__resolve">✅</button>
       `
   }
 
