@@ -75,6 +75,13 @@ class EventList {
     throw new Error("Not Implemented")
   }
 
+  /**
+   * @returns Array<Object> all events in the list
+   */
+  all() {
+    throw new Error("Not Implemented")
+  }
+
   /** @param {function(string, Object)} eventsHandlerFn */
   onEvent(eventsHandlerFn) {
     this._onEvent = eventsHandlerFn
@@ -89,6 +96,10 @@ export class SinglePlayerEventList extends EventList {
     newEvents.forEach(e => {
       this._onEvent(e.name, e)
     })
+  }
+
+  all() {
+    return this.events
   }
 }
 
@@ -105,6 +116,10 @@ export class MultiPlayerEventList extends EventList {
         })
       })
     })
+  }
+
+  all() {
+    return this.events.slice(0)
   }
 
   push(newEvents) {
