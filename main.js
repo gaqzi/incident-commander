@@ -3,7 +3,7 @@ import {AffectedSystems} from './affected-systems.mjs'
 import {config} from './config.mjs'
 import {Countdown, CountdownDisplay} from './countdown.mjs'
 import {IncidentSummary} from './incident-summary.mjs'
-import {EventDispatcher} from './event-bus.mjs'
+import {EventDispatcher, MultiPlayerEventList} from './event-bus.mjs'
 import {UpdatesSection} from './updates.mjs'
 import {NewIndexedDB} from './storage.mjs'
 import * as Y from 'yjs'
@@ -99,7 +99,7 @@ function setupMultiplayer(ydoc) {
     const ydoc = new Y.Doc()
     setupMultiplayer(ydoc)
 
-    let events = new EventDispatcher(null, null, ydoc)
+    let events = new EventDispatcher(null, null, new MultiPlayerEventList(ydoc.get('events', Y.Array)))
     StoreEvents(events, db)
 
     // DEBUG
