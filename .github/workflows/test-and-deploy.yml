@@ -68,7 +68,7 @@ jobs:
       - name: Store failure artifacts
         uses: actions/upload-artifact@v3
         with:
-          path: dist/**/*
+          path: cypress/videos/**/*.mp4
         if: ${{ failure() }}
 
   deploy:
