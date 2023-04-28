@@ -59,7 +59,7 @@ class ActionReporter extends Reporter {
     let finishReason = ''
     if (this.details.reason !== undefined) finishReason = `\n    - ${this.details.reason}`
 
-    return `${resolution} ${this.details.what} (${this.details.who}) ${link}${finishReason}`
+    return `${resolution} ${this.details.what} (${this.details.who}) ${link}${finishReason}`.trim()
   }
 }
 
@@ -181,7 +181,7 @@ class TechUpdate {
       '\n*Current status:*'
     ].concat(affectedSystemOutput(finalEvents['AffectedSystem']))
 
-    let openActions = finalEvents['Action']
+    let openActions = (finalEvents['Action'] || [])
       .filter(r => !r.details.resolution)
       .map(r => r.slack())
     if (openActions.length > 0) {
@@ -189,7 +189,7 @@ class TechUpdate {
       output.push('- ' + openActions.join('\n- '))
     }
 
-    let finishedActions = finalEvents['Action']
+    let finishedActions = (finalEvents['Action'] || [])
       .filter(r => !!r.details.resolution)
       .map(r => r.slack())
     if (finishedActions.length > 0) {
@@ -214,7 +214,7 @@ export class UpdatesSection extends HTMLElement {
     this.eventDispatcher = eventDispatcher
     this.innerHTML = `
         <button data-type="business-update" data-test="business-update">📋 Business update</button>
-        <button data-type="tech-update">📋 Tech update</button>
+        <button data-type="tech-update" data-test="tech-update">📋 Tech update</button>
     `
 
     this.querySelectorAll('button')
