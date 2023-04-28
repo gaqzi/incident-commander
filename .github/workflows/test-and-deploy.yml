@@ -56,6 +56,7 @@ jobs:
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
+      WEBRTC_SIGNALING_SERVER: wss://long-river-3855.fly.dev
     runs-on: ubuntu-latest
     needs:
       - end-to-end-tests
