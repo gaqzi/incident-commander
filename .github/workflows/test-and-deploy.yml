@@ -56,7 +56,6 @@ jobs:
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
-      WEBRTC_SIGNALING_SERVER: 'wss://long-river-3855.fly.dev'
     runs-on: ubuntu-latest
     needs:
       - end-to-end-tests
@@ -72,6 +71,8 @@ jobs:
 
       - run: npm install
       - run: npm run build
+        env:
+          WEBRTC_SIGNALING_SERVER: 'wss://long-river-3855.fly.dev'
 
       - name: Setup Pages
         uses: actions/configure-pages@v3
