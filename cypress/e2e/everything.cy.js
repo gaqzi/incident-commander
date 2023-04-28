@@ -213,4 +213,27 @@ describe('Ongoing Incident: status updates', () => {
         ))
     })
   })
+
+  describe('Tech Update', () => {
+    it('provides the status, summary, affected components, current actions', () => {
+      addActionToIncident('The Action', 'The Who', 'http://example.com/', 10, true)
+      addActionToIncident('A failed action', 'The Whom', 'http://example.com/', 10, true)
+      cy.window().then((win) => cy.stub(win, 'prompt').returns('Was not destined to be.'))
+      cy.get('active-action[what="A failed action"] [data-test="active_action__failed"]').click()
+
+      let clipboardText = ''
+      cy.window().then(function (win) {
+        cy.stub(win.navigator.clipboard, 'writeText', (text) => {clipboardText = text})
+      })
+
+      getDataTest('tech-update')
+        .click()
+        .then(() => expect(clipboardText).to.eq(
+          `*Investigating* Since ${when} we are seeing ${what} in ${where} impacting ${impact}.` +
+          `\n\n*Current status:*\n- 🔴 ${what}` +
+          `\n\n*Actions:*\n- The Action (The Who) [More info](http://example.com/)` +
+          `\n\n*Past actions:*\n- ❌ A failed action (The Whom) [More info](http://example.com/)\n    - Was not destined to be.`
+        ))
+    })
+  })
 })
