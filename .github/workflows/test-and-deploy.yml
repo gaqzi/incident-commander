@@ -44,7 +44,6 @@ jobs:
       - name: Cypress run
         uses: cypress-io/github-action@v5
         with:
-          build: npm run build --if-present
           start: npm start
       - name: Store failure artifacts
         uses: actions/upload-artifact@v3
@@ -65,6 +64,15 @@ jobs:
     steps:
       - name: Setup Pages
         uses: actions/configure-pages@v3
+      - name: Use Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 19.x
+          cache: 'npm'
+
+      - run: npm install
+      - run: npm run build
+
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v1
         with:
