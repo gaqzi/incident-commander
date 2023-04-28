@@ -10,6 +10,7 @@
   },
   "scripts": {
     "build": "parcel build --public-url './' index.html",
+    "lint": "standard",
     "start": "parcel index.html -p 5432",
     "test": "mocha **/*.test.mjs",
     "test-e2e": "cypress run"
