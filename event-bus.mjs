@@ -66,27 +66,67 @@ export class EventListeners {
   }
 }
 
+
+class EventList {
+  _onEvent = () => {}
+
+  /** @param {Array<Object>} newEvents */
+  push(newEvents) {
+    throw new Error("Not Implemented")
+  }
+
+  /** @param {function(string, Object)} eventsHandlerFn */
+  onEvent(eventsHandlerFn) {
+    this._onEvent = eventsHandlerFn
+  }
+}
+
+export class SinglePlayerEventList extends EventList {
+  events = []
+
+  push(newEvents) {
+    this.events = this.events.concat(newEvents)
+    newEvents.forEach(e => {
+      this._onEvent(e.name, e)
+    })
+  }
+}
+
+export class MultiPlayerEventList extends EventList {
+  constructor(yArray) {
+    super();
+    this.events = yArray
+
+    this.events.observe(yjsChangeEvent => {
+      yjsChangeEvent.changes.delta.forEach(change => {
+        if (!change.insert) return // we only expect `insert` changes because we are only ever pushing new events into the array in append only fashion
+        change.insert.forEach(inserted => {
+          this._onEvent(inserted.name, inserted)
+        })
+      })
+    })
+  }
+
+  push(newEvents) {
+    this.events.push(newEvents)
+  }
+}
+
+
 export class EventDispatcher {
   static ALL_EVENTS = EventListeners.ALL_EVENTS
 
   /**
    *
-   * @param {EventListeners} [listeners]
+   * @param {EventListeners} [listeners=EventListeners]
    * @param {idCreator} [idCreator=uniqueishId]
-   * @param {Y.Doc} ydoc - An instance of a YJS Doc e.g. `new Y.Doc()`
+   * @param {EventList} [eventList=SinglePlayerEventList]
    */
-  constructor (listeners, idCreator, ydoc) {
+  constructor (listeners, idCreator, eventList) {
     this.listeners = listeners || new EventListeners()
     this.idCreator = idCreator || uniqueishId
-    this.allEvents = ydoc.get('events', Y.Array)
-    this.allEvents.observe(yjsChangeEvent => {
-      yjsChangeEvent.changes.delta.forEach(change => {
-        if (!change.insert) return // we only expect `insert` changes because we are only ever pushing new events into the array in append only fashion
-        change.insert.forEach(inserted => {
-          this._dispatch(inserted.name, inserted)
-        })
-      })
-    })
+    this.allEvents = eventList || new SinglePlayerEventList()
+    this.allEvents.onEvent(this._dispatch.bind(this))
   }
 
   /**

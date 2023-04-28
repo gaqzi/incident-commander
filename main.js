@@ -3,7 +3,7 @@ import {AffectedSystems} from './affected-systems.mjs'
 import {config} from './config.mjs'
 import {Countdown, CountdownDisplay} from './countdown.mjs'
 import {IncidentSummary} from './incident-summary.mjs'
-import {EventDispatcher} from './event-bus.mjs'
+import {EventDispatcher, MultiPlayerEventList, SinglePlayerEventList} from './event-bus.mjs'
 import {UpdatesSection} from './updates.mjs'
 import {NewIndexedDB} from './storage.mjs'
 import * as Y from 'yjs'
@@ -95,11 +95,19 @@ function setupMultiplayer(ydoc) {
     let db = await NewIndexedDB(window.indexedDB)
     window._db = db
 
-    // Multi-user collab events with YJS
-    const ydoc = new Y.Doc()
-    setupMultiplayer(ydoc)
+    let eventList
+    let params = new URLSearchParams(window.location.search)
+    if (params.get('disableMultiplayer')) {
+        eventList = new SinglePlayerEventList()
+    }
+    else {
+        // Multi-user collab events with YJS
+        const ydoc = new Y.Doc()
+        setupMultiplayer(ydoc)
+        eventList = new MultiPlayerEventList(ydoc.get('events', Y.Array))
+    }
 
-    let events = new EventDispatcher(null, null, ydoc)
+    let events = new EventDispatcher(null, null, eventList)
     StoreEvents(events, db)
 
     // DEBUG

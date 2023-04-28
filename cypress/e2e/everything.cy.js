@@ -34,7 +34,7 @@ function addActionToIncident(what, who, link, minutes, isMitigating) {
 
 describe('Creating a New Incident', () => {
     beforeEach(() => {
-        cy.visit('http://127.0.0.1:5432/?room=test&password=testing') // TODO: dont use hardcoded port
+        cy.visit('http://127.0.0.1:5432/?disableMultiplayer=true') // TODO: dont use hardcoded port
     })
 
     it('creates a new incident - without default actions', () => {
@@ -56,7 +56,7 @@ describe('Creating a New Incident', () => {
         getDataTest('affected-systems__past').get('li').should('have.length.of', 0)
 
         // Actions
-        getDataTest('active-actions active-action').should('have.length.of', 0)
+        getDataTest('actions__active').get('active-action').should('have.length.of', 0)
         getDataTest('past-actions li').should('have.length.of', 0)
     })
 
@@ -68,7 +68,7 @@ describe('Creating a New Incident', () => {
 
         submitIncident(what, when, where, impact, true)
 
-        const activeActions = getDataTest('active-actions')
+        const activeActions = getDataTest('actions__active')
         activeActions.get('active-action').should('have.length.of', 3)
         activeActions.should('contain.text', 'Was there a recent deploy?')
         activeActions.should('contain.text', 'Was a feature flag toggled recently?')
@@ -83,7 +83,7 @@ describe('Ongoing Incident: Managing Affected Components', () => {
     const impact = 'This is the impact'
 
     beforeEach(() => {
-        cy.visit('http://127.0.0.1:5432/?room=test&password=testing') // TODO: dont use hardcoded port
+        cy.visit('http://127.0.0.1:5432/?disableMultiplayer=true') // TODO: dont use hardcoded port
         submitIncident(what, when, where, impact, false)
     })
 
@@ -126,14 +126,14 @@ describe('Ongoing Incident: Managing Affected Components', () => {
     })
 })
 
-describe.only('Ongoing Incident: Managing Actions', () => {
+describe('Ongoing Incident: Managing Actions', () => {
     const what = 'This is the what'
     const when = 'This is the when'
     const where = 'This is the where'
     const impact = 'This is the impact'
 
     beforeEach(() => {
-        cy.visit('http://127.0.0.1:5432/?room=test2&password=testing') // TODO: dont use hardcoded port
+        cy.visit('http://127.0.0.1:5432/?disableMultiplayer=true') // TODO: dont use hardcoded port
         submitIncident(what, when, where, impact, false)
     })
 
@@ -154,7 +154,7 @@ describe.only('Ongoing Incident: Managing Actions', () => {
         action.within(el => el.get(`input[data-test="action__is-mitigating"`)).should('not.be.checked')
     })
 
-    it.only('lets you edit the text of an add affected component', () => {
+    it('lets you edit the text of an add affected component', () => {
         const actionWhat = 'a new action'
         const actionWho = 'john doe'
         const actionLink = 'http://example.com'
