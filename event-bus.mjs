@@ -1,5 +1,3 @@
-import * as Y from "yjs";
-
 /**
  * @callback idCreator
  * @param {string} prefix
@@ -30,7 +28,7 @@ export class EventListeners {
    * @param {Array<string>} events
    * @param {eventListener} listener
    */
-  add(events, listener) {
+  add (events, listener) {
     events.forEach(e => {
       this._listeners[e] = this._listeners[e] || []
       this._listeners[e].push(listener)
@@ -44,12 +42,12 @@ export class EventListeners {
    * @param {Array<string>} events
    * @param {eventListener} listener
    */
-  remove(events, listener) {
-    let removeListener = (l) => l !== listener
+  remove (events, listener) {
+    const removeListener = (l) => l !== listener
 
-    for(let event of events) {
-      if(event === EventListeners.ALL_EVENTS) {
-        for(let kv of Object.entries(this._listeners)) {
+    for (const event of events) {
+      if (event === EventListeners.ALL_EVENTS) {
+        for (const kv of Object.entries(this._listeners)) {
           this._listeners[kv[0]] = kv[1].filter(removeListener)
         }
 
@@ -60,30 +58,29 @@ export class EventListeners {
     }
   }
 
-  notify(event) {
-    for(let cb of this._listeners[EventListeners.ALL_EVENTS] || []) cb(event)
-    for(let cb of this._listeners[event.name] || []) cb(event)
+  notify (event) {
+    for (const cb of this._listeners[EventListeners.ALL_EVENTS] || []) cb(event)
+    for (const cb of this._listeners[event.name] || []) cb(event)
   }
 }
-
 
 class EventList {
   _onEvent = () => {}
 
   /** @param {Array<Object>} newEvents */
-  push(newEvents) {
-    throw new Error("Not Implemented")
+  push (newEvents) {
+    throw new Error('Not Implemented')
   }
 
   /**
    * @returns Array<Object> all events in the list
    */
-  all() {
-    throw new Error("Not Implemented")
+  all () {
+    throw new Error('Not Implemented')
   }
 
   /** @param {function(string, Object)} eventsHandlerFn */
-  onEvent(eventsHandlerFn) {
+  onEvent (eventsHandlerFn) {
     this._onEvent = eventsHandlerFn
   }
 }
@@ -91,21 +88,21 @@ class EventList {
 export class SinglePlayerEventList extends EventList {
   events = []
 
-  push(newEvents) {
+  push (newEvents) {
     this.events = this.events.concat(newEvents)
     newEvents.forEach(e => {
       this._onEvent(e.name, e)
     })
   }
 
-  all() {
+  all () {
     return this.events
   }
 }
 
 export class MultiPlayerEventList extends EventList {
-  constructor(yArray) {
-    super();
+  constructor (yArray) {
+    super()
     this.events = yArray
 
     this.events.observe(yjsChangeEvent => {
@@ -118,15 +115,14 @@ export class MultiPlayerEventList extends EventList {
     })
   }
 
-  all() {
+  all () {
     return this.events.slice(0)
   }
 
-  push(newEvents) {
+  push (newEvents) {
     this.events.push(newEvents)
   }
 }
-
 
 export class EventDispatcher {
   static ALL_EVENTS = EventListeners.ALL_EVENTS
@@ -150,7 +146,7 @@ export class EventDispatcher {
    * @param {eventListener} listener
    */
   addListener (events, listener) {
-    if(typeof events === 'string') events = [events]
+    if (typeof events === 'string') events = [events]
     this.listeners.add(events, listener)
   }
 
@@ -159,8 +155,8 @@ export class EventDispatcher {
    * @param {string|Array<string>} events
    * @param {eventListener} listener
    */
-  removeListener(events, listener) {
-    if(typeof events === 'string') events = [events]
+  removeListener (events, listener) {
+    if (typeof events === 'string') events = [events]
     this.listeners.remove(events, listener)
   }
 
@@ -168,9 +164,9 @@ export class EventDispatcher {
     this.listeners.notify(detail)
   }
 
-  _add(name, detail) {
+  _add (name, detail) {
     detail.name = name
-   detail.recordedAt = detail.recordedAt || new Date().toISOString()
+    detail.recordedAt = detail.recordedAt || new Date().toISOString()
 
     this.allEvents.push([detail])
     return detail

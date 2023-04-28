@@ -9,12 +9,12 @@ class Reporter {
   process (e) {
     if (e.recordedAt > this.lastUpdatedAt) this.lastUpdatedAt = e.recordedAt
 
-    for (let kv of Object.entries(e.details)) {
+    for (const kv of Object.entries(e.details)) {
       this.details[kv[0]] = kv[1]
     }
   }
 
-  slack () { throw `unimplemented markdown reporter for ${this.type}` }
+  slack () { throw new Error(`unimplemented markdown reporter for ${this.type}`) }
 }
 
 class IncidentReporter extends Reporter {
@@ -37,7 +37,7 @@ class AffectedSystemReporter extends Reporter {
   type = 'AffectedSystem'
 
   slack () {
-    let status = this.details.type === 'SUCCESS' ? '✅' : '🔴'
+    const status = this.details.type === 'SUCCESS' ? '✅' : '🔴'
     return `${status} ${this.details.name}`
   }
 }
@@ -73,7 +73,7 @@ function reporterFactory (e) {
     case 'UpdateResourceLink':
       return new ResourceLinkReporter(e)
     case 'NewAffectedSystem':
-    case'UpdateAffectedSystem':
+    case 'UpdateAffectedSystem':
     case 'ResolveAffectedSystem':
       return new AffectedSystemReporter(e)
     case 'CreateAction':
@@ -81,7 +81,7 @@ function reporterFactory (e) {
     case 'FinishAction':
       return new ActionReporter(e)
   }
-  throw `Unknown event looking for reporter: ${e.name}`
+  throw new Error(`Unknown event looking for reporter: ${e.name}`)
 }
 
 /**
@@ -89,11 +89,11 @@ function reporterFactory (e) {
  * @param {Object} e
  * @returns {string}
  */
-function parentIdName(e) {
-  if(e.name === 'UpdateIncident') return 'incidentId'
-  if(e.resourceLinkId !== undefined) return 'resourceLinkId'
-  if(e.actionId !== undefined) return 'actionId'
-  if(e.affectedSystemId !== undefined) return 'affectedSystemId'
+function parentIdName (e) {
+  if (e.name === 'UpdateIncident') return 'incidentId'
+  if (e.resourceLinkId !== undefined) return 'resourceLinkId'
+  if (e.actionId !== undefined) return 'actionId'
+  if (e.affectedSystemId !== undefined) return 'affectedSystemId'
 
   return 'id'
 }
@@ -104,9 +104,9 @@ function parentIdName(e) {
  * @return Object<string,Reporter> where the string is the type of reporter
  */
 function flattenEvents (events) {
-  let finalEvents = {} /** @type Object<string,Reporter> */
-  for (let e of events) {
-    let id = e[parentIdName(e)]
+  const finalEvents = {} /** @type Object<string,Reporter> */
+  for (const e of events) {
+    const id = e[parentIdName(e)]
     if (finalEvents[id] === undefined) {
       finalEvents[id] = reporterFactory(e)
       continue
@@ -125,16 +125,16 @@ function flattenEvents (events) {
 }
 
 function affectedSystemOutput (events) {
-  let output = []
+  const output = []
 
-  let stillAffectedSystems = events
+  const stillAffectedSystems = events
     .filter(r => r.details.type !== 'RESOLVED')
     .map(r => r.slack())
   if (stillAffectedSystems.length > 0) {
     output.push('- ' + stillAffectedSystems.join('\n- '))
   }
 
-  let resolvedAffectedSystems = events
+  const resolvedAffectedSystems = events
     .filter(r => r.details.type === 'RESOLVED')
     .map(r => r.slack())
   if (resolvedAffectedSystems.length > 0) {
@@ -155,18 +155,18 @@ class BusinessUpdate {
   EVENTS = [
     'CreateIncident', 'UpdateIncident', 'ResolveIncident',
     'AddResourceLink', 'UpdateResourceLink',
-    'NewAffectedSystem', 'UpdateAffectedSystem', 'ResolveAffectedSystem',
+    'NewAffectedSystem', 'UpdateAffectedSystem', 'ResolveAffectedSystem'
   ]
 
   report (events) {
-    let finalEvents = flattenEvents(events.filter(e => this.EVENTS.includes(e.name)))
+    const finalEvents = flattenEvents(events.filter(e => this.EVENTS.includes(e.name)))
 
-    let output = [
-      finalEvents['Incident'][0].slack(),
-      '\n*Current status:*',
+    const output = [
+      finalEvents.Incident[0].slack(),
+      '\n*Current status:*'
     ]
-      .concat(affectedSystemOutput(finalEvents['AffectedSystem']))
-      .concat(resourceLinksOutput(finalEvents['ResourceLink']))
+      .concat(affectedSystemOutput(finalEvents.AffectedSystem))
+      .concat(resourceLinksOutput(finalEvents.ResourceLink))
 
     return output.join('\n').trim()
   }
@@ -174,14 +174,14 @@ class BusinessUpdate {
 
 class TechUpdate {
   report (events) {
-    let finalEvents = flattenEvents(events)
+    const finalEvents = flattenEvents(events)
 
     let output = [
-      finalEvents['Incident'][0].slack(),
+      finalEvents.Incident[0].slack(),
       '\n*Current status:*'
-    ].concat(affectedSystemOutput(finalEvents['AffectedSystem']))
+    ].concat(affectedSystemOutput(finalEvents.AffectedSystem))
 
-    let openActions = (finalEvents['Action'] || [])
+    const openActions = (finalEvents.Action || [])
       .filter(r => !r.details.resolution)
       .map(r => r.slack())
     if (openActions.length > 0) {
@@ -189,7 +189,7 @@ class TechUpdate {
       output.push('- ' + openActions.join('\n- '))
     }
 
-    let finishedActions = (finalEvents['Action'] || [])
+    const finishedActions = (finalEvents.Action || [])
       .filter(r => !!r.details.resolution)
       .map(r => r.slack())
     if (finishedActions.length > 0) {
@@ -197,7 +197,7 @@ class TechUpdate {
       output.push('- ' + finishedActions.join('\n- '))
     }
 
-    output = output.concat(resourceLinksOutput(finalEvents['ResourceLink']))
+    output = output.concat(resourceLinksOutput(finalEvents.ResourceLink))
 
     return output.join('\n').trim()
   }
@@ -233,17 +233,17 @@ export class UpdatesSection extends HTMLElement {
       default:
         return
     }
-    if (update === null) throw 'Failed to find update class from update button click'
+    if (update === null) throw new Error('Failed to find update class from update button click')
 
-    let report = update.report(this.eventDispatcher.allEvents.all())
+    const report = update.report(this.eventDispatcher.allEvents.all())
     console.log(report)
     await navigator.clipboard.writeText(report)
 
     // XXX: make nicer, like so many other things, but it works :p
-    let oldVal = e.target.innerText
+    const oldVal = e.target.innerText
     let copiedMsg = 'Copied!'
     if (copiedMsg.length < oldVal.length) copiedMsg += ' '.repeat(oldVal.length - copiedMsg.length)
     e.target.innerText = copiedMsg
-    setTimeout(() => e.target.innerText = oldVal, 500)
+    setTimeout(() => { e.target.innerText = oldVal }, 500)
   }
 }

@@ -39,47 +39,47 @@ export class IndexedDB extends Storage {
 
   add (incidentId, event) {
     return new Promise((resolve, reject) => {
-      let transaction = this._idb.transaction('incidents', 'readwrite')
+      const transaction = this._idb.transaction('incidents', 'readwrite')
       transaction.onerror = (e) => {
-        reject(`failed to create transaction for incidents store: ${e.target.error}}`)
+        reject(new Error(`failed to create transaction for incidents store: ${e.target.error}`))
       }
       transaction.oncomplete = (e) => resolve(undefined)
 
       event.incidentId = incidentId
-      let request = transaction.objectStore('incidents').add(event)
+      const request = transaction.objectStore('incidents').add(event)
       request.onerror = (e) => {
         e.preventDefault()
-        reject(`failed to add event "${JSON.stringify(event)}": objectStore "${e.target.source.name}": ${e.target.error}`)
+        reject(new Error(`failed to add event "${JSON.stringify(event)}": objectStore "${e.target.source.name}": ${e.target.error}`))
       }
     })
   }
 
   allEvents (incidentId) {
     return new Promise((resolve, reject) => {
-      let transaction = this._idb.transaction('incidents', 'readonly')
-      transaction.onerror = (e) => reject(`failed to create transaction for incidents store: ${JSON.stringify(e)}`)
+      const transaction = this._idb.transaction('incidents', 'readonly')
+      transaction.onerror = (e) => reject(new Error(`failed to create transaction for incidents store: ${JSON.stringify(e)}`))
 
       let events = []
       transaction.oncomplete = (e) => resolve(events)
 
-      let index = transaction
+      const index = transaction
         .objectStore('incidents')
         .index('byIncidentId')
-      index.getAll(incidentId).onsuccess = (e) => events = e.target.result.sort((a, b) => a.recordedAt - b.recordedAt)
+      index.getAll(incidentId).onsuccess = (e) => { events = e.target.result.sort((a, b) => a.recordedAt - b.recordedAt) }
     })
   }
 
   allIncidents () {
     return new Promise((resolve, reject) => {
-      let transaction = this._idb.transaction('incidents', 'readonly')
-      transaction.onerror = (e) => reject(`failed to create transaction for incidents store: ${JSON.stringify(e)}`)
+      const transaction = this._idb.transaction('incidents', 'readonly')
+      transaction.onerror = (e) => reject(new Error(`failed to create transaction for incidents store: ${JSON.stringify(e)}`))
 
       let incidents = []
       transaction.oncomplete = (e) => resolve(incidents)
 
       transaction
         .objectStore('incidents')
-        .getAll().onsuccess = (e) => incidents = e.target.result.filter(i => i.name === 'CreateIncident').sort((a, b) => a.recordedAt - b.recordedAt)
+        .getAll().onsuccess = (e) => { incidents = e.target.result.filter(i => i.name === 'CreateIncident').sort((a, b) => a.recordedAt - b.recordedAt) }
     })
   }
 }
@@ -90,23 +90,25 @@ export class IndexedDB extends Storage {
  */
 export function NewIndexedDB (idb) {
   return new Promise((resolve, reject) => {
-    let req = idb.open('incident-commander', 1)
+    const req = idb.open('incident-commander', 1)
     req.onupgradeneeded = (e) => {
-      let db = e.target.result
+      const db = e.target.result
       console.log('time to upgrade the DB!')
       console.log(e)
       switch (e.newVersion) {
         case 1:
-          let store = db.createObjectStore('incidents', { keyPath: 'id' })
-          store.onerror = e => {reject(`failed to create object store: ${JSON.stringify(e)}`)}
-          store.createIndex('byIncidentId', 'incidentId', { unique: false })
+          (() => {
+            const store = db.createObjectStore('incidents', { keyPath: 'id' })
+            store.onerror = e => { reject(new Error(`failed to create object store: ${JSON.stringify(e)}`)) }
+            store.createIndex('byIncidentId', 'incidentId', { unique: false })
+          })()
           break
         default:
-          reject(`Do not know how to upgrade to IndexedDB version ${e.newVersion}, aborting!`)
+          reject(new Error(`Do not know how to upgrade to IndexedDB version ${e.newVersion}, aborting!`))
       }
     }
     req.onerror = (e) => {
-      reject(`unable to get access to IndexedDB: ${JSON.stringify(e)}`)
+      reject(new Error(`unable to get access to IndexedDB: ${JSON.stringify(e)}`))
     }
 
     req.onsuccess = (e) => resolve(new IndexedDB(e.target.result))

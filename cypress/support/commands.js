@@ -24,6 +24,6 @@
 // -- This will overwrite an existing command --
 // Cypress.Commands.overwrite('visit', (originalFn, url, options) => { ... })
 
-Cypress.Commands.add('getDataTest', {prevSubject: true}, (subject, dataTestId) => {
-    return cy.wrap(subject).get(`[data-test="${dataTestId}"]`)
+Cypress.Commands.add('getDataTest', { prevSubject: true }, (subject, dataTestId) => {
+  return cy.wrap(subject).get(`[data-test="${dataTestId}"]`)
 })

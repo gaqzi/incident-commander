@@ -62,10 +62,10 @@ class CountdownTimer {
     let timeLeft = (this.expiresAt - (Date.now() / 1000)).toFixed()
     if (timeLeft < 0) timeLeft = 0
 
-    let seconds = timeLeft % 60,
-      minutes = (timeLeft - seconds) / 60
+    const seconds = timeLeft % 60
+    const minutes = (timeLeft - seconds) / 60
 
-    return { minutes: minutes, seconds: seconds }
+    return { minutes, seconds }
   }
 }
 
@@ -73,13 +73,13 @@ export class CountdownDisplay extends HTMLElement {
   constructor () {
     super()
 
-    let el = document.createElement('span')
-    el.innerHTML = `-<span class="minutes">00</span>:<span class="seconds">00</span>`
+    const el = document.createElement('span')
+    el.innerHTML = '-<span class="minutes">00</span>:<span class="seconds">00</span>'
 
     this.appendChild(el)
   }
 
-  static get observedAttributes () { return ['minutes', 'seconds']}
+  static get observedAttributes () { return ['minutes', 'seconds'] }
 
   attributeChangedCallback (name, oldValue, newValue) {
     if (oldValue === newValue) return
@@ -99,7 +99,7 @@ export class Countdown extends HTMLElement {
   constructor () {
     super()
 
-    let display = new CountdownDisplay()
+    const display = new CountdownDisplay()
     this.appendChild(display)
 
     this.timer = new CountdownTimer(
@@ -112,7 +112,7 @@ export class Countdown extends HTMLElement {
 
         if (!isStart) {
           if (Notification.permission === 'granted') {
-            new Notification('Countdown finished!')
+            new Notification('Countdown finished!') // eslint-disable-line no-new
           }
         }
       }
@@ -128,9 +128,9 @@ export class Countdown extends HTMLElement {
   }
 
   _restartTimer () {
-    let minutesIntoFuture = parseInt(this.getAttribute('interval-minutes'), 10)
-    let now = Date.now(),
-      future = new Date(now + minutesIntoFuture * 60 * 1_000)
+    const minutesIntoFuture = parseInt(this.getAttribute('interval-minutes'), 10)
+    const now = Date.now()
+    const future = new Date(now + minutesIntoFuture * 60 * 1_000)
     this.setAttribute('to', future.toISOString())
   }
 

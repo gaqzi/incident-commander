@@ -18,5 +18,19 @@
     "cypress": "^12.10.0",
     "y-webrtc": "^10.2.4",
     "yjs": "^13.5.49"
+  },
+  "standard": {
+    "env": [
+      "browser",
+      "mocha"
+    ],
+    "globals": [
+      "cy",
+      "Cypress",
+      "expect",
+      "// vv TEMP AND REMOVE after cleaning vv",
+      "config",
+      "objectFromForm"
+    ]
   }
 }

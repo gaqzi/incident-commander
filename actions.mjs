@@ -2,12 +2,12 @@ export class ActiveActions extends HTMLElement {
   constructor () {
     super()
     this.id = this.getAttribute('id')
-    let template = document.getElementById('actions__active__item').content
+    const template = document.getElementById('actions__active__item').content
 
-    let expiresAt = this.getAttribute('expiresAt'),
-      interval = parseInt(this.getAttribute('expireIntervalMinutes'), 10)
+    let expiresAt = this.getAttribute('expiresAt')
+    const interval = parseInt(this.getAttribute('expireIntervalMinutes'), 10)
     if (expiresAt === null) {
-      let createdAt = Date.parse(this.getAttribute('createdAt'))
+      const createdAt = Date.parse(this.getAttribute('createdAt'))
 
       expiresAt = new Date(createdAt + (interval * 60_000)).toISOString()
       this.setAttribute('expiresAt', expiresAt)
@@ -17,12 +17,12 @@ export class ActiveActions extends HTMLElement {
 
     this.countdown = this.querySelector('countdown-timer')
 
-    for (let el of ['link', 'who', 'what']) {
+    for (const el of ['link', 'who', 'what']) {
       this.querySelector('.description').querySelector(`.${el}`).addEventListener('contextmenu', e => {
         e.preventDefault()
-        let value = prompt('What do you want to change to?', this.getAttribute(el))
+        const value = prompt('What do you want to change to?', this.getAttribute(el))
 
-        let data = {}
+        const data = {}
         data[el] = value
         this.eventDispatcher.updateAction(this.id, data)
       })
@@ -33,22 +33,22 @@ export class ActiveActions extends HTMLElement {
     })
 
     this.querySelectorAll('button.finish').forEach(el => el.addEventListener('click', e => {
-        // Feels like there's a need for a third button, one for incident mitigated/resolved
-        let finishStatus = e.target.classList.contains('success') ? 'SUCCESSFUL' : 'FAILED'
-        let type = this.querySelector('input[name="is_action"]').checked ? 'ACTION' : 'TASK'
+      // Feels like there's a need for a third button, one for incident mitigated/resolved
+      const finishStatus = e.target.classList.contains('success') ? 'SUCCESSFUL' : 'FAILED'
+      const type = this.querySelector('input[name="is_action"]').checked ? 'ACTION' : 'TASK'
 
-        let reason = undefined
-        if (finishStatus === 'FAILED') {
-          reason = prompt('Why did this action fail?')
-          if (reason === null) return
-        }
+      let reason
+      if (finishStatus === 'FAILED') {
+        reason = prompt('Why did this action fail?')
+        if (reason === null) return
+      }
 
-        this.eventDispatcher.finishAction(this.id, {
-          type: type,
-          resolution: finishStatus,
-          reason: reason
-        })
+      this.eventDispatcher.finishAction(this.id, {
+        type,
+        resolution: finishStatus,
+        reason
       })
+    })
     )
 
     this.querySelector('button[name="pushTimer"]').addEventListener('click', e => {
@@ -59,10 +59,10 @@ export class ActiveActions extends HTMLElement {
     this.querySelector('button[name="pushTimer"]').addEventListener('contextmenu', e => {
       e.preventDefault()
 
-      let interval = prompt('How many minutes do you want to count down to instead?', '20')
+      const interval = prompt('How many minutes do you want to count down to instead?', '20')
       if (interval === null) return
 
-      let newInterval = Number.parseInt(interval, 10)
+      const newInterval = Number.parseInt(interval, 10)
       if (Number.isNaN(newInterval)) {
         alert('Failed to parse "' + interval + '" into a number')
         return
@@ -75,7 +75,7 @@ export class ActiveActions extends HTMLElement {
       this.countdown.setAttribute('interval-minutes', interval)
       this.eventDispatcher.updateAction(this.id, {
         expireIntervalMinutes: interval.toString(),
-        expiresAt: this.countdown.getAttribute('to'),
+        expiresAt: this.countdown.getAttribute('to')
       })
     })
   }
@@ -86,11 +86,11 @@ export class ActiveActions extends HTMLElement {
 
     this._eventDispatcher = v
 
-    let that = this
+    const that = this
     this._updateEventDispatcher = e => {
       if (e.actionId !== that.id) return
 
-      for (let item of Object.entries(e.details)) {
+      for (const item of Object.entries(e.details)) {
         that.setAttribute(item[0], item[1])
       }
     }
@@ -110,7 +110,7 @@ export class ActiveActions extends HTMLElement {
     return [
       'who', 'what', 'type',
       'link',
-      'expiresat', 'expireintervalminutes',
+      'expiresat', 'expireintervalminutes'
     ]
   }
 
@@ -121,12 +121,7 @@ export class ActiveActions extends HTMLElement {
         break
 
       case 'link':
-        let link = this.querySelector('.description .link')
-        if (newValue === '') {
-          link.innerText = 'Link missing'
-          break
-        }
-        link.innerHTML = `<a href="${newValue}" class="external" target="_blank">More information</a>`
+        this._setLink(newValue)
         break
 
       case 'what':
@@ -142,5 +137,15 @@ export class ActiveActions extends HTMLElement {
         this.countdown.setAttribute('interval-minutes', newValue)
         break
     }
+  }
+
+  _setLink (url) {
+    const link = this.querySelector('.description .link')
+    if (url === '') {
+      link.innerText = 'Link missing'
+      return
+    }
+
+    link.innerHTML = `<a href="${url}" class="external" target="_blank">More information</a>`
   }
 }
