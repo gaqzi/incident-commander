@@ -18,6 +18,20 @@ function submitIncident(what, when, where, impact, shouldUseDefaultActions) {
     getDataTest('new-incident__submit').click()
 }
 
+function addActionToIncident(what, who, link, minutes, isMitigating) {
+    getDataTest('new-action__what').type(what)
+    getDataTest('new-action__who').type(who)
+    getDataTest('new-action__link').type(link)
+    getDataTest('new-action__minutes-between-updates').clear().type(minutes)
+    if (isMitigating) {
+        getDataTest('new-action__is-mitigating').check()
+    } else {
+        getDataTest('new-action__is-mitigating').uncheck()
+    }
+
+    getDataTest('new-action__submit').click()
+}
+
 describe('Creating a New Incident', () => {
     beforeEach(() => {
         cy.visit('http://127.0.0.1:5432/?room=test&password=testing') // TODO: dont use hardcoded port
@@ -98,6 +112,68 @@ describe('Ongoing Incident: Managing Affected Components', () => {
         getDataTest('affected-systems').should('not.contain.text', what)
         getDataTest('affected-systems').should('contain.text', newWhat)
         getDataTest('affected-systems').should('have.length.of', 1)
+    })
+
+    it('lets you resolve an affected component', () => {
+        getDataTest('affected-systems').should('have.length.of', 1)
+        getDataTest('affected-systems__past').should('have.length.of', 0)
+
+        getDataTest('affected-systems').contains(what).get('[data-test="affected-system__resolve"]').click()
+
+        getDataTest('affected-systems').should('have.length.of', 0)
+        getDataTest('affected-systems__past').should('have.length.of', 1)
+        getDataTest('affected-systems__past').should('contain.text', what)
+    })
+})
+
+describe.only('Ongoing Incident: Managing Actions', () => {
+    const what = 'This is the what'
+    const when = 'This is the when'
+    const where = 'This is the where'
+    const impact = 'This is the impact'
+
+    beforeEach(() => {
+        cy.visit('http://127.0.0.1:5432/?room=test2&password=testing') // TODO: dont use hardcoded port
+        submitIncident(what, when, where, impact, false)
+    })
+
+    it('lets you add an action', () => {
+        getDataTest('actions__active').get('li').should('have.length.of', 0)
+
+        const actionWhat = 'a new action'
+        const actionWho = 'john doe'
+        const actionLink = 'http://example.com'
+        const actionMinutes = 10
+        addActionToIncident(actionWho, actionWhat, actionLink, actionMinutes, false)
+
+        getDataTest('actions__active').get('li').should('have.length.of', 1)
+        const action = getDataTest('actions__active').within( el => el.get('li')).first()
+        action.should('contain.text', actionWhat)
+        action.should('contain.text', actionWho)
+        action.within(el => el.get(`a[href="${actionLink}"]`)).should('be.visible')
+        action.within(el => el.get(`input[data-test="action__is-mitigating"`)).should('not.be.checked')
+    })
+
+    it.only('lets you edit the text of an add affected component', () => {
+        const actionWhat = 'a new action'
+        const actionWho = 'john doe'
+        const actionLink = 'http://example.com'
+        const actionMinutes = 10
+        addActionToIncident(actionWho, actionWhat, actionLink, actionMinutes, false)
+        const activeActions = getDataTest('actions__active')
+
+        // This is how you type into prompts with Cypress =-\
+        const newWhat = 'an updated action text'
+        cy.window().then(function(win) {
+            cy.stub(win, 'prompt').returns(newWhat)
+        })
+
+        // Prompt response stubbed above...
+        const action = activeActions.getDataTest('active_action__what').first()
+        action.rightclick()
+
+        action.should('not.contain.text', actionWhat)
+        action.should('contain.text', newWhat)
     })
 
     it('lets you resolve an affected component', () => {

@@ -150,40 +150,41 @@
             <ul>
                 <li>
                     <label for="newActionWhat">What are we trying?</label>
-                    <input type="text" id="newActionWhat" name="what">
+                    <input type="text" id="newActionWhat" name="what" data-test="new-action__what">
                 </li>
                 <li>
                     <label for="newActionWho">Who is doing it?</label>
-                    <input type="text" id="newActionWho" name="who">
+                    <input type="text" id="newActionWho" name="who" data-test="new-action__who" />
                 </li>
                 <li>
                     <label for="newActionLink">Do you have a link for more information?</label>
                     <input type="url" id="newActionLink" name="link"
-                           placeholder="https://company.slack.com/archive/…">
+                           placeholder="https://company.slack.com/archive/…"
+                           data-test="new-action__link" />
                 </li>
                 <li>
                     <label for="newActionWhen">Minutes between updates?</label>
                     <input type="number" id="newActionWhen" name="expireIntervalMinutes" min="5"
-                           max="30" value="10">
+                           max="30" value="10" data-test="new-action__minutes-between-updates"/>
                 </li>
                 <li>
                     <label>
                         Is mitigating?
-                        <input type="checkbox" name="isAction" checked>
+                        <input type="checkbox" name="isAction" checked data-test="new-action__is-mitigating">
                     </label>
                 </li>
             </ul>
 
-            <button type="submit">Add</button>
+            <button type="submit" data-test="new-action__submit">Add</button>
         </form>
     </section>
 
-    <section class="actions__active">
+    <section class="actions__active" data-test="actions__active">
         <h1>Active actions</h1>
         <ul></ul>
     </section>
 
-    <section class="actions__past">
+    <section class="actions__past" data-test="actions__past">
         <h1>Past actions</h1>
         <ul></ul>
     </section>
@@ -250,9 +251,9 @@
     </style>
 
     <span class="description">
-        (<span class="who">WHO</span>)
-        <span class="what">DESCRIPTION</span>
-        [<span class="link">MORE INFORMATION</span>]
+        (<span class="who" data-test="active_action__who">WHO</span>)
+        <span class="what" data-test="active_action__what">DESCRIPTION</span>
+        [<span class="link" data-test="active_action__link">MORE INFORMATION</span>]
     </span>
     <span class="action-group">
         <button name="pushTimer">
@@ -261,7 +262,7 @@
 
         <label>
             Mitigating?
-            <input type="checkbox" name="is_action">
+            <input type="checkbox" name="is_action" data-test="action__is-mitigating">
         </label>
 
         <button class="finish action success">✅️</button>
