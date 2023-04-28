@@ -213,7 +213,7 @@ export class UpdatesSection extends HTMLElement {
 
     this.eventDispatcher = eventDispatcher
     this.innerHTML = `
-        <button data-type="business-update">📋 Business update</button>
+        <button data-type="business-update" data-test="business-update">📋 Business update</button>
         <button data-type="tech-update">📋 Tech update</button>
     `
 

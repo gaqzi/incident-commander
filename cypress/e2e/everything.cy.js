@@ -187,3 +187,30 @@ describe('Ongoing Incident: Managing Actions', () => {
         getDataTest('affected-systems__past').should('contain.text', what)
     })
 })
+
+describe('Ongoing Incident: status updates', () => {
+  const what = 'This is the what'
+  const when = 'This is the when'
+  const where = 'This is the where'
+  const impact = 'This is the impact'
+
+  beforeEach(() => {
+    cy.visit('http://127.0.0.1:5432/?disableMultiplayer=true') // TODO: dont use hardcoded port
+    submitIncident(what, when, where, impact, false)
+  })
+
+  describe('Business Update', () => {
+    it('provides the current status of the incident, the summary, and the currently affected components', () => {
+      let clipboardText = ''
+      cy.window().then(function (win) {
+        cy.stub(win.navigator.clipboard, 'writeText', (text) => {clipboardText = text})
+      })
+
+      getDataTest('business-update')
+        .click()
+        .then(() => expect(clipboardText).to.eq(
+          `*Investigating* Since ${when} we are seeing ${what} in ${where} impacting ${impact}.\n\n*Current status:*\n- 🔴 ${what}`
+        ))
+    })
+  })
+})
