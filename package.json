@@ -1,6 +1,6 @@
 {
   "devDependencies": {
-    "buffer": "^5.7.1",
+    "buffer": "^6.0.3",
     "chai": "^4.3.7",
     "mocha": "^10.2.0",
     "parcel": "^2.8.3",
