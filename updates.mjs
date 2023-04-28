@@ -235,7 +235,7 @@ export class UpdatesSection extends HTMLElement {
     }
     if (update === null) throw 'Failed to find update class from update button click'
 
-    let report = update.report(this.eventDispatcher.allEvents)
+    let report = update.report(this.eventDispatcher.allEvents.all())
     console.log(report)
     await navigator.clipboard.writeText(report)
 
