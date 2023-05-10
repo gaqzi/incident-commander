@@ -3,7 +3,21 @@
 import ws from 'ws'
 import http from 'http'
 import * as map from 'lib0/map'
+import Turn from 'node-turn'
 
+
+// TURN Server stuff ------------
+const turnServer = new Turn({
+  // set options
+  authMech: 'long-term',
+  credentials: {
+    username: "passwd"
+  }
+});
+turnServer.start();
+console.log('TURN server running on localhost:', turnServer.listeningPort)
+
+// Signalling Server stuff ------------
 const wsReadyStateConnecting = 0
 const wsReadyStateOpen = 1
 const wsReadyStateClosing = 2 // eslint-disable-line

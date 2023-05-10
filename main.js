@@ -75,7 +75,17 @@ function setupMultiplayer (ydoc) {
 
   const room = params.get('room')
   const password = params.get('password')
-  const provider = new WebrtcProvider(room, ydoc, { signaling, password })
+
+  // trying STUN to get peers happy
+  const peerOpts = {
+    config: {
+      iceServers: [
+        {urls: process.env.WEBRTC_SIGNALING_SERVER, username: 'username', credential: 'passwd'},
+      ]
+    }
+
+  }
+  const provider = new WebrtcProvider(room, ydoc, { signaling, password, peerOpts })
 
   const sc = provider.signalingConns[0]
   const ws = sc.ws
