@@ -89,8 +89,8 @@ class WSSharedDoc extends Y.Doc {
   /**
    * @param {string} name
    */
-  constructor(name) {
-    super({gc: gcEnabled})
+  constructor (name) {
+    super({ gc: gcEnabled })
     this.name = name
     /**
      * Maps from conn to set of controlled user ids. Delete all user ids from awareness when this conn is closed
@@ -106,7 +106,7 @@ class WSSharedDoc extends Y.Doc {
      * @param {{ added: Array<number>, updated: Array<number>, removed: Array<number> }} changes
      * @param {Object | null} conn Origin is the connection that made the change
      */
-    const awarenessChangeHandler = ({added, updated, removed}, conn) => {
+    const awarenessChangeHandler = ({ added, updated, removed }, conn) => {
       const changedClients = added.concat(updated, removed)
       if (conn !== null) {
         const connControlledIDs = /** @type {Set<number>} */ (this.conns.get(conn))
@@ -134,7 +134,7 @@ class WSSharedDoc extends Y.Doc {
       this.on('update', debounce(
         callbackHandler,
         CALLBACK_DEBOUNCE_WAIT,
-        {maxWait: CALLBACK_DEBOUNCE_MAXWAIT}
+        { maxWait: CALLBACK_DEBOUNCE_MAXWAIT }
       ))
     }
   }
@@ -201,7 +201,7 @@ const closeConn = (doc, conn) => {
     /**
      * @type {Set<number>}
      */
-      // @ts-ignore
+    // @ts-ignore
     const controlledIds = doc.conns.get(conn)
     doc.conns.delete(conn)
     awarenessProtocol.removeAwarenessStates(doc.awareness, Array.from(controlledIds), null)
@@ -241,7 +241,7 @@ const pingTimeout = 30000
  * @param {any} req
  * @param {any} opts
  */
-exports.setupWSConnection = (conn, req, {docName = req.url.slice(1).split('?')[0], gc = true} = {}) => {
+exports.setupWSConnection = (conn, req, { docName = req.url.slice(1).split('?')[0], gc = true } = {}) => {
   conn.binaryType = 'arraybuffer'
   // get doc, initialize if it does not exist yet
   const doc = getYDoc(docName, gc)
