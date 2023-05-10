@@ -3,5 +3,5 @@ cypress/videos/
 cypress/screenshots/
 dist/
 node_modules/
-signaling_server/fly.toml
+socket_relay_server/fly.toml
 .env

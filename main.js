@@ -7,7 +7,7 @@ import { EventDispatcher, MultiPlayerEventList, SinglePlayerEventList } from './
 import { UpdatesSection } from './updates.mjs'
 import { NewIndexedDB } from './storage.mjs'
 import * as Y from 'yjs'
-import { WebrtcProvider } from 'y-webrtc'
+import { WebsocketProvider } from 'y-websocket'
 
 // No idea what the practice here is, do we put in the definition in the
 // module or in main? I'm going with main for now so all the custom
@@ -59,8 +59,6 @@ function StoreEvents (events, storage) {
 }
 
 function setupMultiplayer (ydoc) {
-  const signaling = [process.env.WEBRTC_SIGNALING_SERVER] // injected via parcel. see README for more info
-
   // If we don't have a room and password, create them and refresh window so they're on the query string
   const params = new URLSearchParams(window.location.search)
   if (!params.get('room')) {
@@ -74,19 +72,12 @@ function setupMultiplayer (ydoc) {
   }
 
   const room = params.get('room')
-  const password = params.get('password')
-  const provider = new WebrtcProvider(room, ydoc, { signaling, password })
 
-  const sc = provider.signalingConns[0]
-  const ws = sc.ws
-  ws.addEventListener('open', (event) => {
-    console.info('Connected to signaling server.', event)
+  const websocketProvider = new WebsocketProvider(process.env.YJS_SOCKET_SERVER, room, ydoc)
+  websocketProvider.on('status', event => {
+    console.log('YJS WebSocket Provider: ', event.status) // logs "connected" or "disconnected"
   })
-  // If we can't connect to the signaling server, show an error dialog for now I guess?
-  // Note: websocket errors are super useless, see https://stackoverflow.com/questions/18803971/websocket-onerror-how-to-read-error-description
-  ws.addEventListener('close', (event) => {
-    window.alert(`Failed to get/stay connected to peers.\nMaybe the signaling server (${signaling}) is down?`)
-  })
+  // TODO: If we can't connect to the socket server, show an error dialog for now I guess?
 }
 
 // Bypass inability for top-level await in Parcel (which we use for bundling YJS) by wrapping all our top-level await usage in an async IIFE
