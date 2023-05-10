@@ -1,16 +1,15 @@
-import * as Y from 'yjs'
-import syncProtocol from 'y-protocols/dist/sync.cjs'
-import awarenessProtocol from 'y-protocols/dist/awareness.cjs'
+const Y = require('yjs')
+const syncProtocol = require('y-protocols/dist/sync.cjs')
+const awarenessProtocol = require('y-protocols/dist/awareness.cjs')
 
-import encoding from 'lib0/dist/encoding.cjs'
-import decoding from 'lib0/dist/decoding.cjs'
-import map from 'lib0/dist/map.cjs'
+const encoding = require('lib0/dist/encoding.cjs')
+const decoding = require('lib0/dist/decoding.cjs')
+const map = require('lib0/dist/map.cjs')
 
-import debounce from 'lodash.debounce'
+const debounce = require('lodash.debounce')
 
-import * as callback from './callback.js'
-const callbackHandler = callback.callbackHandler
-const isCallbackSet = callback.isCallbackSet
+const callbackHandler = require('./callback.js').callbackHandler
+const isCallbackSet = require('./callback.js').isCallbackSet
 
 const CALLBACK_DEBOUNCE_WAIT = parseInt(process.env.CALLBACK_DEBOUNCE_WAIT) || 2000
 const CALLBACK_DEBOUNCE_MAXWAIT = parseInt(process.env.CALLBACK_DEBOUNCE_MAXWAIT) || 10000

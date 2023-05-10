@@ -1,13 +1,14 @@
+#!/usr/bin/env node
+
 /**
  * @type {any}
  */
-import WebSocket from 'ws'
-import http from 'http'
-import * as utils from './utils.js'
-
+const WebSocket = require('ws')
+const http = require('http')
 const wss = new WebSocket.Server({ noServer: true })
+const setupWSConnection = require('./utils.js').setupWSConnection
 
-const host = process.env.HOST || '127.0.0.1'
+const host = process.env.HOST || 'localhost'
 const port = process.env.PORT || 1234
 
 const server = http.createServer((request, response) => {
@@ -15,7 +16,7 @@ const server = http.createServer((request, response) => {
   response.end('okay')
 })
 
-wss.on('connection', utils.setupWSConnection)
+wss.on('connection', setupWSConnection)
 
 server.on('upgrade', (request, socket, head) => {
   // You may check auth of request here..
