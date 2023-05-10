@@ -90,7 +90,7 @@ jobs:
       - run: npm install
       - run: npm run build
         env:
-          WEBRTC_SIGNALING_SERVER: 'wss://long-river-3855.fly.dev'
+          YJS_SOCKET_SERVER: 'wss://long-river-3855.fly.dev'
 
       - name: Setup Pages
         uses: actions/configure-pages@v3
