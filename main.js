@@ -9,7 +9,6 @@ import { NewIndexedDB } from './storage.mjs'
 import * as Y from 'yjs'
 import { WebsocketProvider } from 'y-websocket'
 
-
 // No idea what the practice here is, do we put in the definition in the
 // module or in main? I'm going with main for now so all the custom
 // components are declared in one place, but it feels weird
@@ -60,8 +59,6 @@ function StoreEvents (events, storage) {
 }
 
 function setupMultiplayer (ydoc) {
-  const signaling = [process.env.WEBRTC_SIGNALING_SERVER] // injected via parcel. see README for more info
-
   // If we don't have a room and password, create them and refresh window so they're on the query string
   const params = new URLSearchParams(window.location.search)
   if (!params.get('room')) {
@@ -75,17 +72,7 @@ function setupMultiplayer (ydoc) {
   }
 
   const room = params.get('room')
-  const password = params.get('password')
 
-  // trying STUN to get peers happy
-  const peerOpts = {
-    config: {
-      iceServers: [
-        {urls: process.env.WEBRTC_SIGNALING_SERVER, username: 'username', credential: 'passwd'},
-      ]
-    }
-
-  }
   const websocketProvider = new WebsocketProvider(process.env.YJS_SOCKET_SERVER, room, ydoc)
   websocketProvider.on('status', event => {
     console.log('YJS WebSocket Provider: ', event.status) // logs "connected" or "disconnected"
