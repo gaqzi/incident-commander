@@ -23,7 +23,7 @@ function submitIncident (what, when, where, impact, shouldUseDefaultActions) {
   getDataTest('new-incident__submit').click()
 }
 
-function addActionToIncident (what, who, link, minutes, isMitigating) {
+function addActionToIncident ({what='action-what', who='action-who', link='http://example.com', minutes=10, isMitigating=false}) {
   getDataTest('new-action__what').type(what)
   getDataTest('new-action__who').type(who)
   getDataTest('new-action__link').type(link)
@@ -145,26 +145,23 @@ describe('Ongoing Incident: Managing Actions', () => {
   it('lets you add an action', () => {
     getDataTest('actions__active').get('li').should('have.length.of', 0)
 
-    const actionWhat = 'a new action'
-    const actionWho = 'john doe'
-    const actionLink = 'http://example.com'
-    const actionMinutes = 10
-    addActionToIncident(actionWho, actionWhat, actionLink, actionMinutes, false)
+    const what = 'a new action'
+    const who = 'john doe'
+    const link = 'http://example.com'
+    const minutes = 10
+    addActionToIncident({who, what, link, minutes, isMitigating: false})
 
     getDataTest('actions__active').get('li').should('have.length.of', 1)
     const action = getDataTest('actions__active').within(el => el.get('li')).first()
-    action.should('contain.text', actionWhat)
-    action.should('contain.text', actionWho)
-    action.within(el => el.get(`a[href="${actionLink}"]`)).should('be.visible')
+    action.should('contain.text', what)
+    action.should('contain.text', who)
+    action.within(el => el.get(`a[href="${link}"]`)).should('be.visible')
     action.within(el => el.get('input[data-test="action__is-mitigating"')).should('not.be.checked')
   })
 
-  it('lets you edit the text of an add affected component', () => {
-    const actionWhat = 'a new action'
-    const actionWho = 'john doe'
-    const actionLink = 'http://example.com'
-    const actionMinutes = 10
-    addActionToIncident(actionWho, actionWhat, actionLink, actionMinutes, false)
+  it('lets you edit the text of an active action', () => {
+    const what = 'old what'
+    addActionToIncident({what})
     const activeActions = getDataTest('actions__active')
 
     // This is how you type into prompts with Cypress =-\
@@ -177,8 +174,27 @@ describe('Ongoing Incident: Managing Actions', () => {
     const action = activeActions.getDataTest('active_action__what').first()
     action.rightclick()
 
-    action.should('not.contain.text', actionWhat)
+    action.should('not.contain.text', what)
     action.should('contain.text', newWhat)
+  })
+
+  it('lets you edit the link of an active action', () => {
+    const linkVal = 'http://google.com'
+    addActionToIncident({link: linkVal})
+    const activeActions = getDataTest('actions__active')
+
+    // This is how you type into prompts with Cypress =-\
+    const newLinkVal = 'http://example.com'
+    cy.window().then(function (win) {
+      cy.stub(win, 'prompt').returns(newLinkVal)
+    })
+
+    // Prompt response stubbed above...
+    const link = activeActions.getDataTest('active_action__link').first()
+    link.rightclick()
+
+    const anchor = link.get('a').first()
+    anchor.invoke('attr', 'href').should('equal', newLinkVal)
   })
 })
 
@@ -210,8 +226,8 @@ describe('Ongoing Incident: Status Updates', () => {
 
   describe('Tech Update', () => {
     it('provides the status, summary, affected components, current actions', () => {
-      addActionToIncident('The Action', 'The Who', 'http://example.com/', 10, true)
-      addActionToIncident('A failed action', 'The Whom', 'http://example.com/', 10, true)
+      addActionToIncident({what: 'The Action', who: 'The Who', link: 'http://example.com/', minutes:10, isMitigating: true})
+      addActionToIncident({what: 'A failed action', who: 'The Whom', link: 'http://example.com/', minutes:10, isMitigating: true})
       cy.window().then((win) => cy.stub(win, 'prompt').returns('Was not destined to be.'))
       cy.get('active-action[what="A failed action"] [data-test="active_action__failed"]').click()
 
