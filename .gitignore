@@ -5,3 +5,6 @@ dist/
 node_modules/
 socket_relay_server/fly.toml
 .env
+.idea/
+*.swp
+.parcel-cache/
