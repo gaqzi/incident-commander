@@ -1,5 +1,11 @@
 /// <reference types="cypress" />
 
+// Slight speed up for Cypress tests by removing the delay between keystrokes
+Cypress.Keyboard.defaults({
+  keystrokeDelay: 0,
+})
+
+
 function getDataTest (target) {
   return cy.get(`[data-test="${target}"]`)
 }
