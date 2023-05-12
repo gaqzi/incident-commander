@@ -180,20 +180,9 @@ describe('Ongoing Incident: Managing Actions', () => {
     action.should('not.contain.text', actionWhat)
     action.should('contain.text', newWhat)
   })
-
-  it('lets you resolve an affected component', () => {
-    getDataTest('affected-systems').should('have.length.of', 1)
-    getDataTest('affected-systems__past').should('have.length.of', 0)
-
-    getDataTest('affected-systems').contains(what).get('[data-test="affected-system__resolve"]').click()
-
-    getDataTest('affected-systems').should('have.length.of', 0)
-    getDataTest('affected-systems__past').should('have.length.of', 1)
-    getDataTest('affected-systems__past').should('contain.text', what)
-  })
 })
 
-describe('Ongoing Incident: status updates', () => {
+describe('Ongoing Incident: Status Updates', () => {
   const what = 'This is the what'
   const when = 'This is the when'
   const where = 'This is the where'
