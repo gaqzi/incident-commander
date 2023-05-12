@@ -196,6 +196,68 @@ describe('Ongoing Incident: Managing Actions', () => {
     const anchor = link.get('a').first()
     anchor.invoke('attr', 'href').should('equal', newLinkVal)
   })
+
+  it('lets you reset or edit the timer of an active action', () => {
+    const minutes = 10
+    addActionToIncident({minutes})
+    const activeActions = getDataTest('actions__active')
+
+    cy.wait(1 * 1000)
+
+    // TODO refactor out all this nasty invoke then reassign sadness
+    // capture value, wait a teensy bit to see the value change
+    let countdownDisplay = activeActions.getDataTest('active_action__timer').get('countdown-display').first()
+    countdownDisplay.invoke('attr', 'seconds').then(parseInt).as('initialMins')
+    countdownDisplay = activeActions.getDataTest('active_action__timer').get('countdown-display').first()
+    countdownDisplay.invoke('attr', 'seconds').then(parseInt).as('initialSecs')
+
+    cy.wait(3 * 1000)
+
+    activeActions.getDataTest('active_action__timer').get('countdown-display').first()
+    countdownDisplay = activeActions.getDataTest('active_action__timer').get('countdown-display').first()
+    countdownDisplay.invoke('attr', 'minutes').then(parseInt).as('waitedMins')
+    countdownDisplay = activeActions.getDataTest('active_action__timer').get('countdown-display').first()
+    countdownDisplay.invoke('attr', 'seconds').then(parseInt).as('waitedSecs')
+
+    cy.then(function() {
+      expect(this.waitedMins * 60 + this.waitedSecs).to.be.below(this.initialMins * 60 + this.initialSecs)
+    })
+
+    // left-click to reset timer
+    countdownDisplay = activeActions.getDataTest('active_action__timer').get('countdown-display').first()
+    countdownDisplay.click()
+
+    //cy.wait(500)
+
+    countdownDisplay = activeActions.getDataTest('active_action__timer').get('countdown-display').first()
+    countdownDisplay.invoke('attr', 'minutes').then(parseInt).as('resetMins')
+    countdownDisplay = activeActions.getDataTest('active_action__timer').get('countdown-display').first()
+    countdownDisplay.invoke('attr', 'seconds').then(parseInt).as('resetSecs')
+    cy.then(function() {
+      expect(this.resetMins  * 60 + this.resetSecs).to.be.above(this.waitedMins * 60 + this.waitedSecs)
+    })
+
+
+    // right-click to set new value to timer
+    // This is how you type into prompts with Cypress =-\
+    const newMinutes = 20
+    cy.window().then(function (win) {
+      cy.stub(win, 'prompt').returns(newMinutes)
+    })
+
+
+    // Prompt response stubbed above...
+    countdownDisplay = activeActions.getDataTest('active_action__timer').get('countdown-display').first()
+    countdownDisplay.rightclick()
+
+    countdownDisplay = activeActions.getDataTest('active_action__timer').get('countdown-display').first()
+    countdownDisplay.invoke('attr', 'minutes').then(parseInt).as('newMins')
+    countdownDisplay = activeActions.getDataTest('active_action__timer').get('countdown-display').first()
+    countdownDisplay.invoke('attr', 'seconds').then(parseInt).as('newSecs')
+    cy.then(function() {
+      expect(this.newMins  * 60 + this.newSecs).to.equal(newMinutes * 60)
+    })
+  })
 })
 
 describe('Ongoing Incident: Status Updates', () => {
