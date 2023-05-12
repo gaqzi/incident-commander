@@ -198,62 +198,58 @@ describe('Ongoing Incident: Managing Actions', () => {
   })
 
   it('lets you reset or edit the timer of an active action', () => {
+
     const minutes = 10
     addActionToIncident({minutes})
     const activeActions = getDataTest('actions__active')
 
+    const getCountdownDisplay = () => {
+      return activeActions.getDataTest('active_action__timer').get('countdown-display').first()
+    }
+
     cy.wait(1 * 1000)
 
-    // TODO refactor out all this nasty invoke then reassign sadness
     // capture value, wait a teensy bit to see the value change
-    let countdownDisplay = activeActions.getDataTest('active_action__timer').get('countdown-display').first()
-    countdownDisplay.invoke('attr', 'seconds').then(parseInt).as('initialMins')
-    countdownDisplay = activeActions.getDataTest('active_action__timer').get('countdown-display').first()
-    countdownDisplay.invoke('attr', 'seconds').then(parseInt).as('initialSecs')
-
+    getCountdownDisplay().invoke('attr', 'seconds').then(parseInt).as('initialMins')
+    getCountdownDisplay().invoke('attr', 'seconds').then(parseInt).as('initialSecs')
     cy.wait(3 * 1000)
 
+    // look at value after waiting
     activeActions.getDataTest('active_action__timer').get('countdown-display').first()
-    countdownDisplay = activeActions.getDataTest('active_action__timer').get('countdown-display').first()
-    countdownDisplay.invoke('attr', 'minutes').then(parseInt).as('waitedMins')
-    countdownDisplay = activeActions.getDataTest('active_action__timer').get('countdown-display').first()
-    countdownDisplay.invoke('attr', 'seconds').then(parseInt).as('waitedSecs')
+    getCountdownDisplay().invoke('attr', 'minutes').then(parseInt).as('waitedMins')
+    getCountdownDisplay().invoke('attr', 'seconds').then(parseInt).as('waitedSecs')
 
+    // expect to be lower
     cy.then(function() {
       expect(this.waitedMins * 60 + this.waitedSecs).to.be.below(this.initialMins * 60 + this.initialSecs)
     })
 
-    // left-click to reset timer
-    countdownDisplay = activeActions.getDataTest('active_action__timer').get('countdown-display').first()
-    countdownDisplay.click()
+    // now left-click to reset timer
+    getCountdownDisplay().click()
 
-    //cy.wait(500)
+    // get the reset timer vals
+    getCountdownDisplay().invoke('attr', 'minutes').then(parseInt).as('resetMins')
+    getCountdownDisplay().invoke('attr', 'seconds').then(parseInt).as('resetSecs')
 
-    countdownDisplay = activeActions.getDataTest('active_action__timer').get('countdown-display').first()
-    countdownDisplay.invoke('attr', 'minutes').then(parseInt).as('resetMins')
-    countdownDisplay = activeActions.getDataTest('active_action__timer').get('countdown-display').first()
-    countdownDisplay.invoke('attr', 'seconds').then(parseInt).as('resetSecs')
+    // expect them to be higher
     cy.then(function() {
       expect(this.resetMins  * 60 + this.resetSecs).to.be.above(this.waitedMins * 60 + this.waitedSecs)
     })
 
 
-    // right-click to set new value to timer
+    // now right-click to set new value to timer
     // This is how you type into prompts with Cypress =-\
     const newMinutes = 20
     cy.window().then(function (win) {
       cy.stub(win, 'prompt').returns(newMinutes)
     })
+    getCountdownDisplay().rightclick()
 
+    // get the new values
+    getCountdownDisplay().invoke('attr', 'minutes').then(parseInt).as('newMins')
+    getCountdownDisplay().invoke('attr', 'seconds').then(parseInt).as('newSecs')
 
-    // Prompt response stubbed above...
-    countdownDisplay = activeActions.getDataTest('active_action__timer').get('countdown-display').first()
-    countdownDisplay.rightclick()
-
-    countdownDisplay = activeActions.getDataTest('active_action__timer').get('countdown-display').first()
-    countdownDisplay.invoke('attr', 'minutes').then(parseInt).as('newMins')
-    countdownDisplay = activeActions.getDataTest('active_action__timer').get('countdown-display').first()
-    countdownDisplay.invoke('attr', 'seconds').then(parseInt).as('newSecs')
+    // expect them to be what we just set
     cy.then(function() {
       expect(this.newMins  * 60 + this.newSecs).to.equal(newMinutes * 60)
     })
