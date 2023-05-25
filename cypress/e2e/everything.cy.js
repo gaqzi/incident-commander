@@ -6,8 +6,8 @@ Cypress.Keyboard.defaults({
 })
 
 
-function getDataTest (target) {
-  return cy.get(`[data-test="${target}"]`)
+function getDataTest (target, suffix='') {
+  return cy.get(`[data-test="${target}"] ${suffix}`)
 }
 
 function submitIncident (what, when, where, impact, shouldUseDefaultActions) {
@@ -256,12 +256,48 @@ describe('Ongoing Incident: Managing Actions', () => {
 
   it('lets you toggle an active action as mitigating or not', () => {
     addActionToIncident({isMitigating: false})
-    const activeAction = getDataTest('actions__active').first()
+    const activeAction = getDataTest('actions__active', 'ul').first()
     const mitigatingInput = activeAction.getDataTest('action__is-mitigating')
     mitigatingInput.should('not.be.checked')
 
     mitigatingInput.check()
     mitigatingInput.should('be.checked')
+  })
+
+  it.only('lets you finish an action as a success or a failure', () => {
+    addActionToIncident({what: 'Will be a success'})
+    addActionToIncident({what: 'Will be a failure'})
+    const successAction = getDataTest('actions__active', 'ul li').first()
+
+    let pastActionsList = getDataTest('actions__past', 'ul')
+    pastActionsList.should('not.contain.text', 'Will be a success')
+    pastActionsList.should('not.contain.text', '✔️')
+
+    successAction.getDataTest('active_action__succeeded').first().click()
+
+    pastActionsList = getDataTest('actions__past', 'ul')
+    pastActionsList.should('contain.text', 'Will be a success')
+    pastActionsList.should('contain.text', '✔️')
+    pastActionsList.should('not.contain.text', 'Will be a failure')
+    pastActionsList.should('not.contain.text', '❌')
+
+    const failureAction = getDataTest('actions__active', 'ul li').first()
+    const button = failureAction.getDataTest('active_action__failed').first()
+
+    // Failure click will prompt for reason
+    // This is how you type into prompts with Cypress =-\
+    const failureReason = 'This is the failure reason'
+    cy.window().then(function (win) {
+      cy.stub(win, 'prompt').returns(failureReason)
+    })
+
+    // Do the click
+    failureAction.getDataTest('active_action__failed').first().click()
+
+    pastActionsList = getDataTest('actions__past', 'ul')
+    pastActionsList.should('contain.text', 'Will be a failure')
+    pastActionsList.should('contain.text', '❌')
+    pastActionsList.should('contain.text', failureReason)
   })
 })
 
