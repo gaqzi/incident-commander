@@ -254,7 +254,7 @@ describe('Ongoing Incident: Managing Actions', () => {
     })
   })
 
-  it.only('lets you toggle an active action as mitigating or not', () => {
+  it('lets you toggle an active action as mitigating or not', () => {
     addActionToIncident({isMitigating: false})
     const activeAction = getDataTest('actions__active').first()
     const mitigatingInput = activeAction.getDataTest('action__is-mitigating')
