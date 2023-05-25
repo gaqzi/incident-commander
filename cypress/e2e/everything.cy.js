@@ -198,7 +198,6 @@ describe('Ongoing Incident: Managing Actions', () => {
   })
 
   it('lets you reset or edit the timer of an active action', () => {
-
     const minutes = 10
     addActionToIncident({minutes})
     const activeActions = getDataTest('actions__active')
@@ -253,6 +252,16 @@ describe('Ongoing Incident: Managing Actions', () => {
     cy.then(function() {
       expect(this.newMins  * 60 + this.newSecs).to.equal(newMinutes * 60)
     })
+  })
+
+  it.only('lets you toggle an active action as mitigating or not', () => {
+    addActionToIncident({isMitigating: false})
+    const activeAction = getDataTest('actions__active').first()
+    const mitigatingInput = activeAction.getDataTest('action__is-mitigating')
+    mitigatingInput.should('not.be.checked')
+
+    mitigatingInput.check()
+    mitigatingInput.should('be.checked')
   })
 })
 
