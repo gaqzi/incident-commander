@@ -280,7 +280,6 @@ describe('Ongoing Incident: Managing Actions', () => {
     pastActionsList.should('not.contain.text', '❌')
 
     const failureAction = getDataTest('actions__active', 'ul li').first()
-    const button = failureAction.getDataTest('active_action__failed').first()
 
     // Failure click will prompt for reason
     // This is how you type into prompts with Cypress =-\
