@@ -2,11 +2,10 @@
 
 // Slight speed up for Cypress tests by removing the delay between keystrokes
 Cypress.Keyboard.defaults({
-  keystrokeDelay: 0,
+  keystrokeDelay: 0
 })
 
-
-function getDataTest (target, suffix='') {
+function getDataTest (target, suffix = '') {
   return cy.get(`[data-test="${target}"] ${suffix}`)
 }
 
@@ -23,7 +22,7 @@ function submitIncident (what, when, where, impact, shouldUseDefaultActions) {
   getDataTest('new-incident__submit').click()
 }
 
-function addActionToIncident ({what='action-what', who='action-who', link='http://example.com', minutes=10, isMitigating=false}) {
+function addActionToIncident ({ what = 'action-what', who = 'action-who', link = 'http://example.com', minutes = 10, isMitigating = false }) {
   getDataTest('new-action__what').type(what)
   getDataTest('new-action__who').type(who)
   getDataTest('new-action__link').type(link)
@@ -149,7 +148,7 @@ describe('Ongoing Incident: Managing Actions', () => {
     const who = 'john doe'
     const link = 'http://example.com'
     const minutes = 10
-    addActionToIncident({who, what, link, minutes, isMitigating: false})
+    addActionToIncident({ who, what, link, minutes, isMitigating: false })
 
     getDataTest('actions__active').get('li').should('have.length.of', 1)
     const action = getDataTest('actions__active').within(el => el.get('li')).first()
@@ -161,7 +160,7 @@ describe('Ongoing Incident: Managing Actions', () => {
 
   it('lets you edit the text of an active action', () => {
     const what = 'old what'
-    addActionToIncident({what})
+    addActionToIncident({ what })
     const activeActions = getDataTest('actions__active')
 
     // This is how you type into prompts with Cypress =-\
@@ -180,7 +179,7 @@ describe('Ongoing Incident: Managing Actions', () => {
 
   it('lets you edit the link of an active action', () => {
     const linkVal = 'http://google.com'
-    addActionToIncident({link: linkVal})
+    addActionToIncident({ link: linkVal })
     const activeActions = getDataTest('actions__active')
 
     // This is how you type into prompts with Cypress =-\
@@ -199,7 +198,7 @@ describe('Ongoing Incident: Managing Actions', () => {
 
   it('lets you reset or edit the timer of an active action', () => {
     const minutes = 10
-    addActionToIncident({minutes})
+    addActionToIncident({ minutes })
     const activeActions = getDataTest('actions__active')
 
     const getCountdownDisplay = () => {
@@ -219,7 +218,7 @@ describe('Ongoing Incident: Managing Actions', () => {
     getCountdownDisplay().invoke('attr', 'seconds').then(parseInt).as('waitedSecs')
 
     // expect to be lower
-    cy.then(function() {
+    cy.then(function () {
       expect(this.waitedMins * 60 + this.waitedSecs).to.be.below(this.initialMins * 60 + this.initialSecs)
     })
 
@@ -231,10 +230,9 @@ describe('Ongoing Incident: Managing Actions', () => {
     getCountdownDisplay().invoke('attr', 'seconds').then(parseInt).as('resetSecs')
 
     // expect them to be higher
-    cy.then(function() {
-      expect(this.resetMins  * 60 + this.resetSecs).to.be.above(this.waitedMins * 60 + this.waitedSecs)
+    cy.then(function () {
+      expect(this.resetMins * 60 + this.resetSecs).to.be.above(this.waitedMins * 60 + this.waitedSecs)
     })
-
 
     // now right-click to set new value to timer
     // This is how you type into prompts with Cypress =-\
@@ -249,13 +247,13 @@ describe('Ongoing Incident: Managing Actions', () => {
     getCountdownDisplay().invoke('attr', 'seconds').then(parseInt).as('newSecs')
 
     // expect them to be what we just set
-    cy.then(function() {
-      expect(this.newMins  * 60 + this.newSecs).to.equal(newMinutes * 60)
+    cy.then(function () {
+      expect(this.newMins * 60 + this.newSecs).to.equal(newMinutes * 60)
     })
   })
 
   it('lets you toggle an active action as mitigating or not', () => {
-    addActionToIncident({isMitigating: false})
+    addActionToIncident({ isMitigating: false })
     const activeAction = getDataTest('actions__active', 'ul').first()
     const mitigatingInput = activeAction.getDataTest('action__is-mitigating')
     mitigatingInput.should('not.be.checked')
@@ -265,8 +263,8 @@ describe('Ongoing Incident: Managing Actions', () => {
   })
 
   it('lets you finish an action as a success or a failure', () => {
-    addActionToIncident({what: 'Will be a success'})
-    addActionToIncident({what: 'Will be a failure'})
+    addActionToIncident({ what: 'Will be a success' })
+    addActionToIncident({ what: 'Will be a failure' })
     const successAction = getDataTest('actions__active', 'ul li').first()
 
     let pastActionsList = getDataTest('actions__past', 'ul')
@@ -329,8 +327,8 @@ describe('Ongoing Incident: Status Updates', () => {
 
   describe('Tech Update', () => {
     it('provides the status, summary, affected components, current actions', () => {
-      addActionToIncident({what: 'The Action', who: 'The Who', link: 'http://example.com/', minutes:10, isMitigating: true})
-      addActionToIncident({what: 'A failed action', who: 'The Whom', link: 'http://example.com/', minutes:10, isMitigating: true})
+      addActionToIncident({ what: 'The Action', who: 'The Who', link: 'http://example.com/', minutes: 10, isMitigating: true })
+      addActionToIncident({ what: 'A failed action', who: 'The Whom', link: 'http://example.com/', minutes: 10, isMitigating: true })
       cy.window().then((win) => cy.stub(win, 'prompt').returns('Was not destined to be.'))
       cy.get('active-action[what="A failed action"] [data-test="active_action__failed"]').click()
 
