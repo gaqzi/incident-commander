@@ -264,7 +264,7 @@ describe('Ongoing Incident: Managing Actions', () => {
     mitigatingInput.should('be.checked')
   })
 
-  it.only('lets you finish an action as a success or a failure', () => {
+  it('lets you finish an action as a success or a failure', () => {
     addActionToIncident({what: 'Will be a success'})
     addActionToIncident({what: 'Will be a failure'})
     const successAction = getDataTest('actions__active', 'ul li').first()
