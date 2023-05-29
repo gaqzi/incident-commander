@@ -25,5 +25,9 @@
 // Cypress.Commands.overwrite('visit', (originalFn, url, options) => { ... })
 
 Cypress.Commands.add('getDataTest', { prevSubject: true }, (subject, dataTestId) => {
-  return cy.wrap(subject).get(`[data-test="${dataTestId}"]`)
+  let selector = `[data-test="${dataTestId}"]`
+  if (Array.isArray(dataTestId)) {
+    selector = dataTestId.reduce((accum, id) => accum + `[data-test="${id}"`, '')
+  }
+  return cy.wrap(subject).get(selector)
 })
