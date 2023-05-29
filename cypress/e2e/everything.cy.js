@@ -5,9 +5,18 @@ Cypress.Keyboard.defaults({
   keystrokeDelay: 0
 })
 
-function getDataTest (target, suffix = '') {
-  return cy.get(`[data-test="${target}"] ${suffix}`)
+// function getDataTest (target, suffix = '') {
+//   return cy.get(`[data-test="${target}"] ${suffix}`)
+// }
+
+function getDataTest (ids, suffix = '') {
+  let selector = `[data-test="${ids}"]`
+  if (Array.isArray(ids)) {
+    selector = ids.reduce((accum, id) => accum + `[data-test="${id}"] `, '')
+  }
+  return cy.get(selector + ' ' + suffix)
 }
+
 
 function submitIncident (what, when, where, impact, shouldUseDefaultActions) {
   getDataTest('new-incident__what').type(what)
@@ -202,7 +211,7 @@ describe('Ongoing Incident: Managing Actions', () => {
     const activeActions = getDataTest('actions__active')
 
     const getCountdownDisplay = () => {
-      return activeActions.getDataTest('active_action__timer').get('countdown-display').first()
+      return getDataTest('actions__active', 'countdown-display').first()
     }
 
     cy.wait(1 * 1000)
@@ -213,7 +222,6 @@ describe('Ongoing Incident: Managing Actions', () => {
     cy.wait(3 * 1000)
 
     // look at value after waiting
-    activeActions.getDataTest('active_action__timer').get('countdown-display').first()
     getCountdownDisplay().invoke('attr', 'minutes').then(parseInt).as('waitedMins')
     getCountdownDisplay().invoke('attr', 'seconds').then(parseInt).as('waitedSecs')
 
@@ -265,13 +273,12 @@ describe('Ongoing Incident: Managing Actions', () => {
   it('lets you finish an action as a success or a failure', () => {
     addActionToIncident({ what: 'Will be a success' })
     addActionToIncident({ what: 'Will be a failure' })
-    const successAction = getDataTest('actions__active', 'ul li').first()
 
     let pastActionsList = getDataTest('actions__past', 'ul')
     pastActionsList.should('not.contain.text', 'Will be a success')
     pastActionsList.should('not.contain.text', '✔️')
 
-    successAction.getDataTest('active_action__succeeded').first().click()
+    getDataTest('active_action__succeeded').first().click()
 
     pastActionsList = getDataTest('actions__past', 'ul')
     pastActionsList.should('contain.text', 'Will be a success')
