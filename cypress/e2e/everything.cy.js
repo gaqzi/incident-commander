@@ -17,7 +17,6 @@ function getDataTest (ids, suffix = '') {
   return cy.get(selector + ' ' + suffix)
 }
 
-
 function submitIncident (what, when, where, impact, shouldUseDefaultActions) {
   getDataTest('new-incident__what').type(what)
   getDataTest('new-incident__when').type(when)
@@ -208,7 +207,6 @@ describe('Ongoing Incident: Managing Actions', () => {
   it('lets you reset or edit the timer of an active action', () => {
     const minutes = 10
     addActionToIncident({ minutes })
-    const activeActions = getDataTest('actions__active')
 
     const getCountdownDisplay = () => {
       return getDataTest('actions__active', 'countdown-display').first()
