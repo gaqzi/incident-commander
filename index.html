@@ -15,6 +15,10 @@
             content: '↗';
         }
 
+        .hidden {
+            display: none;
+        }
+
         li > label + :not(input[type="checkbox"]) {
             display: block;
         }
@@ -34,24 +38,31 @@
 
         affected-systems {
             display: grid;
-            grid-template-columns: 33% 64%;
             border-bottom: 1px dashed gray;
         }
 
+
         .affected-systems__new {
-            grid-column: 1/2;
             padding-left: 1em;
         }
 
-        .affected-systems__listing {
-            grid-column: 2/2;
-            border-left: 1px dashed gray;
-            padding-left: 1em
+        .affected-systems__listing__active {
+            margin-top: 20px;
+        }
+
+        .affected-systems__listing__past {
+            margin-top: 20px;
+        }
+
+        affected-systems ul {
+            list-style: none;
+        }
+
+        affected-systems > section > ul > li {
+            margin-bottom: 40px;
         }
 
         .actions {
-            display: grid;
-            grid-template-columns: 33% 64%;
         }
 
         /* Important to make the active-action to take up the full <li>, block doesn't work the same way. */
@@ -65,13 +76,10 @@
         }
 
         .actions__active, .actions__past {
-            grid-column: 2/2;
-            border-left: 1px dashed grey;
             padding-left: 1em
         }
 
         .actions__past {
-            border-top: 1px dashed gray;
         }
 
         .actions__past time {
@@ -143,52 +151,7 @@
 <section class="affected-systems">
 </section>
 
-<section class="actions">
-    <section class="actions__add">
-        <h1>New action</h1>
-        <form>
-            <ul>
-                <li>
-                    <label for="newActionWhat">What are we trying?</label>
-                    <input type="text" id="newActionWhat" name="what" data-test="new-action__what">
-                </li>
-                <li>
-                    <label for="newActionWho">Who is doing it?</label>
-                    <input type="text" id="newActionWho" name="who" data-test="new-action__who" />
-                </li>
-                <li>
-                    <label for="newActionLink">Do you have a link for more information?</label>
-                    <input type="url" id="newActionLink" name="link"
-                           placeholder="https://company.slack.com/archive/…"
-                           data-test="new-action__link" />
-                </li>
-                <li>
-                    <label for="newActionWhen">Minutes between updates?</label>
-                    <input type="number" id="newActionWhen" name="expireIntervalMinutes" min="5"
-                           max="30" value="10" data-test="new-action__minutes-between-updates"/>
-                </li>
-                <li>
-                    <label>
-                        Is mitigating?
-                        <input type="checkbox" name="isAction" checked data-test="new-action__is-mitigating">
-                    </label>
-                </li>
-            </ul>
 
-            <button type="submit" data-test="new-action__submit">Add</button>
-        </form>
-    </section>
-
-    <section class="actions__active" data-test="actions__active">
-        <h1>Active actions</h1>
-        <ul></ul>
-    </section>
-
-    <section class="actions__past" data-test="actions__past">
-        <h1>Past actions</h1>
-        <ul></ul>
-    </section>
-</section>
 
 <template id="incident-summary">
     <div class="message" data-test="summary">

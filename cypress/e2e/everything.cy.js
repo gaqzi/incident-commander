@@ -14,6 +14,9 @@ function getDataTest (ids, suffix = '') {
   if (Array.isArray(ids)) {
     selector = ids.reduce((accum, id) => accum + `[data-test="${id}"] `, '')
   }
+  if (suffix.startsWith('>')) {
+    return cy.get(selector + '>' + suffix.substring(1))
+  }
   return cy.get(selector + ' ' + suffix)
 }
 
@@ -31,6 +34,7 @@ function submitIncident (what, when, where, impact, shouldUseDefaultActions) {
 }
 
 function addActionToIncident ({ what = 'action-what', who = 'action-who', link = 'http://example.com', minutes = 10, isMitigating = false }) {
+  getDataTest('actions__active__add_action').click()
   getDataTest('new-action__what').type(what)
   getDataTest('new-action__who').type(who)
   getDataTest('new-action__link').type(link)
@@ -104,36 +108,36 @@ describe('Ongoing Incident: Managing Affected Components', () => {
     getDataTest('new-affected-system__what').type(newWhat)
     getDataTest('new-affected-system__submit').click()
 
-    getDataTest('affected-systems').should('have.length.of', 2)
-    getDataTest('affected-systems').should('contain.text', newWhat)
+    getDataTest('affected-systems__active', '>ul>li').should('have.length', 2)
+    getDataTest('affected-systems__active', 'ul li').should('contain.text', newWhat)
   })
 
   it('lets you edit the text of an add affected component', () => {
     // Showing & Cancelling update dialog
-    getDataTest('affected-systems').should('contain.text', what)
+    getDataTest('affected-systems__active').should('contain.text', what)
     getDataTest('update-affected-system__dialog').should('not.be.visible')
-    getDataTest('affected-systems').contains(what).rightclick()
+    getDataTest('affected-systems__active').contains(what).rightclick()
     getDataTest('update-affected-system__dialog').should('be.visible')
     getDataTest('update-affected-system__cancel').click()
 
     // Changing via the dialog
     const newWhat = 'changed to this'
-    getDataTest('affected-systems').contains(what).rightclick()
+    getDataTest('affected-systems__active').contains(what).rightclick()
     getDataTest('update-affected-system__what').clear().type(newWhat)
     getDataTest('update-affected-system__submit').click()
-    getDataTest('affected-systems').should('not.contain.text', what)
-    getDataTest('affected-systems').should('contain.text', newWhat)
-    getDataTest('affected-systems').should('have.length.of', 1)
+    getDataTest('affected-systems__active').should('not.contain.text', what)
+    getDataTest('affected-systems__active').should('contain.text', newWhat)
+    getDataTest('affected-systems__active').should('have.length', 1)
   })
 
   it('lets you resolve an affected component', () => {
-    getDataTest('affected-systems').should('have.length.of', 1)
-    getDataTest('affected-systems__past').should('have.length.of', 0)
+    getDataTest('affected-systems__active', '>ul>li').should('have.length', 1)
+    getDataTest('affected-systems__past', '>ul>li').should('have.length', 0)
 
-    getDataTest('affected-systems').contains(what).get('[data-test="affected-system__resolve"]').click()
+    getDataTest('affected-systems__active').contains(what).get('[data-test="affected-system__resolve"]').click()
 
-    getDataTest('affected-systems').should('have.length.of', 0)
-    getDataTest('affected-systems__past').should('have.length.of', 1)
+    getDataTest('affected-systems__active', '>ul>li').should('have.length', 0)
+    getDataTest('affected-systems__past', '>ul>li').should('have.length', 1)
     getDataTest('affected-systems__past').should('contain.text', what)
   })
 })

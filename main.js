@@ -114,18 +114,19 @@ function setupMultiplayer (ydoc) {
     data.status = config.statuses[0]
     events.createIncident(data)
 
+    const affectedSystem = events.newAffectedSystem({ name: data.what })
+
     if (data.use_default_actions) {
       config.defaultActions.forEach(action => {
         events.createAction({
           type: 'ACTION',
           what: action,
           who: 'TBD',
-          expireIntervalMinutes: '10'
+          expireIntervalMinutes: '10',
+          affectedSystemId: affectedSystem.id
         })
       })
     }
-
-    events.newAffectedSystem({ name: data.what })
   })
 
   customElements.define('active-action', ActiveActions)
@@ -138,10 +139,14 @@ function setupMultiplayer (ydoc) {
         who="${e.details.who}"
         link="${e.details.link || ''}"
         createdAt="${e.recordedAt}"
-        expireIntervalMinutes="${e.details.expireIntervalMinutes}" id="${e.id}"></active-action>`
+        expireIntervalMinutes="${e.details.expireIntervalMinutes}" 
+        id="${e.id}"
+        affectedSystemId="${e.details.affectedSystemId}"
+        >
+        </active-action>`
     item.children[0].eventDispatcher = events
 
-    document.querySelector('.actions__active ul').appendChild(item)
+    document.querySelector(`.actions__active[data-affected_system_id="${e.details.affectedSystemId}"] ul`).appendChild(item)
   })
 
   events.addListener('CreateIncident', e => {
@@ -159,18 +164,6 @@ function setupMultiplayer (ydoc) {
 
   document.querySelector('.incident-summary h1').addEventListener('click', e => {
     onElement(findParentElementWithClass(e.target, 'incident-summary'), el => el.classList.toggle('closed'))
-  })
-
-  // Actions
-  document.querySelector('.actions__add form').addEventListener('submit', e => {
-    e.preventDefault()
-
-    const data = objectFromForm(new FormData(e.currentTarget))
-    data.type = data.isAction ? 'ACTION' : 'TASK'
-    delete data.isAction
-    events.createAction(data)
-
-    e.currentTarget.reset()
   })
 
   const createIncidentHandler = e => {
@@ -252,35 +245,41 @@ function setupMultiplayer (ydoc) {
       status: 'Investigating'
     })
 
+    const affectedSystem = events.newAffectedSystem({ name: 'Paypal unavailable' })
+
     config.defaultActions.forEach(action => {
       events.createAction({
         type: 'ACTION',
         what: action,
         who: 'TBD',
-        expireIntervalMinutes: '10'
+        expireIntervalMinutes: '10',
+        affectedSystemId: affectedSystem.id
       })
     })
-
-    events.newAffectedSystem({ name: 'Paypal unavailable' })
 
     const failedAction = events.createAction({
       type: 'ACTION',
       what: 'Has there been a rip in spacetime?',
       who: 'Peter',
-      expireIntervalMinutes: 10
+      expireIntervalMinutes: 10,
+      affectedSystemId: affectedSystem.id
     })
+
     events.finishAction(failedAction.id, {
       type: 'ACTION',
       resolution: 'FAILED',
-      reason: 'No recent Dalek or Cybermen activity, and no signs of a blue box.'
+      reason: 'No recent Dalek or Cybermen activity, and no signs of a blue box.',
+      affectedSystemId: affectedSystem.id
     })
 
     const successAction = events.createAction({
       type: 'TASK',
       what: 'Escalating to CTO',
       who: 'Björn',
-      expireIntervalMinutes: '10'
+      expireIntervalMinutes: '10',
+      affectedSystemId: affectedSystem.id
     })
+
     events.finishAction(successAction.id, {
       type: 'TASK',
       resolution: 'SUCCESSFUL'
