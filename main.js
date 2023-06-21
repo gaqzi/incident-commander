@@ -166,7 +166,6 @@ function setupMultiplayer (ydoc) {
     onElement(findParentElementWithClass(e.target, 'incident-summary'), el => el.classList.toggle('closed'))
   })
 
-
   const createIncidentHandler = e => {
     const is = new IncidentSummary(e.id, events)
     for (const kv of Object.entries(e.details)) {

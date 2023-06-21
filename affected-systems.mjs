@@ -13,7 +13,7 @@ export class AffectedSystems extends HTMLElement {
    * AffectedSystems handles the view and actions of current and cast affected components.
    * @param {EventDispatcher} eventDispatcher
    */
-  constructor(eventDispatcher) {
+  constructor (eventDispatcher) {
     super()
     this.eventDispatcher = eventDispatcher
 
@@ -62,7 +62,7 @@ export class AffectedSystems extends HTMLElement {
 
         const input = this.querySelector('form input[name="affected_system"]')
 
-        this.eventDispatcher.newAffectedSystem({name: input.value})
+        this.eventDispatcher.newAffectedSystem({ name: input.value })
 
         e.target.reset()
         input.focus()
@@ -82,17 +82,16 @@ export class AffectedSystems extends HTMLElement {
       const updatedName = e.currentTarget.querySelector('input[name="affected_system"]').value
       const formData = new FormData(e.currentTarget)
       const id = formData.get('id')
-      this.eventDispatcher.updateAffectedSystem(id, {name: updatedName})
+      this.eventDispatcher.updateAffectedSystem(id, { name: updatedName })
       this._getDialog().close()
     })
 
     this.querySelector('dialog form').addEventListener('reset', e => {
       this._getDialog().close()
     })
-
   }
 
-  _templatedHtml(id, affectedSystem) {
+  _templatedHtml (id, affectedSystem) {
     return `
           <span>${affectedSystem.name}</span> <button data-test="affected-system__resolve">Resolve ✅</button>
           
@@ -154,7 +153,7 @@ export class AffectedSystems extends HTMLElement {
       `
   }
 
-  _new(e) {
+  _new (e) {
     const li = document.createElement('li')
     li.setAttribute('data-id', e.id)
     li.innerHTML = this._templatedHtml(e.id, e.details)
@@ -184,7 +183,7 @@ export class AffectedSystems extends HTMLElement {
     })
 
     li.querySelector('button')
-      .addEventListener('click', (_) => this.eventDispatcher.resolveAffectedSystem(e.id, {type: 'SUCCESS'}))
+      .addEventListener('click', (_) => this.eventDispatcher.resolveAffectedSystem(e.id, { type: 'SUCCESS' }))
 
     li.querySelector('span')
       .addEventListener('contextmenu', (e) => {
@@ -200,7 +199,7 @@ export class AffectedSystems extends HTMLElement {
       .appendChild(li)
   }
 
-  _update(e) {
+  _update (e) {
     const li = this.querySelector(`.affected-systems__listing__active li[data-id="${e.affectedSystemId}"]`)
 
     // TODO: it feels wrong that _update has to know that the span happens to be where the name lives and this info also
@@ -209,7 +208,7 @@ export class AffectedSystems extends HTMLElement {
     li.querySelector('span').innerHTML = e.details.name
   }
 
-  _resolve(e) {
+  _resolve (e) {
     const li = this.querySelector(`.affected-systems__listing__active li[data-id="${e.affectedSystemId}"]`)
     li.remove()
     li.querySelector('button').remove()
@@ -218,7 +217,7 @@ export class AffectedSystems extends HTMLElement {
     this.querySelector('.affected-systems__listing__past ul').appendChild(li)
   }
 
-  _getDialog() {
+  _getDialog () {
     return this.querySelector('dialog')
   }
 }
