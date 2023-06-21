@@ -3,7 +3,7 @@
     "buffer": "^6.0.3",
     "chai": "^4.3.7",
     "mocha": "^10.2.0",
-    "parcel": "^2.8.3",
+    "parcel": "^2.9.2",
     "process": "^0.11.10",
     "standard": "^17.1.0",
     "testdouble": "^3.18.0"
@@ -16,10 +16,10 @@
     "test-e2e": "cypress run"
   },
   "dependencies": {
-    "cypress": "12.13.0",
+    "cypress": "12.14.0",
     "y-webrtc": "^10.2.4",
     "y-websocket": "^1.5.0",
-    "yjs": "^13.6.1"
+    "yjs": "^13.6.4"
   },
   "standard": {
     "env": [
