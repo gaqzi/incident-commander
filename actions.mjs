@@ -110,7 +110,8 @@ export class ActiveActions extends HTMLElement {
     return [
       'who', 'what', 'type',
       'link',
-      'expiresat', 'expireintervalminutes'
+      'expiresat', 'expireintervalminutes',
+      'affectedSystemId'
     ]
   }
 
