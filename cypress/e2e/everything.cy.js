@@ -34,6 +34,7 @@ function submitIncident (what, when, where, impact, shouldUseDefaultActions) {
 }
 
 function addActionToIncident ({ what = 'action-what', who = 'action-who', link = 'http://example.com', minutes = 10, isMitigating = false }) {
+  getDataTest('actions__active__add_action').click()
   getDataTest('new-action__what').type(what)
   getDataTest('new-action__who').type(who)
   getDataTest('new-action__link').type(link)

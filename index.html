@@ -15,6 +15,10 @@
             content: '↗';
         }
 
+        .hidden {
+            display: none;
+        }
+
         li > label + :not(input[type="checkbox"]) {
             display: block;
         }
@@ -34,24 +38,31 @@
 
         affected-systems {
             display: grid;
-            grid-template-columns: 33% 64%;
             border-bottom: 1px dashed gray;
         }
 
+
         .affected-systems__new {
-            grid-column: 1/2;
             padding-left: 1em;
         }
 
-        .affected-systems__listing {
-            grid-column: 2/2;
-            border-left: 1px dashed gray;
-            padding-left: 1em
+        .affected-systems__listing__active {
+            margin-top: 20px;
+        }
+
+        .affected-systems__listing__past {
+            margin-top: 20px;
+        }
+
+        affected-systems ul {
+            list-style: none;
+        }
+
+        affected-systems > section > ul > li {
+            margin-bottom: 40px;
         }
 
         .actions {
-            display: grid;
-            grid-template-columns: 33% 64%;
         }
 
         /* Important to make the active-action to take up the full <li>, block doesn't work the same way. */
@@ -65,13 +76,10 @@
         }
 
         .actions__active, .actions__past {
-            grid-column: 2/2;
-            border-left: 1px dashed grey;
             padding-left: 1em
         }
 
         .actions__past {
-            border-top: 1px dashed gray;
         }
 
         .actions__past time {

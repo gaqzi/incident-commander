@@ -94,59 +94,63 @@ export class AffectedSystems extends HTMLElement {
 
   _templatedHtml(id, affectedSystem) {
     return `
-          <span>${affectedSystem.name}</span> <button data-test="affected-system__resolve">✅</button>
+          <span>${affectedSystem.name}</span> <button data-test="affected-system__resolve">Resolve ✅</button>
           
            <section class="actions">
            <section class="actions__add">
-           <h1>New action</h1>
-           <form>
-           <ul>
-           <li>
-           <label for="newActionWhat">What are we trying?</label>
-           <input type="text" id="newActionWhat" name="what" data-test="new-action__what">
-           </li>
-           
-           <li>
-           <label for="newActionWho">Who is doing it?</label>
-           <input type="text" id="newActionWho" name="who" data-test="new-action__who" />
-           </li>
-           
-           <li>
-           <label for="newActionLink">Do you have a link for more information?</label>
-           <input type="url" id="newActionLink" name="link"
-           placeholder="https://company.slack.com/archive/…"
-           data-test="new-action__link" />
-           </li>
-           
-           <li>
-           <label for="newActionWhen">Minutes between updates?</label>
-           <input type="number" id="newActionWhen" name="expireIntervalMinutes" min="5"
-           max="30" value="10" data-test="new-action__minutes-between-updates"/>
-           </li>
-           
-           <li>
-           <label>
-           Is mitigating?
-           <input type="checkbox" name="isAction" checked data-test="new-action__is-mitigating">
-           </label>
-           </li>
-           </ul>
-           
-           <input type="hidden" name="affectedSystemId" value="${id}"/>
-           <button type="submit" data-test="new-action__submit">Add</button>
-           </form>
+             
+             <form class="hidden">
+               <ul>
+                 <li>
+                   <label for="newActionWhat">What are we trying?</label>
+                   <input type="text" id="newActionWhat" name="what" data-test="new-action__what">
+                 </li>
+               
+                 <li>
+                   <label for="newActionWho">Who is doing it?</label>
+                   <input type="text" id="newActionWho" name="who" data-test="new-action__who" />
+                 </li>
+               
+                 <li>
+                   <label for="newActionLink">Do you have a link for more information?</label>
+                   <input type="url" id="newActionLink" name="link"
+                   placeholder="https://company.slack.com/archive/…"
+                   data-test="new-action__link" />
+                 </li>
+               
+                 <li>
+                   <label for="newActionWhen">Minutes between updates?</label>
+                   <input type="number" id="newActionWhen" name="expireIntervalMinutes" min="5"
+                   max="30" value="10" data-test="new-action__minutes-between-updates"/>
+                 </li>
+               
+                 <li>
+                   <label>
+                   Is mitigating?
+                   <input type="checkbox" name="isAction" checked data-test="new-action__is-mitigating">
+                   </label>
+                 </li>
+               </ul>
+               
+               <input type="hidden" name="affectedSystemId" value="${id}"/>
+               <button type="submit" data-test="new-action__submit">Add</button>
+               <button type="reset" class="cancel" data-test="add_action__cancel">Cancel</button>
+             </form>
            </section>
            
            <section class="actions__active" data-affected_system_id="${id}" data-test="actions__active">
-           <h1>Active actions</h1>
-           <ul></ul>
+             <h1>Active actions</h1>
+             
+             <button class="add_action" data-test="actions__active__add_action">Add Action</button>
+             
+             <ul></ul>
            </section>
            
            <section class="actions__past" data-test="actions__past">
-           <h1>Past actions</h1>
-           <ul></ul>
+             <h1>Past actions</h1>
+             <ul></ul>
            </section>
-           </section>
+         </section>
       `
   }
 
@@ -154,6 +158,16 @@ export class AffectedSystems extends HTMLElement {
     const li = document.createElement('li')
     li.setAttribute('data-id', e.id)
     li.innerHTML = this._templatedHtml(e.id, e.details)
+
+    li.querySelector('.actions__active button.add_action').addEventListener('click', e => {
+      e.target.classList.toggle('hidden')
+      li.querySelector('.actions__add form').classList.toggle('hidden')
+    })
+
+    li.querySelector('.actions__add form button.cancel').addEventListener('click', e => {
+      li.querySelector('.actions__active button.add_action').classList.toggle('hidden')
+      li.querySelector('.actions__add form').classList.toggle('hidden')
+    })
 
     // Actions
     li.querySelector('.actions__add form').addEventListener('submit', e => {
@@ -165,6 +179,8 @@ export class AffectedSystems extends HTMLElement {
       this.eventDispatcher.createAction(data)
 
       e.currentTarget.reset()
+      li.querySelector('.actions__add form').classList.toggle('hidden')
+      li.querySelector('.actions__active button.add_action').classList.toggle('hidden')
     })
 
     li.querySelector('button')
