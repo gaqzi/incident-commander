@@ -1,0 +1,109 @@
+'use client'
+
+import {useForm} from "react-hook-form";
+import {Button} from "antd";
+
+interface props {
+    action?: Action
+    onSubmit?: (Action) => void,
+    onCancel?: () => void,
+    affectedSystemId?: string,
+}
+
+export default function ActionForm({ action, onSubmit, onCancel, affectedSystemId} : props) {
+    const { register, handleSubmit, reset, formState: { errors } } = useForm({
+        defaultValues: { affectedSystemId, ...action }
+    })
+
+    return (
+        <form
+            onSubmit={handleSubmit((data) => {reset(); onSubmit && onSubmit(data)})}
+        >
+            <div className="flex flex-col mb-2">
+                <label className="block" htmlFor="newActionWhat">What are we trying?</label>
+                <input
+                    className="block"
+                    type="text"
+                    id="newActionWhat"
+                    name="what"
+                    data-test="new-action__what"
+                    {...register("what")}
+                />
+            </div>
+
+                <div className="flex flex-col mb-2">
+                    <label className="block" htmlFor="newActionWho">Who is doing it?</label>
+                    <input
+                        className="block"
+                        type="text"
+                        id="newActionWho"
+                        name="who"
+                        data-test="new-action__who"
+                        {...register("who")}
+                    />
+                </div>
+
+                <div className="flex flex-col mb-2">
+                    <label className="block" htmlFor="newActionLink">Do you have a link for more information?</label>
+                    <input
+                        className="block"
+                        type="url"
+                        id="newActionLink"
+                        name="link"
+                        placeholder="https://company.slack.com/archive/…"
+                        data-test="new-action__link"
+                        {...register("link")}
+                    />
+                </div>
+
+                <div className="flex flex-col mb-2">
+                    <label className="block"  htmlFor="newActionWhen">Minutes between updates?</label>
+                    <input
+                        className="block"
+                        type="text"
+                        id="newActionWhen"
+                        name="expireIntervalMinutes"
+                        data-test="new-action__minutes-between-updates"
+                        {...register("expireIntervalMinutes")}
+                    />
+                </div>
+
+                <div className="flex flex-col mb-2">
+                    <label>
+                        Is mitigating?
+                        <input
+                            type="checkbox"
+                            name="isMitigating"
+                            data-test="new-action__is-mitigating"
+                            {...register("isMitigating")}
+                        />
+                    </label>
+                </div>
+
+            <input
+                type="hidden"
+                name="affectedSystemId"
+                {...register("affectedSystemId")}
+            />
+
+            <Button
+                size="small"
+                type="primary"
+                htmlType="submit"
+                data-test="new-action__submit"
+            >
+                { action.id ? 'Update' : 'Add'}
+            </Button>
+
+            <Button
+                size="small"
+                htmlType="reset"
+                className="cancel"
+                data-test="add_action__cancel"
+                onClick={onCancel}
+            >
+                Cancel
+            </Button>
+        </form>
+    )
+}
