@@ -16,7 +16,7 @@
     "test-e2e": "cypress run"
   },
   "dependencies": {
-    "cypress": "12.17.0",
+    "cypress": "12.17.1",
     "y-webrtc": "^10.2.4",
     "y-websocket": "^1.5.0",
     "yjs": "^13.6.6"
