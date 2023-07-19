@@ -247,7 +247,7 @@ export default function OngoingIncident() {
                     }
                     {
                         ! affectedSystemFormVisible &&
-                        <Button size="small" icon={<PlusOutlined/>} onClick={addAffectedSystemClick}>Add Affected System</Button>
+                        <Button data-test="btn-add-affected-system" size="small" icon={<PlusOutlined/>} onClick={addAffectedSystemClick}>Add Affected System</Button>
                     }
                 </section>
 

@@ -100,12 +100,17 @@ export default function IncidentSummary({incident}: {incident: Incident}) {
                     <h2>Summary</h2>
 
                   <div className="incident-summary__actions">
-                    <Button onClick={copyBusinessUpdate.bind(this, incident)}>Copy Business Update</Button>
-                    <Button onClick={copyTechUpdate}>Copy Tech Update</Button>
+                    <Button data-test="button-business-update" onClick={copyBusinessUpdate.bind(this, incident)}>Copy Business Update</Button>
+                    <Button data-test="button-tech-update" onClick={copyTechUpdate}>Copy Tech Update</Button>
                   </div>
 
                     <div className="message max-w-xl" data-test="summary">
-                      <Popover content={<Button type="text" icon={<EditOutlined />} onClick={onSummaryEditClick}>Edit</Button>} title="Actions">
+                      <Popover
+                        title="Actions"
+                        content={
+                          <Button data-test="button-edit-summary" type="text" icon={<EditOutlined />} onClick={onSummaryEditClick}>Edit</Button>
+                        }
+                        >
                         <strong>Since</strong> <span className="when">{summary.whenUtcString}</span>
                         &nbsp;<strong>we are seeing</strong> <span className="what">{summary.what}</span>
                         &nbsp;<strong>in</strong> <span className="where">{summary.where}</span>

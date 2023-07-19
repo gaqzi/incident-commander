@@ -51,7 +51,7 @@ export default function IncidentSummaryForm(props : Props) {
                         type="text"
                         id="summaryWhat"
                         name="what"
-                        data-test="summary__what"
+                        data-test="summary__input__what"
                         {...register("what")}
                     />
                 </div>
@@ -62,7 +62,7 @@ export default function IncidentSummaryForm(props : Props) {
                         type="text"
                         id="summaryWhen"
                         name="whenDate"
-                        data-test="summary__when"
+                        data-test="summary__input__when"
                         {...register("whenDate")}
                     />
                 {/*<DatePicker*/}
@@ -81,7 +81,7 @@ export default function IncidentSummaryForm(props : Props) {
                         type="text"
                         id="summaryWhere"
                         name="where"
-                        data-test="summary__where"
+                        data-test="summary__input__where"
                         {...register("where")}
                     />
                 </div>
@@ -92,7 +92,7 @@ export default function IncidentSummaryForm(props : Props) {
                         type="text"
                         id="summaryImpact"
                         name="impact"
-                        data-test="summary__impact"
+                        data-test="summary__input__impact"
                         {...register("impact")}
                     />
                 </div>

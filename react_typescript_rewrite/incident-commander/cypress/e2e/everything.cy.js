@@ -9,6 +9,8 @@ Cypress.Keyboard.defaults({
 //   return cy.get(`[data-test="${target}"] ${suffix}`)
 // }
 
+const URL = "http://127.0.0.1:5432/incident/ongoing?disableMultiplayer=true"
+
 function getDataTest (ids, suffix = '') {
   // OMG WTF: learing: cy.get seems to mutate a global state that all cy.get.shoulds are evaluated against!
   // This means you can't hold a reference to this
@@ -23,10 +25,10 @@ function getDataTest (ids, suffix = '') {
 }
 
 function submitIncident (what, when, where, impact, shouldUseDefaultActions) {
-  getDataTest('summary__what').type(what)
-  getDataTest('summary__when').clear().type(when)
-  getDataTest('summary__where').type(where)
-  getDataTest('summary__impact').type(impact)
+  getDataTest('summary__input__what').type(what)
+  getDataTest('summary__input__when').clear().type(when)
+  getDataTest('summary__input__where').type(where)
+  getDataTest('summary__input__impact').type(impact)
   if (shouldUseDefaultActions) {
     getDataTest('summary__add-default-actions').check()
   } else {
@@ -52,7 +54,7 @@ function addActionToIncident ({ what = 'action-what', who = 'action-who', link =
 
 describe('Creating a New Incident', () => {
   beforeEach(() => {
-    cy.visit('http://127.0.0.1:5432/incident/ongoing?disableMultiplayer=true') // TODO: dont use hardcoded port
+    cy.visit(URL) // TODO: dont use hardcoded port
   })
 
   it('creates a new incident - without default actions', () => {
@@ -102,6 +104,49 @@ describe('Creating a New Incident', () => {
   })
 })
 
+
+describe('Ongoing Incident: Managing the Summary', () => {
+  const what = 'This is the what'
+  const when = 'This is the when'
+  const where = 'This is the where'
+  const impact = 'This is the impact'
+
+  beforeEach(() => {
+    cy.visit(URL) // TODO: dont use hardcoded port
+    submitIncident(what, when, where, impact, false)
+  })
+
+  it('lets you edit the incident summary attributes', () => {
+    // Showing the form
+    getDataTest('affected-systems__listing__active').should('contain.text', what)
+    getDataTest('summary__input__what').should('not.exist')
+    getDataTest('summary', '>span').trigger('mouseover')
+    getDataTest('button-edit-summary').click()
+
+    const newWhat = 'new what'
+    const newWhen = 'new when'
+    const newWhere = 'new where'
+    const newImpact = 'new impact'
+
+    getDataTest('summary__input__what').clear().type(newWhat)
+    getDataTest('summary__input__when').clear().type(newWhen)
+    getDataTest('summary__input__where').clear().type(newWhere)
+    getDataTest('summary__input__impact').clear().type(newImpact)
+    getDataTest('summary__submit').click()
+
+    getDataTest('summary')
+      .should('contain.text', newWhat)
+      .should('contain.text', newWhen)
+      .should('contain.text', newWhere)
+      .should('contain.text', newImpact)
+      .should('not.contain.text', what)
+      .should('not.contain.text', when)
+      .should('not.contain.text', where)
+      .should('not.contain.text', impact)
+  })
+})
+
+
 describe('Ongoing Incident: Managing Affected Components', () => {
   const what = 'This is the what'
   const when = 'This is the when'
@@ -109,35 +154,37 @@ describe('Ongoing Incident: Managing Affected Components', () => {
   const impact = 'This is the impact'
 
   beforeEach(() => {
-    cy.visit('http://127.0.0.1:5432/?disableMultiplayer=true') // TODO: dont use hardcoded port
+    cy.visit(URL) // TODO: dont use hardcoded port
     submitIncident(what, when, where, impact, false)
   })
 
   it('lets you add another affected component', () => {
     const newWhat = 'Another what'
+    getDataTest('btn-add-affected-system').click()
     getDataTest('new-affected-system__what').type(newWhat)
     getDataTest('new-affected-system__submit').click()
 
-    getDataTest('affected-systems__active', '>ul>li').should('have.length', 2)
-    getDataTest('affected-systems__active', 'ul li').should('contain.text', newWhat)
+    getDataTest('affected-systems__listing__active', '>ul>li')
+      .should('have.length', 2)
+      .should('contain.text', newWhat)
   })
 
   it('lets you edit the text of an add affected component', () => {
-    // Showing & Cancelling update dialog
-    getDataTest('affected-systems__active').should('contain.text', what)
-    getDataTest('update-affected-system__dialog').should('not.be.visible')
-    getDataTest('affected-systems__active').contains(what).rightclick()
-    getDataTest('update-affected-system__dialog').should('be.visible')
-    getDataTest('update-affected-system__cancel').click()
+    // Showing the form
+    getDataTest('affected-systems__listing__active').should('contain.text', what)
+    // getDataTest('summary__input__what').should('not.exist')
+    getDataTest('affected-system-what').trigger('mouseover')
+    getDataTest('button-edit-affected-system').click()
 
-    // Changing via the dialog
     const newWhat = 'changed to this'
-    getDataTest('affected-systems__active').contains(what).rightclick()
-    getDataTest('update-affected-system__what').clear().type(newWhat)
-    getDataTest('update-affected-system__submit').click()
-    getDataTest('affected-systems__active').should('not.contain.text', what)
-    getDataTest('affected-systems__active').should('contain.text', newWhat)
-    getDataTest('affected-systems__active').should('have.length', 1)
+    getDataTest('new-affected-system__what').clear().type(newWhat)
+    getDataTest('new-affected-system__submit').click()
+
+    getDataTest('affected-systems__listing__active')
+      .should('not.contain.text', what)
+      .should('contain.text', newWhat)
+      .find('li')
+        .should('have.length', 1)
   })
 
   it('lets you resolve an affected component', () => {
@@ -159,7 +206,7 @@ describe('Ongoing Incident: Managing Actions', () => {
   const impact = 'This is the impact'
 
   beforeEach(() => {
-    cy.visit('http://127.0.0.1:5432/?disableMultiplayer=true') // TODO: dont use hardcoded port
+    cy.visit(URL) // TODO: dont use hardcoded port
     submitIncident(what, when, where, impact, false)
   })
 
@@ -324,7 +371,7 @@ describe('Ongoing Incident: Status Updates', () => {
   const impact = 'This is the impact'
 
   beforeEach(() => {
-    cy.visit('http://127.0.0.1:5432/?disableMultiplayer=true') // TODO: dont use hardcoded port
+    cy.visit(URL) // TODO: dont use hardcoded port
     submitIncident(what, when, where, impact, false)
   })
 

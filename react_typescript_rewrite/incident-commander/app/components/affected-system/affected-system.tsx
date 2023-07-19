@@ -54,11 +54,11 @@ export default function AffectedSystem({affectedSystem}: {affectedSystem: Affect
                 <div className="p-1">
                     <Popover content={
                         <>
-                            <Button className="block" icon={<CheckOutlined/>} data-test="affected-system__resolve" onClick={resolve}>Resolve</Button>
-                            <Button className="block" icon={<EditOutlined/>} data-test="affected-system__edit" onClick={onEditClick}>Edit</Button>
+                            <Button data-test="button-resolve-affected-system" className="block" icon={<CheckOutlined/>} onClick={resolve}>Resolve</Button>
+                            <Button data-test="button-edit-affected-system" className="block" icon={<EditOutlined/>} onClick={onEditClick}>Edit</Button>
                         </>
                     }>
-                      <div className="bg-slate-500 -m-1 p-1 text-white">{affectedSystem.what}</div>
+                      <div data-test="affected-system-what" className="bg-slate-500 -m-1 p-1 text-white">{affectedSystem.what}</div>
                     </Popover>
 
                       <div className="bg-slate-500 -m-1 p-1">
