@@ -7,12 +7,11 @@ interface props {
     action?: Action
     onSubmit?: (Action) => void,
     onCancel?: () => void,
-    affectedSystemId?: string,
 }
 
-export default function ActionForm({ action, onSubmit, onCancel, affectedSystemId} : props) {
+export default function ActionForm({ action, onSubmit, onCancel } : props) {
     const { register, handleSubmit, reset, formState: { errors } } = useForm({
-        defaultValues: { affectedSystemId, ...action }
+        defaultValues: action
     })
 
     return (
@@ -62,9 +61,9 @@ export default function ActionForm({ action, onSubmit, onCancel, affectedSystemI
                         className="block"
                         type="text"
                         id="newActionWhen"
-                        name="expireIntervalMinutes"
+                        name="timerDurationInMinutes"
                         data-test="new-action__minutes-between-updates"
-                        {...register("expireIntervalMinutes")}
+                        {...register("timerDurationInMinutes")}
                     />
                 </div>
 

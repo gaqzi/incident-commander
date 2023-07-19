@@ -8,6 +8,7 @@ import {IncidentDispatchContext} from "@/app/contexts/incident-context";
 import ActionForm from "@/app/components/action/action-form";
 import {Button, Popover, Typography} from "antd";
 import {CheckOutlined, EditOutlined, PlusOutlined} from "@ant-design/icons";
+import {uuidv4} from "lib0/random";
 const { Text } = Typography;
 
 export default function AffectedSystem({affectedSystem}: {affectedSystem: AffectedSystem}) {
@@ -34,11 +35,11 @@ export default function AffectedSystem({affectedSystem}: {affectedSystem: Affect
 
     const addAction = (data) => {
         setShowNewActionForm(false)
-        incidentReducer([{type: 'add_action', payload: data}])
+        incidentReducer([{type: 'add_action', payload: {...data, id: `action_${uuidv4()}` }}])
     }
 
     return (
-        <section>
+        <section data-test={`affected-system__${affectedSystem.status == 'Active' ? 'active' : 'past'}`}>
             {
                 showSelfForm &&
                 <AffectedSystemForm
@@ -82,7 +83,7 @@ export default function AffectedSystem({affectedSystem}: {affectedSystem: Affect
                           </div>
                         }
 
-                        <ul>
+                        <ul data-test="actions__active">
                             {
                                 affectedSystem.actions.filter(a => a.status == 'Active').map((action) => {
                                     return (
@@ -92,6 +93,9 @@ export default function AffectedSystem({affectedSystem}: {affectedSystem: Affect
                                     )
                                 })
                             }
+                        </ul>
+
+                        <ul data-test="actions__inactive">
                             {
                                 affectedSystem.actions.filter(a => a.status != 'Active').map((action) => {
                                     return (

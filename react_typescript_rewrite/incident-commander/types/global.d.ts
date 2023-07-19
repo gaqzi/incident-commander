@@ -51,6 +51,7 @@ declare global {
     }
 
     type IncidentSummary = {
+        _isNew: boolean
         what: string
         whenUtcString: string
         where: string

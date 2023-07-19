@@ -37,7 +37,7 @@ export default function Action({action}: props) {
     }
 
     return (
-        <>
+        <section>
             {showForm &&
               <div className=""><ActionForm action={action} onSubmit={updateAction} onCancel={cancelForm}/></div>
             }
@@ -117,6 +117,6 @@ export default function Action({action}: props) {
                 </span>
               </div>
             }
-        </>
+        </section>
     )
 }

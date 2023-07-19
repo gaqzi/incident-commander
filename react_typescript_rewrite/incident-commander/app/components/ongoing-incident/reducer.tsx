@@ -52,15 +52,51 @@ const getIndexForResourceLinkId = (incident: Incident, id: string) => {
     return incident.summary.resourceLinks.findIndex(l => l.id == id)
 }
 
-const editIncidentSummary = (incident: Incident, summary: IncidentSummary) => {
+const editIncidentSummary = (incident: Incident, updatedSummary: IncidentSummary) => {
     let updatedIncident = JSON.parse(JSON.stringify(incident))
-    updatedIncident.summary = summary
+    updatedIncident.summary = {...updatedIncident.summary, _isNew: false, ...updatedSummary}
+
+    if (incident.summary._isNew) {
+        // This is the initial user form submission to create the incident,
+        // so also create the first affected system from the what.
+        updatedIncident = addAffectedSystem(updatedIncident, {id: 'system_0', what: updatedSummary.what})
+
+        // TODO: move this to a config
+        const defaultActions = [
+            'Was there a recent deploy?',
+            'Was a feature flag toggled recently?',
+            'Has there been an infrastructure changed recently?'
+        ]
+
+        // HACK: we are throwing `addDefaultActions` into the payload for the update incident summary event
+        // for the special case of when the initial incident summary data is submitted. It's not part of the
+        // IncidentSummary type. We should probably figure out a cleaner way to do this but it's fine for now.
+        if (updatedSummary.addDefaultActions) {
+            // This is a special case where we are making a new incident record,
+            // and we just created the first Affected System above. So we can safely
+            // grab it from the incident's array of affected systems (there will be only one)
+            // and use its ID value to associate the default actions with it.
+            const affectedSystemId = updatedIncident.affectedSystems[0].id
+
+            defaultActions.forEach(what => {
+                updatedIncident = addAction(updatedIncident, {
+                    id: `action_${uuidv4()}`,
+                    status: 'Active',
+                    isMitigating: true,
+                    what,
+                    affectedSystemId
+                })
+            })
+        }
+
+    }
+
     return updatedIncident
 }
 
 const addResourceLink = (incident: Incident, newResourceLink: ResourceLink): Incident => {
     let updatedIncident = JSON.parse(JSON.stringify(incident))
-    updatedIncident.summary.resourceLinks = [...updatedIncident.summary.resourceLinks, {id: `link_${uuidv4()}`, ...newResourceLink } ]
+    updatedIncident.summary.resourceLinks = [...updatedIncident.summary.resourceLinks, newResourceLink ]
     return updatedIncident
 }
 
@@ -79,7 +115,7 @@ const addAction = (incident: Incident, newAction: Action): Incident => {
     let updatedIncident = JSON.parse(JSON.stringify(incident))
     const systemIndex = getIndexForSystemId(incident, newAction.affectedSystemId as string)
     if (systemIndex != -1) {
-        updatedIncident.affectedSystems[systemIndex].actions.push({id: uuidv4(), ...newAction})
+        updatedIncident.affectedSystems[systemIndex].actions.push(newAction)
         return updatedIncident
     }
 
@@ -123,10 +159,9 @@ const resolveActionSuccess = (incident, actionId: string) => {
 
 const addAffectedSystem = (incident: Incident, newSystem: AffectedSystem): Incident => {
     let updatedIncident = JSON.parse(JSON.stringify(incident))
-    newSystem.id = `system_${uuidv4()}`
-    newSystem.status = 'Active'
-    newSystem.actions = newSystem.actions ?? []
-    updatedIncident.affectedSystems.push(newSystem)
+    const status = 'Active'
+    const actions = newSystem.actions ?? []
+    updatedIncident.affectedSystems.push({...newSystem, status, actions})
     return updatedIncident
 }
 

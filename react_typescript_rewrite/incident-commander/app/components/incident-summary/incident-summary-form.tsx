@@ -1,39 +1,43 @@
 'use client'
 
 import {useForm} from "react-hook-form";
-import {Button, DatePicker} from "antd";
+import {Button, DatePicker, Switch} from "antd";
 import * as dayjs from 'dayjs'
 import {useEffect, useState} from "react";
 
-interface props {
+interface Props {
     summary?: IncidentSummary,
     onSubmit?: (Action) => void,
     onCancel?: () => void,
-    affectedSystemId?: string,
 }
 
 const utc = require('dayjs/plugin/utc')
 dayjs.extend(utc)
 
 
-export default function IncidentSummaryForm({ summary, onSubmit, onCancel, affectedSystemId} : props) {
-    const [whenDate, setWhenDate] = useState(dayjs.utc(Date.parse(summary.whenUtcString)))
+export default function IncidentSummaryForm(props : Props) {
+    const {  summary, onSubmit, onCancel } = props
+    const [whenDate, setWhenDate] = useState(summary.whenUtcString)
 
     const { register, handleSubmit, reset, formState: { errors }, setFocus } = useForm({
-        defaultValues: { ...summary, whenDate }
+        defaultValues: { ...summary, whenDate, addDefaultActions: true },
+        values: { whenDate }
     })
 
     useEffect(()=>{
+        // HACK
+        if (summary.whenUtcString == "Thu, 01 Jan 1970 00:00:00 GMT") {
+            setWhenDate(new Date().toUTCString())
+        }
+
         if (summary.what == "")  {
             setFocus('what')
         }
-    }, [setFocus, summary.what])
-
-
+    })
 
     const myOnSubmit = (data) => {
-        const utcString = whenDate.toDate().toUTCString()
-        onSubmit && onSubmit({...data, whenUtcString: utcString})
+        const { what, where, impact } = data
+        onSubmit && onSubmit({what, where, impact, whenUtcString: data.whenDate, addDefaultActions: data.addDefaultActions })
     }
 
     return (
@@ -53,14 +57,22 @@ export default function IncidentSummaryForm({ summary, onSubmit, onCancel, affec
                 </div>
 
             <div className="flex flex-col mb-2">
-                    <label htmlFor="summaryWhat">Since when?</label>
-                <DatePicker
-                    format="YYYY-MM-DD HH:mm"
-                    defaultValue={whenDate}
-                    showTime={{ defaultValue:(whenDate) }}
-                    onOk={(val)=>{setWhenDate(val)}}
-                    data-test="summary__when"
-                />
+                    <label htmlFor="summaryWhen">Since when?</label>
+                    <input
+                        type="text"
+                        id="summaryWhen"
+                        name="whenDate"
+                        data-test="summary__when"
+                        {...register("whenDate")}
+                    />
+                {/*<DatePicker*/}
+                {/*    format="YYYY-MM-DD HH:mm"*/}
+                {/*    // defaultValue={whenDate}*/}
+                {/*    value={whenDate}*/}
+                {/*    showTime={{ defaultValue:(whenDate) }}*/}
+                {/*    onOk={(val)=>{setWhenDate(val)}}*/}
+                {/*    changeOnBlur={true}*/}
+                {/*/>*/}
                 </div>
 
             <div className="flex flex-col mb-2">
@@ -85,13 +97,25 @@ export default function IncidentSummaryForm({ summary, onSubmit, onCancel, affec
                     />
                 </div>
 
+            <div>
+                <label htmlFor="summaryAddDefaultActions">Add default actions?</label>
+                <input
+                    className="ml-2"
+                    type="checkbox"
+                    id="summaryAddDefaultActions"
+                    name="addDefaultActions"
+                    data-test="summary__add-default-actions"
+                    {...register("addDefaultActions")}
+                />
+            </div>
+
             <Button
                 size="small"
                 type="primary"
                 htmlType="submit"
                 data-test="summary__submit"
             >
-                Update
+                { summary._isNew ? 'Create' : 'Update' }
             </Button>
 
             <Button

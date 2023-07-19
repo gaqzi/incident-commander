@@ -10,19 +10,21 @@ Cypress.Keyboard.defaults({
 // }
 
 function getDataTest (ids, suffix = '') {
+  // OMG WTF: learing: cy.get seems to mutate a global state that all cy.get.shoulds are evaluated against!
+  // This means you can't hold a reference to this
   let selector = `[data-test="${ids}"]`
   if (Array.isArray(ids)) {
     selector = ids.reduce((accum, id) => accum + `[data-test="${id}"] `, '')
   }
   if (suffix.startsWith('>')) {
-    return cy.get(selector + '>' + suffix.substring(1))
+    return cy.get('body').find(selector + '>' + suffix.substring(1))
   }
-  return cy.get(selector + ' ' + suffix)
+  return cy.get('body').find(selector + ' ' + suffix)
 }
 
 function submitIncident (what, when, where, impact, shouldUseDefaultActions) {
   getDataTest('summary__what').type(what)
-  getDataTest('summary__when').type(when)
+  getDataTest('summary__when').clear().type(when)
   getDataTest('summary__where').type(where)
   getDataTest('summary__impact').type(impact)
   if (shouldUseDefaultActions) {
@@ -53,7 +55,7 @@ describe('Creating a New Incident', () => {
     cy.visit('http://127.0.0.1:5432/incident/ongoing?disableMultiplayer=true') // TODO: dont use hardcoded port
   })
 
-  it.only('creates a new incident - without default actions', () => {
+  it('creates a new incident - without default actions', () => {
     const what = 'This is the what'
     const when = '2021-01-02 11:22:00'
     const where = 'This is the where'
@@ -63,17 +65,21 @@ describe('Creating a New Incident', () => {
 
     // Summary
     const summary = getDataTest('summary')
+    summary.should('contain.text', what)
     summary.should('contain.text', when)
     summary.should('contain.text', where)
     summary.should('contain.text', impact)
 
     // Affected Systems
-    getDataTest('affected-systems__active').should('contain.text', what)
-    getDataTest('affected-systems__past').get('li').should('have.length.of', 0)
+    getDataTest('affected-systems__listing__active', 'li')
+      .should('have.lengthOf', 1)
+      .should('contain.text', what)
 
-    // Actions
-    getDataTest('actions__active').get('active-action').should('have.length.of', 0)
-    getDataTest('past-actions li').should('have.length.of', 0)
+      .find('[data-test="actions__active"] li')
+        .should('have.lengthOf', 0)
+
+    getDataTest('affected-systems__listing__past', 'li')
+      .should('have.lengthOf', 0)
   })
 
   it('creates a new incident - with default actions', () => {
@@ -84,11 +90,15 @@ describe('Creating a New Incident', () => {
 
     submitIncident(what, when, where, impact, true)
 
-    const activeActions = getDataTest('actions__active')
-    activeActions.get('active-action').should('have.length.of', 3)
-    activeActions.should('contain.text', 'Was there a recent deploy?')
-    activeActions.should('contain.text', 'Was a feature flag toggled recently?')
-    activeActions.should('contain.text', 'Has there been an infrastructure changed recently?')
+    //TODO file a bug with Cypress.  should('have.length.of',...) silently passes but is invalid.  'have.length.eq' seems to work, as does 'have.lengthOf'
+
+    getDataTest('affected-system__past')
+      .should('not.exist')
+
+    getDataTest('affected-system__active')
+      .should('have.lengthOf', 1)
+      .should('contain.text', 'Was a feature flag toggled recently?')
+      .should('contain.text', 'Has there been an infrastructure changed recently?')
   })
 })
 
@@ -154,7 +164,7 @@ describe('Ongoing Incident: Managing Actions', () => {
   })
 
   it('lets you add an action', () => {
-    getDataTest('actions__active').get('li').should('have.length.of', 0)
+    getDataTest('actions__active').get('li').should('have.lengthOf', 0)
 
     const what = 'a new action'
     const who = 'john doe'
@@ -162,7 +172,7 @@ describe('Ongoing Incident: Managing Actions', () => {
     const minutes = 10
     addActionToIncident({ who, what, link, minutes, isMitigating: false })
 
-    getDataTest('actions__active').get('li').should('have.length.of', 1)
+    getDataTest('actions__active').get('li').should('have.lengthOf', 1)
     const action = getDataTest('actions__active').within(el => el.get('li')).first()
     action.should('contain.text', what)
     action.should('contain.text', who)

@@ -8,12 +8,17 @@ import IncidentSummaryForm from "@/app/components/incident-summary/incident-summ
 import { Button, Modal, Popover } from "antd"
 import {EditOutlined, PlusOutlined} from "@ant-design/icons";
 import {Incident} from "@/app/components/ongoing-incident/reducer";
+import {uuidv4} from "lib0/random";
 
 export default function IncidentSummary({incident}: {incident: Incident}) {
     const summary = incident.summary
     const incidentReducer = useContext(IncidentDispatchContext)
 
-    const [showSummaryForm, setShowSummaryForm] = useState(false)
+    const [showSummaryForm, setShowSummaryForm] = useState(incident.summary._isNew)
+    useEffect(()=>{
+        setShowSummaryForm(incident.summary._isNew)
+    }, [incident])
+
     const updateSummary = (data) => {
         setShowSummaryForm(false)
         incidentReducer([{type: 'edit_incident_summary', payload: data}])
@@ -25,12 +30,6 @@ export default function IncidentSummary({incident}: {incident: Incident}) {
         setShowSummaryForm(true)
     }
 
-    useEffect(()=>{
-       if (incident.summary.what == "")  {
-           setShowSummaryForm(true)
-       }
-    }, [])
-
     const [resourceLinkFormVisible, setResourceLinkFormVisible] = useState(false)
     const addResourceLinkClick = () => {
         setResourceLinkFormVisible(true)
@@ -39,7 +38,7 @@ export default function IncidentSummary({incident}: {incident: Incident}) {
         setResourceLinkFormVisible(false)
     }
     const addResourceLink = (resourceLink: ResourceLink) => {
-        incidentReducer([{type: 'add_incident_resource_link', payload: resourceLink}])
+        incidentReducer([{type: 'add_incident_resource_link', payload: {resourceLink, id: `link_${uuidv4()}`}}])
         setResourceLinkFormVisible(false)
     }
 
@@ -107,7 +106,7 @@ export default function IncidentSummary({incident}: {incident: Incident}) {
 
                     <div className="message max-w-xl" data-test="summary">
                       <Popover content={<Button type="text" icon={<EditOutlined />} onClick={onSummaryEditClick}>Edit</Button>} title="Actions">
-                        <strong>Since</strong> <span className="when">{new Date(Date.parse(summary.whenUtcString)).toUTCString()}</span>
+                        <strong>Since</strong> <span className="when">{summary.whenUtcString}</span>
                         &nbsp;<strong>we are seeing</strong> <span className="what">{summary.what}</span>
                         &nbsp;<strong>in</strong> <span className="where">{summary.where}</span>
                         &nbsp;<strong>impacting</strong> <span className="impact">{summary.impact}</span>.

@@ -14,21 +14,21 @@ import {NotificationsContext, IncidentDispatchContext} from "@/app/contexts/inci
 import ResourceLink from "@/app/components/resource-link/resource-link";
 import { Button, Modal } from "antd"
 import {PlusOutlined} from "@ant-design/icons";
+import {uuidv4} from "lib0/random";
 
-const params = new URLSearchParams(window.location.search)
-const defaultIncident = params.get('defaultIncident') == null
-    ?  {
-            affectedSystems: [],
-            summary: {
-                impact: "",
-                whenUtcString: new Date().toUTCString(),
-                what: "",
-                where: "",
-                status: "Investigating",
-                resourceLinks:[]
-            }
-        }
-    : {
+let initialDefault = {
+    affectedSystems: [],
+    summary: {
+        _isNew: true,
+        impact: "",
+        whenUtcString: "Thu, 01 Jan 1970 00:00:00 GMT",
+        what: "",
+        where: "",
+        status: "Investigating",
+        resourceLinks:[]
+    }
+};
+const defaultIncident =  {
         affectedSystems: [
         {
             id: 'system_1',
@@ -146,7 +146,7 @@ function setupMultiplayer(dispatch: DispatchWithoutAction) {
     return ydocEvents
 }
 
-const singleplayerDispatch = (events: any[] = []) => {
+const singleplayerDispatch = (dispatch: DispatchWithoutAction, events: any[]) => {
     // console.log('sp dispatch', events)
     events.forEach(event => dispatch(event))
 }
@@ -160,7 +160,7 @@ const multiplayerDispatch = (ydocEvents: any, events: any[] = []) => {
 
 
 export default function OngoingIncident() {
-    const [incident, dispatch] = useReducer(incidentReducer, defaultIncident)
+    const [incident, dispatch] = useReducer(incidentReducer, initialDefault)
     let isMultiplayer = false
     const [dispatcher, setDispatcher] = useState(null)
 
@@ -169,11 +169,16 @@ export default function OngoingIncident() {
         const params = new URLSearchParams(window.location.search)
         if (params.get('disableMultiplayer')) {
             isMultiplayer = false
-            setDispatcher(()=>{return singleplayerDispatch})
+            setDispatcher(()=>{return singleplayerDispatch.bind(this, dispatch)})
         } else {
             isMultiplayer = true
             let ydocEvents = setupMultiplayer(dispatch)
             setDispatcher(()=>{return multiplayerDispatch.bind(this, ydocEvents)})
+        }
+        if (Notification.permission == 'granted') {
+            Notification.requestPermission().then((newPermission)=>{
+                setNotificationPermission(newPermission == 'granted')
+            });
         }
     }, [])
 
@@ -181,9 +186,9 @@ export default function OngoingIncident() {
         defaultValues: incident
     })
 
-    const [notificationPermission, setNotificationPermission] = useState(Notification.permission == 'granted')
+    const [notificationPermission, setNotificationPermission] = useState(false)
     const toggleNotifications = (event) => {
-        if (notificationPermission) {
+        if (!notificationPermission) {
             setNotificationPermission(false)
         }
         else {
@@ -200,7 +205,7 @@ export default function OngoingIncident() {
         setAffectedSystemFormVisible(false)
     }
     const addAffectedSystem = (affectedSystem: AffectedSystem) => {
-        dispatcher([{type: 'add_affected_system', payload: affectedSystem}])
+        dispatcher([{type: 'add_affected_system', payload: {...affectedSystem, id: `system_${uuidv4()}`}}])
         setAffectedSystemFormVisible(false)
     }
 
@@ -220,9 +225,9 @@ export default function OngoingIncident() {
                 </Button>
             </header>
 
-            <IncidentSummary incident={incident}></IncidentSummary>
+            <IncidentSummary incident={incident} showForm={incident.summary._isNew}></IncidentSummary>
 
-            <section className="affected-systems__listing__active" data-test="affected-systems__active">
+            <section data-test="affected-systems__listing__active">
                 <h3>Affected Systems</h3>
 
                 <section className="affected-systems__new">
@@ -257,7 +262,7 @@ export default function OngoingIncident() {
                 </ul>
             </section>
 
-            <section className="affected-systems__listing__past" data-test="affected-systems__past">
+            <section className="affected-systems__listing__past">
                 <h3>Resolved Issues</h3>
 
                 <ul className="grid grid-cols-3 gap-4">
