@@ -63,9 +63,10 @@ export default function AffectedSystem({affectedSystem}: {affectedSystem: Affect
 
                       <div className="bg-slate-500 -m-1 p-1">
                           {!showNewActionForm &&
-                            <Button style={{color: 'white'}} type="dashed" size="small" icon={<PlusOutlined/>} onClick={() => {
-                                setShowNewActionForm(true)
-                            }}>
+                            <Button 
+                                style={{color: 'white'}} type="dashed" size="small" icon={<PlusOutlined/>} onClick={() => { setShowNewActionForm(true) }}
+                                data-test="actions__active__add_action"
+                            >
                               Add Action
                             </Button>
                           }

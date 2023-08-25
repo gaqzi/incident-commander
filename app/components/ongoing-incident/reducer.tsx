@@ -113,9 +113,10 @@ const updateResourceLink = (incident: Incident, updatedResourceLink: ResourceLin
 
 const addAction = (incident: Incident, newAction: Action): Incident => {
     let updatedIncident = JSON.parse(JSON.stringify(incident))
+    const status = 'Active'
     const systemIndex = getIndexForSystemId(incident, newAction.affectedSystemId as string)
     if (systemIndex != -1) {
-        updatedIncident.affectedSystems[systemIndex].actions.push(newAction)
+        updatedIncident.affectedSystems[systemIndex].actions.push({...newAction, status})
         return updatedIncident
     }
 
