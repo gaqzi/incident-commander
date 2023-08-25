@@ -188,14 +188,18 @@ describe('Ongoing Incident: Managing Affected Components', () => {
   })
 
   it('lets you resolve an affected component', () => {
-    getDataTest('affected-systems__active', '>ul>li').should('have.length', 1)
-    getDataTest('affected-systems__past', '>ul>li').should('have.length', 0)
+    getDataTest('affected-systems__listing__active', '>ul>li').should('have.length', 1)
+    getDataTest('affected-systems__listing__past', '>ul>li').should('not.exist')
 
-    getDataTest('affected-systems__active').contains(what).get('[data-test="affected-system__resolve"]').click()
+    getDataTest('affected-systems__listing__active')
+      .contains(what)
+      .trigger('mouseover')
+      .get('[data-test="button-resolve-affected-system"]')
+      .click()
 
-    getDataTest('affected-systems__active', '>ul>li').should('have.length', 0)
-    getDataTest('affected-systems__past', '>ul>li').should('have.length', 1)
-    getDataTest('affected-systems__past').should('contain.text', what)
+    getDataTest('affected-systems__listing__active', '>ul>li').should('not.exist')
+    getDataTest('affected-systems__listing__past', '>ul>li').should('have.length', 1)
+    getDataTest('affected-systems__listing__past').should('contain.text', what)
   })
 })
 

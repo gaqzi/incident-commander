@@ -262,7 +262,7 @@ export default function OngoingIncident() {
                 </ul>
             </section>
 
-            <section className="affected-systems__listing__past">
+            <section data-test="affected-systems__listing__past">
                 <h3>Resolved Issues</h3>
 
                 <ul className="grid grid-cols-3 gap-4">
