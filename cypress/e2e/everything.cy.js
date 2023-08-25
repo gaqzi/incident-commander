@@ -249,20 +249,15 @@ describe('Ongoing Incident: Managing Actions', () => {
   it('lets you edit the link of an active action', () => {
     const linkVal = 'http://google.com'
     addActionToIncident({ link: linkVal })
-    const activeActions = getDataTest('actions__active')
 
-    // This is how you type into prompts with Cypress =-\
     const newLinkVal = 'http://example.com'
-    cy.window().then(function (win) {
-      cy.stub(win, 'prompt').returns(newLinkVal)
-    })
+    getDataTest('active_action__link').trigger('mouseover')
+    getDataTest('action__edit').click()
+    getDataTest('new-action__link').clear().type(newLinkVal)
 
-    // Prompt response stubbed above...
-    const link = activeActions.getDataTest('active_action__link').first()
-    link.rightclick()
+    getDataTest('new-action__submit').click()
 
-    const anchor = link.get('a').first()
-    anchor.invoke('attr', 'href').should('equal', newLinkVal)
+    getDataTest('active_action__link').should('have.attr', 'href', newLinkVal)
   })
 
   it('lets you reset or edit the timer of an active action', () => {
