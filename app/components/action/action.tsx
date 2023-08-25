@@ -46,7 +46,13 @@ export default function Action({action}: props) {
                 <Popover
                   content={
                       <>
-                          <Button className="block" size="small" icon={<EditOutlined/>} onClick={onEditClick}>
+                          <Button 
+                            className="block" 
+                            size="small" 
+                            icon={<EditOutlined/>} 
+                            onClick={onEditClick}
+                            data-test="action__edit"
+                            >
                               Edit Action
                           </Button>
 

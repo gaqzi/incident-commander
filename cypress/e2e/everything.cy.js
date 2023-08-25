@@ -234,20 +234,16 @@ describe('Ongoing Incident: Managing Actions', () => {
   it('lets you edit the text of an active action', () => {
     const what = 'old what'
     addActionToIncident({ what })
-    const activeActions = getDataTest('actions__active')
 
-    // This is how you type into prompts with Cypress =-\
-    const newWhat = 'an updated action text'
-    cy.window().then(function (win) {
-      cy.stub(win, 'prompt').returns(newWhat)
-    })
+    const newWhat = 'new what'
+    getDataTest('active_action__what').trigger('mouseover')
+    getDataTest('action__edit').click()
+    getDataTest('new-action__what').clear().type(newWhat)
+    getDataTest('new-action__submit').click()
 
-    // Prompt response stubbed above...
-    const action = activeActions.getDataTest('active_action__what').first()
-    action.rightclick()
-
-    action.should('not.contain.text', what)
-    action.should('contain.text', newWhat)
+    getDataTest('active_action__what')
+      .should('not.contain.text', what)
+      .should('contain.text', newWhat)
   })
 
   it('lets you edit the link of an active action', () => {
