@@ -9,28 +9,32 @@ Cypress.Keyboard.defaults({
 //   return cy.get(`[data-test="${target}"] ${suffix}`)
 // }
 
+const URL = "http://127.0.0.1:5432/incident/ongoing?disableMultiplayer=true"
+
 function getDataTest (ids, suffix = '') {
+  // OMG WTF: learing: cy.get seems to mutate a global state that all cy.get.shoulds are evaluated against!
+  // This means you can't hold a reference to this
   let selector = `[data-test="${ids}"]`
   if (Array.isArray(ids)) {
     selector = ids.reduce((accum, id) => accum + `[data-test="${id}"] `, '')
   }
   if (suffix.startsWith('>')) {
-    return cy.get(selector + '>' + suffix.substring(1))
+    return cy.get('body').find(selector + '>' + suffix.substring(1))
   }
-  return cy.get(selector + ' ' + suffix)
+  return cy.get('body').find(selector + ' ' + suffix)
 }
 
 function submitIncident (what, when, where, impact, shouldUseDefaultActions) {
-  getDataTest('new-incident__what').type(what)
-  getDataTest('new-incident__when').type(when)
-  getDataTest('new-incident__where').type(where)
-  getDataTest('new-incident__impact').type(impact)
+  getDataTest('summary__input__what').type(what)
+  getDataTest('summary__input__when').clear().type(when)
+  getDataTest('summary__input__where').type(where)
+  getDataTest('summary__input__impact').type(impact)
   if (shouldUseDefaultActions) {
-    getDataTest('new-incident__add-default-actions').check()
+    getDataTest('summary__add-default-actions').check()
   } else {
-    getDataTest('new-incident__add-default-actions').uncheck()
+    getDataTest('summary__add-default-actions').uncheck()
   }
-  getDataTest('new-incident__submit').click()
+  getDataTest('summary__submit').click()
 }
 
 function addActionToIncident ({ what = 'action-what', who = 'action-who', link = 'http://example.com', minutes = 10, isMitigating = false }) {
@@ -50,12 +54,12 @@ function addActionToIncident ({ what = 'action-what', who = 'action-who', link =
 
 describe('Creating a New Incident', () => {
   beforeEach(() => {
-    cy.visit('http://127.0.0.1:5432/?disableMultiplayer=true') // TODO: dont use hardcoded port
+    cy.visit(URL) // TODO: dont use hardcoded port
   })
 
   it('creates a new incident - without default actions', () => {
     const what = 'This is the what'
-    const when = 'This is the when'
+    const when = '2021-01-02 11:22:00'
     const where = 'This is the where'
     const impact = 'This is the impact'
 
@@ -63,17 +67,21 @@ describe('Creating a New Incident', () => {
 
     // Summary
     const summary = getDataTest('summary')
+    summary.should('contain.text', what)
     summary.should('contain.text', when)
     summary.should('contain.text', where)
     summary.should('contain.text', impact)
 
     // Affected Systems
-    getDataTest('affected-systems__active').should('contain.text', what)
-    getDataTest('affected-systems__past').get('li').should('have.length.of', 0)
+    getDataTest('affected-systems__listing__active', 'li')
+      .should('have.lengthOf', 1)
+      .should('contain.text', what)
 
-    // Actions
-    getDataTest('actions__active').get('active-action').should('have.length.of', 0)
-    getDataTest('past-actions li').should('have.length.of', 0)
+      .find('[data-test="actions__active"] li')
+        .should('have.lengthOf', 0)
+
+    getDataTest('affected-systems__listing__past', 'li')
+      .should('have.lengthOf', 0)
   })
 
   it('creates a new incident - with default actions', () => {
@@ -84,13 +92,60 @@ describe('Creating a New Incident', () => {
 
     submitIncident(what, when, where, impact, true)
 
-    const activeActions = getDataTest('actions__active')
-    activeActions.get('active-action').should('have.length.of', 3)
-    activeActions.should('contain.text', 'Was there a recent deploy?')
-    activeActions.should('contain.text', 'Was a feature flag toggled recently?')
-    activeActions.should('contain.text', 'Has there been an infrastructure changed recently?')
+    //TODO file a bug with Cypress.  should('have.length.of',...) silently passes but is invalid.  'have.length.eq' seems to work, as does 'have.lengthOf'
+
+    getDataTest('affected-system__past')
+      .should('not.exist')
+
+    getDataTest('affected-system__active')
+      .should('have.lengthOf', 1)
+      .should('contain.text', 'Was a feature flag toggled recently?')
+      .should('contain.text', 'Has there been an infrastructure changed recently?')
   })
 })
+
+
+describe('Ongoing Incident: Managing the Summary', () => {
+  const what = 'This is the what'
+  const when = 'This is the when'
+  const where = 'This is the where'
+  const impact = 'This is the impact'
+
+  beforeEach(() => {
+    cy.visit(URL) // TODO: dont use hardcoded port
+    submitIncident(what, when, where, impact, false)
+  })
+
+  it('lets you edit the incident summary attributes', () => {
+    // Showing the form
+    getDataTest('affected-systems__listing__active').should('contain.text', what)
+    getDataTest('summary__input__what').should('not.exist')
+    getDataTest('summary', '>span').trigger('mouseover')
+    getDataTest('button-edit-summary').click()
+
+    const newWhat = 'new what'
+    const newWhen = 'new when'
+    const newWhere = 'new where'
+    const newImpact = 'new impact'
+
+    getDataTest('summary__input__what').clear().type(newWhat)
+    getDataTest('summary__input__when').clear().type(newWhen)
+    getDataTest('summary__input__where').clear().type(newWhere)
+    getDataTest('summary__input__impact').clear().type(newImpact)
+    getDataTest('summary__submit').click()
+
+    getDataTest('summary')
+      .should('contain.text', newWhat)
+      .should('contain.text', newWhen)
+      .should('contain.text', newWhere)
+      .should('contain.text', newImpact)
+      .should('not.contain.text', what)
+      .should('not.contain.text', when)
+      .should('not.contain.text', where)
+      .should('not.contain.text', impact)
+  })
+})
+
 
 describe('Ongoing Incident: Managing Affected Components', () => {
   const what = 'This is the what'
@@ -99,35 +154,37 @@ describe('Ongoing Incident: Managing Affected Components', () => {
   const impact = 'This is the impact'
 
   beforeEach(() => {
-    cy.visit('http://127.0.0.1:5432/?disableMultiplayer=true') // TODO: dont use hardcoded port
+    cy.visit(URL) // TODO: dont use hardcoded port
     submitIncident(what, when, where, impact, false)
   })
 
   it('lets you add another affected component', () => {
     const newWhat = 'Another what'
+    getDataTest('btn-add-affected-system').click()
     getDataTest('new-affected-system__what').type(newWhat)
     getDataTest('new-affected-system__submit').click()
 
-    getDataTest('affected-systems__active', '>ul>li').should('have.length', 2)
-    getDataTest('affected-systems__active', 'ul li').should('contain.text', newWhat)
+    getDataTest('affected-systems__listing__active', '>ul>li')
+      .should('have.length', 2)
+      .should('contain.text', newWhat)
   })
 
   it('lets you edit the text of an add affected component', () => {
-    // Showing & Cancelling update dialog
-    getDataTest('affected-systems__active').should('contain.text', what)
-    getDataTest('update-affected-system__dialog').should('not.be.visible')
-    getDataTest('affected-systems__active').contains(what).rightclick()
-    getDataTest('update-affected-system__dialog').should('be.visible')
-    getDataTest('update-affected-system__cancel').click()
+    // Showing the form
+    getDataTest('affected-systems__listing__active').should('contain.text', what)
+    // getDataTest('summary__input__what').should('not.exist')
+    getDataTest('affected-system-what').trigger('mouseover')
+    getDataTest('button-edit-affected-system').click()
 
-    // Changing via the dialog
     const newWhat = 'changed to this'
-    getDataTest('affected-systems__active').contains(what).rightclick()
-    getDataTest('update-affected-system__what').clear().type(newWhat)
-    getDataTest('update-affected-system__submit').click()
-    getDataTest('affected-systems__active').should('not.contain.text', what)
-    getDataTest('affected-systems__active').should('contain.text', newWhat)
-    getDataTest('affected-systems__active').should('have.length', 1)
+    getDataTest('new-affected-system__what').clear().type(newWhat)
+    getDataTest('new-affected-system__submit').click()
+
+    getDataTest('affected-systems__listing__active')
+      .should('not.contain.text', what)
+      .should('contain.text', newWhat)
+      .find('li')
+        .should('have.length', 1)
   })
 
   it('lets you resolve an affected component', () => {
@@ -149,12 +206,12 @@ describe('Ongoing Incident: Managing Actions', () => {
   const impact = 'This is the impact'
 
   beforeEach(() => {
-    cy.visit('http://127.0.0.1:5432/?disableMultiplayer=true') // TODO: dont use hardcoded port
+    cy.visit(URL) // TODO: dont use hardcoded port
     submitIncident(what, when, where, impact, false)
   })
 
   it('lets you add an action', () => {
-    getDataTest('actions__active').get('li').should('have.length.of', 0)
+    getDataTest('actions__active').get('li').should('have.lengthOf', 0)
 
     const what = 'a new action'
     const who = 'john doe'
@@ -162,7 +219,7 @@ describe('Ongoing Incident: Managing Actions', () => {
     const minutes = 10
     addActionToIncident({ who, what, link, minutes, isMitigating: false })
 
-    getDataTest('actions__active').get('li').should('have.length.of', 1)
+    getDataTest('actions__active').get('li').should('have.lengthOf', 1)
     const action = getDataTest('actions__active').within(el => el.get('li')).first()
     action.should('contain.text', what)
     action.should('contain.text', who)
@@ -314,7 +371,7 @@ describe('Ongoing Incident: Status Updates', () => {
   const impact = 'This is the impact'
 
   beforeEach(() => {
-    cy.visit('http://127.0.0.1:5432/?disableMultiplayer=true') // TODO: dont use hardcoded port
+    cy.visit(URL) // TODO: dont use hardcoded port
     submitIncident(what, when, where, impact, false)
   })
 
