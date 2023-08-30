@@ -62,22 +62,22 @@ export default function IncidentSummary({incident}: {incident: Incident}) {
                 if (activeActions.length > 0) {
                     lines.push(`    *Actions:*`)
                     activeActions.forEach(action => {
-                        lines.push(`    - ${action.what} [@${action.who}]`)
+                        lines.push(`    - ${action.what} (@${action.who})` + (action.link ? ` [More info](${action.link})` : ``))
                     })
                 }
                 if (resolvedActions.length > 0) {
                     lines.push(``)
-                    lines.push(`    *Resolved Actions:*`)
+                    lines.push(`    *Past Actions:*`)
                     resolvedActions.forEach(action => {
                         const symbol = action.status == 'Success' ? '✔️' : '❌'
-                        lines.push(`    - ${symbol} ${action.what} [@${action.who}`)
+                        lines.push(`    - ${symbol} ${action.what} (@${action.who})` + (action.link ? ` [More info](${action.link})` : ``))
                     })
                 }
             }
             lines.push(``)
         })
 
-        return lines.join('\n')
+        return lines.join('\n').trim()
     }
 
     const copyBusinessUpdate = async () => {
