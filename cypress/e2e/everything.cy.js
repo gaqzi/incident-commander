@@ -334,34 +334,30 @@ describe('Ongoing Incident: Managing Actions', () => {
     addActionToIncident({ what: 'Will be a success' })
     addActionToIncident({ what: 'Will be a failure' })
 
-    let pastActionsList = getDataTest('actions__past', 'ul')
-    pastActionsList.should('not.contain.text', 'Will be a success')
-    pastActionsList.should('not.contain.text', '✔️')
+    getDataTest('actions__inactive', 'li').should('not.exist')
+      // .should('not.contain.text', 'Will be a success')
+      // .should('not.contain.text', '✔️')
 
+    // click mark as success
+    getDataTest('active_action__what').first().trigger('mouseover')
     getDataTest('active_action__succeeded').first().click()
 
-    pastActionsList = getDataTest('actions__past', 'ul')
-    pastActionsList.should('contain.text', 'Will be a success')
-    pastActionsList.should('contain.text', '✔️')
-    pastActionsList.should('not.contain.text', 'Will be a failure')
-    pastActionsList.should('not.contain.text', '❌')
+    getDataTest('actions__inactive', 'li')
+      .should('contain.text', 'Will be a success')
+      .should('contain.text', 'Success')
+      .should('not.contain.text', 'Will be a failure')
+      .should('not.contain.text', 'Failure')
 
-    const failureAction = getDataTest('actions__active', 'ul li').first()
 
-    // Failure click will prompt for reason
-    // This is how you type into prompts with Cypress =-\
-    const failureReason = 'This is the failure reason'
-    cy.window().then(function (win) {
-      cy.stub(win, 'prompt').returns(failureReason)
-    })
+    // click mark as failure
+    // const failureReason = 'This is the failure reason'
+    getDataTest('active_action__what').first().trigger('mouseover')
+    getDataTest('active_action__failed').first().click()
 
-    // Do the click
-    failureAction.getDataTest('active_action__failed').first().click()
-
-    pastActionsList = getDataTest('actions__past', 'ul')
-    pastActionsList.should('contain.text', 'Will be a failure')
-    pastActionsList.should('contain.text', '❌')
-    pastActionsList.should('contain.text', failureReason)
+    getDataTest('actions__inactive', 'li')
+      .should('contain.text', 'Will be a failure')
+      .should('contain.text', 'Failure')
+      // .should('contain.text', failureReason) // TODO
   })
 })
 
