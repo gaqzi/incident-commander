@@ -68,7 +68,7 @@ export default function CountdownTimer({id, durationInMinutes, label, onComplete
     }, [isRunning, expiresAt])
 
     return (
-    <>
+    <div data-test="countdown-display-wrapper">
         {
             showForm &&
               <form onSubmit={handleSubmit((data) => {reset(); onSubmit(data)})} >
@@ -107,16 +107,16 @@ export default function CountdownTimer({id, durationInMinutes, label, onComplete
 
     <Popover content={
         <>
-            <Button size="small" onClick={restart}>Restart</Button>
+            <Button data-test="countdown-timer__restart" size="small" onClick={restart}>Restart</Button>
             {
-                isRunning && <Button size="small" onClick={cancel}>Cancel</Button>
+                isRunning && <Button data-test="countdown-timer__cancel" size="small" onClick={cancel}>Cancel</Button>
             }
-            <Button size="small" onClick={()=>setShowForm(true)}>Edit</Button>
+            <Button data-test="countdown-timer__edit" size="small" onClick={()=>setShowForm(true)}>Edit</Button>
         </>
     }>
         {
           !showForm &&
-          <span>
+          <span data-test="countdown-display">
             -
             <span className="minutes">{minutes}</span>
             :
@@ -124,6 +124,6 @@ export default function CountdownTimer({id, durationInMinutes, label, onComplete
         </span>
         }
     </Popover>
-    </>
+    </div>
     )
 }

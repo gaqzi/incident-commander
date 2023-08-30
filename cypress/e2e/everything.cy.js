@@ -265,52 +265,56 @@ describe('Ongoing Incident: Managing Actions', () => {
     addActionToIncident({ minutes })
 
     const getCountdownDisplay = () => {
-      return getDataTest('actions__active', 'countdown-display').first()
+      return getDataTest('actions__active', '[data-test="countdown-display-wrapper"]').first()
     }
 
     cy.wait(1 * 1000)
 
     // capture value, wait a teensy bit to see the value change
-    getCountdownDisplay().invoke('attr', 'seconds').then(parseInt).as('initialMins')
-    getCountdownDisplay().invoke('attr', 'seconds').then(parseInt).as('initialSecs')
+    getCountdownDisplay().within(()=>cy.get('.minutes').invoke('text').then(parseInt).as('initialMins'))
+    getCountdownDisplay().within(()=>cy.get('.seconds').invoke('text').then(parseInt).as('initialSecs'))
     cy.wait(3 * 1000)
 
     // look at value after waiting
-    getCountdownDisplay().invoke('attr', 'minutes').then(parseInt).as('waitedMins')
-    getCountdownDisplay().invoke('attr', 'seconds').then(parseInt).as('waitedSecs')
+    getCountdownDisplay().within(()=>cy.get('.minutes').invoke('text').then(parseInt).as('waitedMins'))
+    getCountdownDisplay().within(()=>cy.get('.seconds').invoke('text').then(parseInt).as('waitedSecs'))
 
     // expect to be lower
     cy.then(function () {
       expect(this.waitedMins * 60 + this.waitedSecs).to.be.below(this.initialMins * 60 + this.initialSecs)
     })
 
-    // now left-click to reset timer
-    getCountdownDisplay().click()
+    // now restart timer
+    getCountdownDisplay().within(()=>cy.get('[data-test="countdown-display"]').trigger('mouseover'))
+    getDataTest('countdown-timer__restart').click()
+    cy.wait(1 * 1000)
 
-    // get the reset timer vals
-    getCountdownDisplay().invoke('attr', 'minutes').then(parseInt).as('resetMins')
-    getCountdownDisplay().invoke('attr', 'seconds').then(parseInt).as('resetSecs')
+    // get the restart timer vals
+    getCountdownDisplay().within(()=>cy.get('.minutes').invoke('text').then(parseInt).as('restartMins'))
+    getCountdownDisplay().within(()=>cy.get('.seconds').invoke('text').then(parseInt).as('restartSecs'))
 
     // expect them to be higher
     cy.then(function () {
-      expect(this.resetMins * 60 + this.resetSecs).to.be.above(this.waitedMins * 60 + this.waitedSecs)
+      expect(this.restartMins * 60 + this.restartSecs).to.be.above(this.waitedMins * 60 + this.waitedSecs)
     })
 
-    // now right-click to set new value to timer
-    // This is how you type into prompts with Cypress =-\
+    // now set new value to timer
     const newMinutes = 20
-    cy.window().then(function (win) {
-      cy.stub(win, 'prompt').returns(newMinutes)
-    })
-    getCountdownDisplay().rightclick()
+    getCountdownDisplay().trigger('mouseover')
+    getDataTest('countdown-timer__edit').click()
+    getDataTest('countdown-timer__minutes').clear().type(newMinutes)
+    getDataTest('countdown-timer-form__submit').click()
+    cy.wait(1 * 1000)
 
     // get the new values
-    getCountdownDisplay().invoke('attr', 'minutes').then(parseInt).as('newMins')
-    getCountdownDisplay().invoke('attr', 'seconds').then(parseInt).as('newSecs')
+    getCountdownDisplay().within(()=>cy.get('.minutes').invoke('text').then(parseInt).as('newMins'))
+    getCountdownDisplay().within(()=>cy.get('.seconds').invoke('text').then(parseInt).as('newSecs'))
 
     // expect them to be what we just set
     cy.then(function () {
-      expect(this.newMins * 60 + this.newSecs).to.equal(newMinutes * 60)
+      // doing a range here just because we'r dealing with timing code
+      expect(this.newMins * 60 + this.newSecs).to.be.greaterThan(newMinutes * 60 - 10)
+      expect(this.newMins * 60 + this.newSecs).to.be.lessThan(newMinutes * 60 + 1)
     })
   })
 
