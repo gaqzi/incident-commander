@@ -18,8 +18,8 @@ function getDataTest (ids, suffix = '') {
   if (Array.isArray(ids)) {
     selector = ids.reduce((accum, id) => accum + `[data-test="${id}"] `, '')
   }
-  if (suffix.startsWith('>')) {
-    return cy.get('body').find(selector + '>' + suffix.substring(1))
+  if (suffix != '') {
+    return cy.get('body').find(selector + ' ' + suffix)
   }
   return cy.get('body').find(selector + ' ' + suffix)
 }
@@ -320,12 +320,14 @@ describe('Ongoing Incident: Managing Actions', () => {
 
   it('lets you toggle an active action as mitigating or not', () => {
     addActionToIncident({ isMitigating: false })
-    const activeAction = getDataTest('actions__active', 'ul').first()
-    const mitigatingInput = activeAction.getDataTest('action__is-mitigating')
-    mitigatingInput.should('not.be.checked')
+    getDataTest('action__is-mitigating')
+      .should('not.be.checked')
 
-    mitigatingInput.check()
-    mitigatingInput.should('be.checked')
+    getDataTest('active_action__what').trigger('mouseover')
+    getDataTest('action__edit').click()
+    getDataTest('new-action__is-mitigating').check()
+    getDataTest('new-action__submit').click()
+    getDataTest('action__is-mitigating').should('be.checked')
   })
 
   it('lets you finish an action as a success or a failure', () => {
