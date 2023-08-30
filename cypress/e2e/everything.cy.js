@@ -9,7 +9,7 @@ Cypress.Keyboard.defaults({
 //   return cy.get(`[data-test="${target}"] ${suffix}`)
 // }
 
-const URL = "http://127.0.0.1:5432/incident/ongoing?disableMultiplayer=true"
+const URL = 'http://127.0.0.1:5432/incident/ongoing?disableMultiplayer=true'
 
 function getDataTest (ids, suffix = '') {
   // OMG WTF: learing: cy.get seems to mutate a global state that all cy.get.shoulds are evaluated against!
@@ -78,7 +78,7 @@ describe('Creating a New Incident', () => {
       .should('contain.text', what)
 
       .find('[data-test="actions__active"] li')
-        .should('have.lengthOf', 0)
+      .should('have.lengthOf', 0)
 
     getDataTest('affected-systems__listing__past', 'li')
       .should('have.lengthOf', 0)
@@ -92,7 +92,7 @@ describe('Creating a New Incident', () => {
 
     submitIncident(what, when, where, impact, true)
 
-    //TODO file a bug with Cypress.  should('have.length.of',...) silently passes but is invalid.  'have.length.eq' seems to work, as does 'have.lengthOf'
+    // TODO file a bug with Cypress.  should('have.length.of',...) silently passes but is invalid.  'have.length.eq' seems to work, as does 'have.lengthOf'
 
     getDataTest('affected-system__past')
       .should('not.exist')
@@ -103,7 +103,6 @@ describe('Creating a New Incident', () => {
       .should('contain.text', 'Has there been an infrastructure changed recently?')
   })
 })
-
 
 describe('Ongoing Incident: Managing the Summary', () => {
   const what = 'This is the what'
@@ -146,7 +145,6 @@ describe('Ongoing Incident: Managing the Summary', () => {
   })
 })
 
-
 describe('Ongoing Incident: Managing Affected Components', () => {
   const what = 'This is the what'
   const when = 'This is the when'
@@ -184,7 +182,7 @@ describe('Ongoing Incident: Managing Affected Components', () => {
       .should('not.contain.text', what)
       .should('contain.text', newWhat)
       .find('li')
-        .should('have.length', 1)
+      .should('have.length', 1)
   })
 
   it('lets you resolve an affected component', () => {
@@ -271,13 +269,13 @@ describe('Ongoing Incident: Managing Actions', () => {
     cy.wait(1 * 1000)
 
     // capture value, wait a teensy bit to see the value change
-    getCountdownDisplay().within(()=>cy.get('.minutes').invoke('text').then(parseInt).as('initialMins'))
-    getCountdownDisplay().within(()=>cy.get('.seconds').invoke('text').then(parseInt).as('initialSecs'))
+    getCountdownDisplay().within(() => cy.get('.minutes').invoke('text').then(parseInt).as('initialMins'))
+    getCountdownDisplay().within(() => cy.get('.seconds').invoke('text').then(parseInt).as('initialSecs'))
     cy.wait(3 * 1000)
 
     // look at value after waiting
-    getCountdownDisplay().within(()=>cy.get('.minutes').invoke('text').then(parseInt).as('waitedMins'))
-    getCountdownDisplay().within(()=>cy.get('.seconds').invoke('text').then(parseInt).as('waitedSecs'))
+    getCountdownDisplay().within(() => cy.get('.minutes').invoke('text').then(parseInt).as('waitedMins'))
+    getCountdownDisplay().within(() => cy.get('.seconds').invoke('text').then(parseInt).as('waitedSecs'))
 
     // expect to be lower
     cy.then(function () {
@@ -285,13 +283,13 @@ describe('Ongoing Incident: Managing Actions', () => {
     })
 
     // now restart timer
-    getCountdownDisplay().within(()=>cy.get('[data-test="countdown-display"]').trigger('mouseover'))
+    getCountdownDisplay().within(() => cy.get('[data-test="countdown-display"]').trigger('mouseover'))
     getDataTest('countdown-timer__restart').click()
     cy.wait(1 * 1000)
 
     // get the restart timer vals
-    getCountdownDisplay().within(()=>cy.get('.minutes').invoke('text').then(parseInt).as('restartMins'))
-    getCountdownDisplay().within(()=>cy.get('.seconds').invoke('text').then(parseInt).as('restartSecs'))
+    getCountdownDisplay().within(() => cy.get('.minutes').invoke('text').then(parseInt).as('restartMins'))
+    getCountdownDisplay().within(() => cy.get('.seconds').invoke('text').then(parseInt).as('restartSecs'))
 
     // expect them to be higher
     cy.then(function () {
@@ -307,8 +305,8 @@ describe('Ongoing Incident: Managing Actions', () => {
     cy.wait(1 * 1000)
 
     // get the new values
-    getCountdownDisplay().within(()=>cy.get('.minutes').invoke('text').then(parseInt).as('newMins'))
-    getCountdownDisplay().within(()=>cy.get('.seconds').invoke('text').then(parseInt).as('newSecs'))
+    getCountdownDisplay().within(() => cy.get('.minutes').invoke('text').then(parseInt).as('newMins'))
+    getCountdownDisplay().within(() => cy.get('.seconds').invoke('text').then(parseInt).as('newSecs'))
 
     // expect them to be what we just set
     cy.then(function () {
@@ -335,8 +333,8 @@ describe('Ongoing Incident: Managing Actions', () => {
     addActionToIncident({ what: 'Will be a failure' })
 
     getDataTest('actions__inactive', 'li').should('not.exist')
-      // .should('not.contain.text', 'Will be a success')
-      // .should('not.contain.text', '✔️')
+    // .should('not.contain.text', 'Will be a success')
+    // .should('not.contain.text', '✔️')
 
     // click mark as success
     getDataTest('active_action__what').first().trigger('mouseover')
@@ -347,7 +345,6 @@ describe('Ongoing Incident: Managing Actions', () => {
       .should('contain.text', 'Success')
       .should('not.contain.text', 'Will be a failure')
       .should('not.contain.text', 'Failure')
-
 
     // click mark as failure
     // const failureReason = 'This is the failure reason'
@@ -391,7 +388,7 @@ describe('Ongoing Incident: Status Updates', () => {
     it('provides the status, summary, affected components, current actions', () => {
       addActionToIncident({ what: 'The Action', who: 'The Who', link: 'http://example.com/', minutes: 10, isMitigating: true })
       addActionToIncident({ what: 'A failed action', who: 'The Whom', link: 'http://example.com/', minutes: 10, isMitigating: true })
-      
+
       // Mark action as failed
       getDataTest('active_action__what').eq(1).trigger('mouseover')
       getDataTest('active_action__failed').click()
@@ -399,7 +396,6 @@ describe('Ongoing Incident: Status Updates', () => {
       // TODO - not handlign failed action reasonings yet
       // cy.window().then((win) => cy.stub(win, 'prompt').returns('Was not destined to be.'))
 
-      
       // cy.get('active-action[what="A failed action"] [data-test="active_action__failed"]').click()
 
       let clipboardText = ''
@@ -407,20 +403,20 @@ describe('Ongoing Incident: Status Updates', () => {
         cy.stub(win.navigator.clipboard, 'writeText', (text) => { clipboardText = text })
       })
 
-      const expected = `` +
+      const expected = '' +
               `Tech Update\n*Investigating*\nSince ${when} we are seeing ${what} in ${where} impacting ${impact}.` +
               `\n\n*Current status:*\n- 🔴 ${what}` +
-              `\n    *Actions:*\n` + 
-              `    - The Action (@The Who) [More info](http://example.com/)` +
+              '\n    *Actions:*\n' +
+              '    - The Action (@The Who) [More info](http://example.com/)' +
               // '\n\n*Past actions:*\n- ❌ A failed action (The Whom) [More info](http://example.com/)\n    - Was not destined to be.'
-              `\n` + 
-              `\n    *Past Actions:*` + 
-              `\n    - ❌ A failed action (@The Whom) [More info](http://example.com/)`
+              '\n' +
+              '\n    *Past Actions:*' +
+              '\n    - ❌ A failed action (@The Whom) [More info](http://example.com/)'
 
       getDataTest('button-tech-update')
         .click()
         .then(() => {
-            expect(clipboardText).to.eq(expected)
+          expect(clipboardText).to.eq(expected)
         })
     })
   })
