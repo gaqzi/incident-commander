@@ -70,7 +70,17 @@ export default function IncidentSummary({incident}: {incident: Incident}) {
                     lines.push(`    *Past Actions:*`)
                     resolvedActions.forEach(action => {
                         const symbol = action.status == 'Success' ? '✔️' : '❌'
-                        lines.push(`    - ${symbol} ${action.what} (@${action.who})` + (action.link ? ` [More info](${action.link})` : ``))
+                        let line = `    - ${symbol} ${action.what}`
+                        if (action.who)  {
+                            line += ` (@${action.who})`
+                        }
+                        if (action.link) {
+                            line += ` [More info](${action.link})`
+                        }
+                        if (action.resolution) {
+                            line += ` -- ${action.resolution}`
+                        }
+                        lines.push(line)
                     })
                 }
             }

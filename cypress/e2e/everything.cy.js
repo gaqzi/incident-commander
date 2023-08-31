@@ -333,8 +333,6 @@ describe('Ongoing Incident: Managing Actions', () => {
     addActionToIncident({ what: 'Will be a failure' })
 
     getDataTest('actions__inactive', 'li').should('not.exist')
-    // .should('not.contain.text', 'Will be a success')
-    // .should('not.contain.text', '✔️')
 
     // click mark as success
     getDataTest('active_action__what').first().trigger('mouseover')
@@ -349,8 +347,8 @@ describe('Ongoing Incident: Managing Actions', () => {
     // click mark as failure
     // need to stub the prompt...
     const failureReason = 'This is the failure reason'
-    cy.window().then((win) => {  
-      cy.stub(win, 'prompt').returns(failureReason) 
+    cy.window().then((win) => {
+      cy.stub(win, 'prompt').returns(failureReason)
     })
 
     getDataTest('active_action__what').first().trigger('mouseover')
@@ -390,18 +388,14 @@ describe('Ongoing Incident: Status Updates', () => {
   })
 
   describe('Tech Update', () => {
-    it('provides the status, summary, affected components, current actions', () => {
+    it.only('provides the status, summary, affected components, current actions', () => {
       addActionToIncident({ what: 'The Action', who: 'The Who', link: 'http://example.com/', minutes: 10, isMitigating: true })
       addActionToIncident({ what: 'A failed action', who: 'The Whom', link: 'http://example.com/', minutes: 10, isMitigating: true })
 
       // Mark action as failed
+      cy.window().then((win) => cy.stub(win, 'prompt').returns('Was not destined to be.'))
       getDataTest('active_action__what').eq(1).trigger('mouseover')
       getDataTest('active_action__failed').click()
-
-      // TODO - not handlign failed action reasonings yet
-      // cy.window().then((win) => cy.stub(win, 'prompt').returns('Was not destined to be.'))
-
-      // cy.get('active-action[what="A failed action"] [data-test="active_action__failed"]').click()
 
       let clipboardText = ''
       cy.window().then(function (win) {
@@ -416,7 +410,7 @@ describe('Ongoing Incident: Status Updates', () => {
               // '\n\n*Past actions:*\n- ❌ A failed action (The Whom) [More info](http://example.com/)\n    - Was not destined to be.'
               '\n' +
               '\n    *Past Actions:*' +
-              '\n    - ❌ A failed action (@The Whom) [More info](http://example.com/)'
+              '\n    - ❌ A failed action (@The Whom) [More info](http://example.com/) -- Was not destined to be.'
 
       getDataTest('button-tech-update')
         .click()
