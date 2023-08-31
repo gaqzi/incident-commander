@@ -1,5 +1,3 @@
-import { v4 as uuidv4 } from 'uuid';
-
 // Incident
 type AddIncidentResourceLink = { type: 'add_incident_resource_link', payload: ResourceLink }
 type EditIncidentResourceLink = { type: 'edit_incident_resource_link', payload: ResourceLink }
@@ -79,9 +77,9 @@ const editIncidentSummary = (incident: Incident, updatedSummary: IncidentSummary
             // and use its ID value to associate the default actions with it.
             const affectedSystemId = updatedIncident.affectedSystems[0].id
 
-            defaultActions.forEach(what => {
+            defaultActions.forEach((what, index) => {
                 updatedIncident = addAction(updatedIncident, {
-                    id: `action_${uuidv4()}`,
+                    id: `action_default_${index}`,
                     status: 'Active',
                     isMitigating: true,
                     what,
