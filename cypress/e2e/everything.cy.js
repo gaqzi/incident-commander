@@ -347,14 +347,19 @@ describe('Ongoing Incident: Managing Actions', () => {
       .should('not.contain.text', 'Failure')
 
     // click mark as failure
-    // const failureReason = 'This is the failure reason'
+    // need to stub the prompt...
+    const failureReason = 'This is the failure reason'
+    cy.window().then((win) => {  
+      cy.stub(win, 'prompt').returns(failureReason) 
+    })
+
     getDataTest('active_action__what').first().trigger('mouseover')
     getDataTest('active_action__failed').first().click()
 
     getDataTest('actions__inactive', 'li')
       .should('contain.text', 'Will be a failure')
       .should('contain.text', 'Failure')
-      // .should('contain.text', failureReason) // TODO
+      .should('contain.text', failureReason) // TODO
   })
 })
 

@@ -13,8 +13,9 @@ type ResolveAffectedSystem = { type: 'resolve_affected_system', payload: string 
 // Actions
 type AddAction = { type: 'add_action', payload: Action }
 type EditAction = { type: 'edit_action', payload: Action }
+type ResolveActionPayload = { actionId: string, resolution: string }
 type ResolveActionSuccess = { type: 'resolve_action_success', payload: string }
-type ResolveActionFailure = { type: 'resolve_action_failure', payload: string }
+type ResolveActionFailure = { type: 'resolve_action_failure', payload: ResolveActionPayload }
 type UpdateActionTimer = { type: 'update_action_timer', payload: {minutes: number} }
 
 // Putting it all together...
@@ -134,12 +135,13 @@ const updateAction = (incident: Incident, updatedAction: Action): Incident => {
     throw new Error(`Could not find action with id ${updatedAction.id} within incident: ${JSON.stringify(incident)}`)
 }
 
-const resolveActionFailure = (incident, actionId: string) => {
+const resolveActionFailure = (incident, payload: ResolveActionPayload) => {
+    const { actionId, resolution } = payload
     let updatedIncident = JSON.parse(JSON.stringify(incident))
     const { systemIndex, actionIndex } = getIndexesForActionId(incident, actionId)
     if (actionIndex != -1) {
         const action = incident.affectedSystems[systemIndex].actions[actionIndex]
-        updatedIncident.affectedSystems[systemIndex].actions[actionIndex] = {...action, status: 'Failure'}
+        updatedIncident.affectedSystems[systemIndex].actions[actionIndex] = {...action, status: 'Failure', resolution }
         return updatedIncident
     }
 
@@ -207,7 +209,7 @@ export const incidentReducer = (incident: Incident, event: IncidentEvents): Inci
         case 'resolve_action_success':
             return resolveActionSuccess(incident, payload as string)
         case 'resolve_action_failure':
-            return resolveActionFailure(incident, payload as string)
+            return resolveActionFailure(incident, payload as ResolveActionPayload)
         default: {
             throw Error(`Unknown event type: ${type} payload:${payload}`);
         }

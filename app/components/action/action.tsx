@@ -33,7 +33,11 @@ export default function Action({action}: props) {
     }
 
     const resolveActionFailure = () => {
-        incidentReducer([{type: 'resolve_action_failure', payload: action.id}])
+        const resolution = prompt('Why did this fail to resolve the issue?')
+        if (resolution == null) {
+          return;
+        }
+        incidentReducer([{type: 'resolve_action_failure', payload: { actionId: action.id, resolution } }])
     }
 
     return (
@@ -118,7 +122,10 @@ export default function Action({action}: props) {
 
                     {
                         action.status != 'Active' &&
-                      <span className="block">{action.status}</span>
+                        <>
+                          <span className="block">{action.status}</span>
+                          <span className="block">{action.resolution}</span>
+                        </>
                     }
                 </span>
               </div>
