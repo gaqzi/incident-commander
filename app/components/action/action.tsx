@@ -87,7 +87,7 @@ export default function Action({action}: props) {
                         @<span className="who" data-test="active_action__who">{action.who}</span>
                         {
                           action.link &&
-                          <a className="ml-1" href={action.link} data-test="active_action__link">link</a>
+                          <a className="ml-1" target="_blank" href={action.link} data-test="active_action__link">link</a>
                         }
                     </span>
                 </Popover>
