@@ -16,7 +16,7 @@ export default function ResourceLinkForm({ resourceLink, onSubmit, onCancel } : 
 
     return (
         <form
-            onSubmit={handleSubmit((data) => onSubmit && onSubmit(data))}
+            onSubmit={handleSubmit((data) => {onSubmit && onSubmit(data); reset()})}
         >
             <div className="flex flex-col mb-2">
                 <label htmlFor="resourceLinkName">Resource Name</label>

@@ -38,7 +38,7 @@ export default function IncidentSummary({incident}: {incident: Incident}) {
         setResourceLinkFormVisible(false)
     }
     const addResourceLink = (resourceLink: ResourceLink) => {
-        incidentReducer([{type: 'add_incident_resource_link', payload: {resourceLink, id: `link_${uuidv4()}`}}])
+        incidentReducer([{type: 'add_incident_resource_link', payload: {...resourceLink, id: `link_${uuidv4()}`}}])
         setResourceLinkFormVisible(false)
     }
 
