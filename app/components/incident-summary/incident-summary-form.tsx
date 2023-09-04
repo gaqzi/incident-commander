@@ -1,9 +1,10 @@
 'use client'
 
 import {useForm} from "react-hook-form";
-import {Button, DatePicker, Switch} from "antd";
+import {Button, DatePicker, Select, Switch} from "antd";
 import * as dayjs from 'dayjs'
 import {useEffect, useState} from "react";
+import config from '../../config'
 
 interface Props {
     summary?: IncidentSummary,
@@ -18,10 +19,11 @@ dayjs.extend(utc)
 export default function IncidentSummaryForm(props : Props) {
     const {  summary, onSubmit, onCancel } = props
     const [whenDate, setWhenDate] = useState(summary.whenUtcString)
+    const [status, setStatus] = useState(summary.status)
 
     const { register, handleSubmit, reset, formState: { errors }, setFocus } = useForm({
         defaultValues: { ...summary, whenDate, addDefaultActions: true },
-        values: { whenDate }
+        values: { status, whenDate }
     })
 
     useEffect(()=>{
@@ -36,8 +38,12 @@ export default function IncidentSummaryForm(props : Props) {
     })
 
     const myOnSubmit = (data) => {
-        const { what, where, impact } = data
-        onSubmit && onSubmit({what, where, impact, whenUtcString: data.whenDate, addDefaultActions: data.addDefaultActions })
+        const { status, what, where, impact } = data
+        onSubmit && onSubmit({status, what, where, impact, whenUtcString: data.whenDate, addDefaultActions: data.addDefaultActions })
+    }
+
+    const handleStatusSelect = (data) => {
+        setStatus(data)
     }
 
     return (
@@ -45,6 +51,19 @@ export default function IncidentSummaryForm(props : Props) {
             onSubmit={handleSubmit((data) => myOnSubmit(data))}
             className="mt-2 mb-4"
         >
+            <div className="flex flex-col mb-2">
+                <label htmlFor="summaryStatus">Status</label>
+                <Select
+                    defaultValue={summary?.status}
+                    // style={{ width: 120 }}
+                    onChange={handleStatusSelect}
+                    options={
+                        config.statuses.map(s => { return { value: s, label: s } } )
+                    }
+                    data-test="summary__select__status"
+                />
+            </div>
+
             <div className="flex flex-col mb-2">
                     <label htmlFor="summaryWhat">What is wrong?</label>
                     <input
