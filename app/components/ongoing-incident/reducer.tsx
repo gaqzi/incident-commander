@@ -1,3 +1,5 @@
+import config from '../../config'
+
 // Incident
 type AddIncidentResourceLink = { type: 'add_incident_resource_link', payload: ResourceLink }
 type EditIncidentResourceLink = { type: 'edit_incident_resource_link', payload: ResourceLink }
@@ -60,12 +62,6 @@ const editIncidentSummary = (incident: Incident, updatedSummary: IncidentSummary
         // so also create the first affected system from the what.
         updatedIncident = addAffectedSystem(updatedIncident, {id: 'system_0', what: updatedSummary.what})
 
-        // TODO: move this to a config
-        const defaultActions = [
-            'Was there a recent deploy?',
-            'Was a feature flag toggled recently?',
-            'Has there been an infrastructure changed recently?'
-        ]
 
         // HACK: we are throwing `addDefaultActions` into the payload for the update incident summary event
         // for the special case of when the initial incident summary data is submitted. It's not part of the
@@ -77,7 +73,7 @@ const editIncidentSummary = (incident: Incident, updatedSummary: IncidentSummary
             // and use its ID value to associate the default actions with it.
             const affectedSystemId = updatedIncident.affectedSystems[0].id
 
-            defaultActions.forEach((what, index) => {
+            config.defaultActions.forEach((what, index) => {
                 updatedIncident = addAction(updatedIncident, {
                     id: `action_default_${index}`,
                     status: 'Active',
