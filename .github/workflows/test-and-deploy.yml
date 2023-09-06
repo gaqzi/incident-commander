@@ -60,7 +60,7 @@ jobs:
       - name: Cypress run
         uses: cypress-io/github-action@v6
         with:
-          start: npm start
+          start: npm run dev
       - name: Store failure artifacts
         uses: actions/upload-artifact@v3
         with:
