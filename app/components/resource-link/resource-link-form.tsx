@@ -5,7 +5,7 @@ import {Button} from "antd";
 
 interface props {
     resourceLink?: ResourceLink
-    onSubmit?: (ResourceLink) => void,
+    onSubmit?: (link: any) => void,
     onCancel?: () => void,
 }
 
@@ -23,7 +23,6 @@ export default function ResourceLinkForm({ resourceLink, onSubmit, onCancel } : 
                 <input
                     type="text"
                     id="resourceLinkName"
-                    name="name"
                     data-test="resource-link__name"
                     {...register("name")}
                 />
@@ -34,13 +33,12 @@ export default function ResourceLinkForm({ resourceLink, onSubmit, onCancel } : 
                 <input
                     type="text"
                     id="resourceLinkUrl"
-                    name="url"
                     data-test="resource-link__url"
                     {...register("url")}
                 />
             </div>
 
-            <input type="hidden" name="id" {...register("id")} />
+            <input type="hidden" {...register("id")} />
 
 
             <div>
@@ -55,11 +53,10 @@ export default function ResourceLinkForm({ resourceLink, onSubmit, onCancel } : 
                 </Button>
 
                 <Button
-                    className="inline"
-                    type="secondary"
+                    className="inline cancel"
+                    type="default"
                     size="small"
                     htmlType="reset"
-                    className="cancel"
                     data-test="resource-link__cancel"
                     onClick={onCancel}
                 >

@@ -15,7 +15,7 @@ export default function Action({action}: props) {
     const [showForm, setShowForm] = useState(false)
     const incidentReducer = useContext(IncidentDispatchContext)
     const notificationPermission = useContext(NotificationsContext)
-    const updateAction = (data) => {
+    const updateAction = (data: Action) => {
         // TODO emit event instead
         // setAction(data)
         setShowForm(false)
@@ -101,7 +101,7 @@ export default function Action({action}: props) {
                            durationInMinutes={action.timerDurationInMinutes}
                            label={action.what}
                            onCompleted={(id, label)=> {
-                              if (notificationPermission) {
+                              if (notificationPermission && label) {
                                   new Notification(label) // eslint-disable-line no-new
                               }
                            }}

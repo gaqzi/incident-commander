@@ -10,7 +10,7 @@ import {EditOutlined, PlusOutlined} from "@ant-design/icons";
 import {Incident} from "@/app/components/ongoing-incident/reducer";
 import {uuidv4} from "lib0/random";
 
-export default function IncidentSummary({incident}: {incident: Incident}) {
+export default function IncidentSummary({incident, showForm}: {incident: Incident, showForm: boolean}) {
     const summary = incident.summary
     const incidentReducer = useContext(IncidentDispatchContext)
 
@@ -19,7 +19,7 @@ export default function IncidentSummary({incident}: {incident: Incident}) {
         setShowSummaryForm(incident.summary._isNew)
     }, [incident])
 
-    const updateSummary = (data) => {
+    const updateSummary = (data: any) => { // TODO: fix sig
         setShowSummaryForm(false)
         incidentReducer([{type: 'edit_incident_summary', payload: data}])
     }
@@ -57,18 +57,18 @@ export default function IncidentSummary({incident}: {incident: Incident}) {
 
             if (includeActions) {
                 // Note: We always still skip all actions where isMitigating is false
-                const activeActions = system.actions.filter(a => a.status == 'Active' && a.isMitigating)
-                const resolvedActions = system.actions.filter(a => a.status != 'Active' && a.isMitigating)
-                if (activeActions.length > 0) {
+                const activeActions = system.actions?.filter(a => a.status == 'Active' && a.isMitigating)
+                const resolvedActions = system.actions?.filter(a => a.status != 'Active' && a.isMitigating)
+                if (activeActions!.length > 0) {
                     lines.push(`    *Actions:*`)
-                    activeActions.forEach(action => {
+                    activeActions!.forEach(action => {
                         lines.push(`    - ${action.what} (@${action.who})` + (action.link ? ` [More info](${action.link})` : ``))
                     })
                 }
-                if (resolvedActions.length > 0) {
+                if (resolvedActions!.length > 0) {
                     lines.push(``)
                     lines.push(`    *Past Actions:*`)
-                    resolvedActions.forEach(action => {
+                    resolvedActions!.forEach(action => {
                         const symbol = action.status == 'Success' ? '✔️' : '❌'
                         let line = `    - ${symbol} ${action.what}`
                         if (action.who)  {
@@ -110,7 +110,7 @@ export default function IncidentSummary({incident}: {incident: Incident}) {
                     <h2>Summary</h2>
 
                   <div className="incident-summary__actions">
-                    <Button data-test="button-business-update" onClick={copyBusinessUpdate.bind(this, incident)}>Copy Business Update</Button>
+                    <Button data-test="button-business-update" onClick={copyBusinessUpdate}>Copy Business Update</Button>
                     <Button data-test="button-tech-update" onClick={copyTechUpdate}>Copy Tech Update</Button>
                   </div>
 
@@ -151,7 +151,7 @@ export default function IncidentSummary({incident}: {incident: Incident}) {
                     onCancel={onResourceLinkFormCancel}
                     footer={null}
                 >
-                  <ResourceLinkForm resourceLink={null} onSubmit={addResourceLink} onCancel={onResourceLinkFormCancel}/>
+                  <ResourceLinkForm resourceLink={undefined} onSubmit={addResourceLink} onCancel={onResourceLinkFormCancel}/>
                 </Modal>
 
                 <ul className="incident-summary__links__list">

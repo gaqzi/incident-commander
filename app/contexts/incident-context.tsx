@@ -2,5 +2,10 @@
 
 import {createContext} from "react";
 
-export const IncidentDispatchContext = createContext(null)
-export const NotificationsContext = createContext(null)
+export const nullDispatch = (events: any[]) => {
+    console.log('NULL DISPATCH', events)
+}
+
+
+export const IncidentDispatchContext = createContext(nullDispatch)
+export const NotificationsContext = createContext(false)

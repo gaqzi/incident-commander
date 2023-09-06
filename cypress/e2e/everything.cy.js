@@ -388,7 +388,7 @@ describe('Ongoing Incident: Status Updates', () => {
   })
 
   describe('Tech Update', () => {
-    it.only('provides the status, summary, affected components, current actions', () => {
+    it('provides the status, summary, affected components, current actions', () => {
       addActionToIncident({ what: 'The Action', who: 'The Who', link: 'http://example.com/', minutes: 10, isMitigating: true })
       addActionToIncident({ what: 'A failed action', who: 'The Whom', link: 'http://example.com/', minutes: 10, isMitigating: true })
 

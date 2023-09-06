@@ -7,11 +7,11 @@ import {useForm} from "react-hook-form";
 interface Props {
     id: string
     durationInMinutes: number
-    onCompleted?: (id, string?) => void
+    onCompleted?: (id: string, message?: string) => void
     label?: string
 }
 export default function CountdownTimer({id, durationInMinutes, label, onCompleted}: Props) {
-    let timer
+    let timer: any
     const [expiresAt, setExpiresAt] = useState((new Date(Date.now() + 1000 * 60 * durationInMinutes)).valueOf())
     const [durationMins, setDurationMins] = useState(durationInMinutes)
     const [minutes, setMinutes] = useState(0)
@@ -22,13 +22,13 @@ export default function CountdownTimer({id, durationInMinutes, label, onComplete
         defaultValues: { durationMins: durationInMinutes }
     })
 
-    const onSubmit = (data) => {
+    const onSubmit = (data: {durationMins: number}) => {
         setDurationMins(data.durationMins)
         setShowForm(false)
-        restart(null, data.durationMins)
+        restart(data.durationMins)
     }
 
-    const restart = (event, mins) => {
+    const restart = (mins?: number) => {
         if (mins == null) {
             mins = durationMins
         }
@@ -78,7 +78,6 @@ export default function CountdownTimer({id, durationInMinutes, label, onComplete
                     className="block"
                     type="text"
                     id="minutes"
-                    name="durationMins"
                     data-test="countdown-timer__minutes"
                     {...register("durationMins")}
                   />
@@ -107,7 +106,7 @@ export default function CountdownTimer({id, durationInMinutes, label, onComplete
 
     <Popover content={
         <>
-            <Button data-test="countdown-timer__restart" size="small" onClick={restart}>Restart</Button>
+            <Button data-test="countdown-timer__restart" size="small" onClick={()=>restart()}>Restart</Button>
             {
                 isRunning && <Button data-test="countdown-timer__cancel" size="small" onClick={cancel}>Cancel</Button>
             }

@@ -15,7 +15,7 @@ interface props {
 export default function ResourceLink({resourceLink: resourceLink}: props) {
     const [showForm, setShowForm] = useState(false)
     const incidentReducer = useContext(IncidentDispatchContext)
-    const updateResourceLink = (data) => {
+    const updateResourceLink = (data: any) => {
         setShowForm(false)
         incidentReducer([{type: 'edit_incident_resource_link', payload: data}])
     }

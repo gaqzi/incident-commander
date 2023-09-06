@@ -8,7 +8,7 @@ import config from '../../config'
 
 interface Props {
     summary?: IncidentSummary,
-    onSubmit?: (Action) => void,
+    onSubmit?: (summary: any) => void, //TODO: fix this type signature
     onCancel?: () => void,
 }
 
@@ -18,8 +18,8 @@ dayjs.extend(utc)
 
 export default function IncidentSummaryForm(props : Props) {
     const {  summary, onSubmit, onCancel } = props
-    const [whenDate, setWhenDate] = useState(summary.whenUtcString)
-    const [status, setStatus] = useState(summary.status)
+    const [whenDate, setWhenDate] = useState(summary?.whenUtcString)
+    const [status, setStatus] = useState(summary?.status)
 
     const { register, handleSubmit, reset, formState: { errors }, setFocus } = useForm({
         defaultValues: { ...summary, whenDate, addDefaultActions: true },
@@ -28,21 +28,21 @@ export default function IncidentSummaryForm(props : Props) {
 
     useEffect(()=>{
         // HACK
-        if (summary.whenUtcString == "Thu, 01 Jan 1970 00:00:00 GMT") {
+        if (summary?.whenUtcString == "Thu, 01 Jan 1970 00:00:00 GMT") {
             setWhenDate(new Date().toUTCString())
         }
 
-        if (summary.what == "")  {
+        if (summary?.what == "")  {
             setFocus('what')
         }
     })
 
-    const myOnSubmit = (data) => {
+    const myOnSubmit = (data: any) => {
         const { status, what, where, impact } = data
         onSubmit && onSubmit({status, what, where, impact, whenUtcString: data.whenDate, addDefaultActions: data.addDefaultActions })
     }
 
-    const handleStatusSelect = (data) => {
+    const handleStatusSelect = (data: any) => {
         setStatus(data)
     }
 
@@ -69,7 +69,6 @@ export default function IncidentSummaryForm(props : Props) {
                     <input
                         type="text"
                         id="summaryWhat"
-                        name="what"
                         data-test="summary__input__what"
                         {...register("what")}
                     />
@@ -80,7 +79,6 @@ export default function IncidentSummaryForm(props : Props) {
                     <input
                         type="text"
                         id="summaryWhen"
-                        name="whenDate"
                         data-test="summary__input__when"
                         {...register("whenDate")}
                     />
@@ -99,7 +97,6 @@ export default function IncidentSummaryForm(props : Props) {
                     <input
                         type="text"
                         id="summaryWhere"
-                        name="where"
                         data-test="summary__input__where"
                         {...register("where")}
                     />
@@ -110,7 +107,6 @@ export default function IncidentSummaryForm(props : Props) {
                     <input
                         type="text"
                         id="summaryImpact"
-                        name="impact"
                         data-test="summary__input__impact"
                         {...register("impact")}
                     />
@@ -122,7 +118,6 @@ export default function IncidentSummaryForm(props : Props) {
                     className="ml-2"
                     type="checkbox"
                     id="summaryAddDefaultActions"
-                    name="addDefaultActions"
                     data-test="summary__add-default-actions"
                     {...register("addDefaultActions")}
                 />
@@ -134,11 +129,11 @@ export default function IncidentSummaryForm(props : Props) {
                 htmlType="submit"
                 data-test="summary__submit"
             >
-                { summary._isNew ? 'Create' : 'Update' }
+                { summary?._isNew ? 'Create' : 'Update' }
             </Button>
 
             <Button
-                type="secondary"
+                type="default"
                 size="small"
                 htmlType="reset"
                 className="cancel"

@@ -20,7 +20,7 @@ export default function AffectedSystem({affectedSystem}: {affectedSystem: Affect
         setShowSelfForm(true)
     }
 
-    const editAffectedSystem = (data) => {
+    const editAffectedSystem = (data: any) => {
         setShowSelfForm(false)
         incidentReducer([{type: 'edit_affected_system', payload: data}])
     }
@@ -33,7 +33,7 @@ export default function AffectedSystem({affectedSystem}: {affectedSystem: Affect
         incidentReducer([{type: 'resolve_affected_system', payload: affectedSystem.id}])
     }
 
-    const addAction = (data) => {
+    const addAction = (data: any) => {
         setShowNewActionForm(false)
         incidentReducer([{type: 'add_action', payload: {...data, id: `action_${uuidv4()}` }}])
     }
@@ -86,7 +86,7 @@ export default function AffectedSystem({affectedSystem}: {affectedSystem: Affect
 
                         <ul data-test="actions__active">
                             {
-                                affectedSystem.actions.filter(a => a.status == 'Active').map((action) => {
+                                affectedSystem.actions?.filter(a => a.status == 'Active').map((action) => {
                                     return (
                                         <li key={action.id} className="mb-2 border-solid pb-2 border-b-2 border-slate-30 last:border-b-0 last:pb-0">
                                             <Action action={action} />
@@ -98,7 +98,7 @@ export default function AffectedSystem({affectedSystem}: {affectedSystem: Affect
 
                         <ul data-test="actions__inactive">
                             {
-                                affectedSystem.actions.filter(a => a.status != 'Active').map((action) => {
+                                affectedSystem.actions?.filter(a => a.status != 'Active').map((action) => {
                                     return (
                                         <li key={action.id} className="mb-2 border-solid pb-2 border-b-2 border-slate-30 last:border-b-0 last:pb-0">
                                             <Action action={action} />

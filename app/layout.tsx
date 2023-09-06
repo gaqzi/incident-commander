@@ -13,24 +13,37 @@ const items: MenuProps['items'] = [
     {
         label: 'Home',
         key: 'home',
-        path: '/',
     },
     {
         label: 'New Incident',
         key: 'new_incident',
-        path: '/incident/ongoing',
     },
 ]
+const pathsToKeys: any = {
+    '/': 'home',
+    '/incident/ongoing' : 'new_incident',
+}
 
-const getMenuItemByPath = (path) => {
-    return items.find(i => { return i.path == path })
+const getMenuItemByPath = (path: string) => {
+    const key: string = pathsToKeys[path] as string
+    return items.find((i: any) => { return i.key == key })
 }
-const getMenuItemByKey = (key) => {
-    return items.find(i => { return i.key == key })
+const getMenuItemByKey = (key: string) => {
+    return items.find((i: any) => { return i.key == key })
 }
-const onMenuClick: MenuProps['onClick'] = (router, pathname, e) => {
+const onMenuClick: any = (router: any, pathname: string, e: any) => {
     const selectedItem = getMenuItemByKey(e.key)
-    router.push(selectedItem.path)
+    if (!selectedItem) {
+        return
+    } else {
+        const entry = Object.entries(pathsToKeys).find(([_, key]) => { return key == selectedItem.key })
+        if (!entry) {
+            return
+        }
+        else {
+            router.push(entry[0])
+        }
+    }
 };
 
 
@@ -47,7 +60,7 @@ export default function RootLayout({
     <html lang="en">
       <body className={inter.className}>
         <nav>
-            <Menu onClick={onMenuClick.bind(this, router, pathname)} selectedKeys={[getMenuItemByPath(pathname).key]} mode="horizontal" items={items} />
+            <Menu onClick={onMenuClick.bind(null, router, pathname)} selectedKeys={[getMenuItemByPath(pathname)?.key as string]} mode="horizontal" items={items} />
         </nav>
 
         <main className="container mx-auto px-4">

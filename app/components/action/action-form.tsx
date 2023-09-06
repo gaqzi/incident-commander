@@ -4,8 +4,8 @@ import {useForm} from "react-hook-form";
 import {Button} from "antd";
 
 interface props {
-    action?: Action
-    onSubmit?: (Action) => void,
+    action?: Action | any // TODO: fix this
+    onSubmit?: (action: Action) => void,
     onCancel?: () => void,
 }
 
@@ -24,7 +24,6 @@ export default function ActionForm({ action, onSubmit, onCancel } : props) {
                     className="block"
                     type="text"
                     id="newActionWhat"
-                    name="what"
                     data-test="new-action__what"
                     {...register("what")}
                 />
@@ -36,7 +35,6 @@ export default function ActionForm({ action, onSubmit, onCancel } : props) {
                         className="block"
                         type="text"
                         id="newActionWho"
-                        name="who"
                         data-test="new-action__who"
                         {...register("who")}
                     />
@@ -48,7 +46,6 @@ export default function ActionForm({ action, onSubmit, onCancel } : props) {
                         className="block"
                         type="url"
                         id="newActionLink"
-                        name="link"
                         placeholder="https://company.slack.com/archive/…"
                         data-test="new-action__link"
                         {...register("link")}
@@ -61,7 +58,6 @@ export default function ActionForm({ action, onSubmit, onCancel } : props) {
                         className="block"
                         type="text"
                         id="newActionWhen"
-                        name="timerDurationInMinutes"
                         data-test="new-action__minutes-between-updates"
                         {...register("timerDurationInMinutes")}
                     />
@@ -72,7 +68,6 @@ export default function ActionForm({ action, onSubmit, onCancel } : props) {
                         Is mitigating?
                         <input
                             type="checkbox"
-                            name="isMitigating"
                             data-test="new-action__is-mitigating"
                             {...register("isMitigating")}
                         />
@@ -81,7 +76,6 @@ export default function ActionForm({ action, onSubmit, onCancel } : props) {
 
             <input
                 type="hidden"
-                name="affectedSystemId"
                 {...register("affectedSystemId")}
             />
 
@@ -91,7 +85,7 @@ export default function ActionForm({ action, onSubmit, onCancel } : props) {
                 htmlType="submit"
                 data-test="new-action__submit"
             >
-                { action.id ? 'Update' : 'Add'}
+                { action!.id ? 'Update' : 'Add'}
             </Button>
 
             <Button

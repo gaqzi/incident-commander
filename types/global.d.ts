@@ -40,8 +40,8 @@ declare global {
     type AffectedSystem = {
         id?: string
         what: string
-        status: string
-        actions: Action[]
+        status?: string
+        actions?: Action[]
     }
 
     type ResourceLink = {
@@ -58,5 +58,6 @@ declare global {
         impact: string
         status: string
         resourceLinks: ResourceLink[]
+        addDefaultActions?: boolean
     }
 }

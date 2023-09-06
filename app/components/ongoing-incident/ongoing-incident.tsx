@@ -1,16 +1,15 @@
 'use client'
 
-import {Dispatch, DispatchWithoutAction, useEffect, useReducer, useState} from 'react'
+import {useEffect, useReducer, useState} from 'react'
 import {useForm} from 'react-hook-form'
 import * as Y from 'yjs'
 import { WebsocketProvider } from 'y-websocket'
 import {incidentReducer} from "@/app/components/ongoing-incident/reducer";
-import type IncidentEvents from "@app/components/ongoing-incident/reducer"
 
 import IncidentSummary from "@/app/components/incident-summary/incident-summary";
 import AffectedSystem from "@/app/components/affected-system/affected-system";
 import AffectedSystemForm from "@/app/components/affected-system/affected-system-form";
-import {NotificationsContext, IncidentDispatchContext} from "@/app/contexts/incident-context";
+import {NotificationsContext, IncidentDispatchContext, nullDispatch} from "@/app/contexts/incident-context";
 import ResourceLink from "@/app/components/resource-link/resource-link";
 import { Button, Modal } from "antd"
 import {PlusOutlined} from "@ant-design/icons";
@@ -109,14 +108,14 @@ const defaultIncident =  {
 
 // Multiplayer Stuff ===================
 
-function setupMultiplayer(dispatch: DispatchWithoutAction) {
+function setupMultiplayer(dispatch: any) {
     // If we don't have a room and password, create them and refresh window so they're on the query string
     const params = new URLSearchParams(window.location.search)
     if (!params.get('room')) {
-        params.set('room', new Date().valueOf())
+        params.set('room', new Date().valueOf().toString())
     }
     if (!params.get('password')) {
-        params.set('password', parseInt(Math.random() * 10e5, 10))
+        params.set('password', parseInt((Math.random() * 10e5).toString(), 10).toString())
     }
     if ((new URLSearchParams(window.location.search)).toString() !== params.toString()) {
         window.location.search = params.toString()
@@ -124,8 +123,8 @@ function setupMultiplayer(dispatch: DispatchWithoutAction) {
 
     const ydoc = new Y.Doc()
     const room = params.get('room') as string
-    const websocketProvider = new WebsocketProvider(process.env.NEXT_PUBLIC_YJS_SOCKET_SERVER, room, ydoc)
-    websocketProvider.on('status', event => {
+    const websocketProvider = new WebsocketProvider(process.env.NEXT_PUBLIC_YJS_SOCKET_SERVER as string, room, ydoc)
+    websocketProvider.on('status', (event: any) => {
         console.log('YJS WebSocket Provider: ', event.status) // logs "connected" or "disconnected"
     })
     // TODO: If we can't connect to the socket server, show an error dialog for now I guess?
@@ -134,9 +133,9 @@ function setupMultiplayer(dispatch: DispatchWithoutAction) {
     const ydocEvents = ydoc.get('events', Y.Array)
 
     ydocEvents.observe(yjsChangeEvent => {
-        yjsChangeEvent.changes.delta.forEach(change => {
+        yjsChangeEvent.changes.delta.forEach((change: any) => {
             if (!change.insert) return // we only expect `insert` changes because we are only ever pushing new events into the array in append only fashion
-            change.insert.forEach(inserted => {
+            change.insert.forEach((inserted: any) => {
                 // console.log('YJS', inserted)
                 dispatch(inserted)
             })
@@ -146,7 +145,7 @@ function setupMultiplayer(dispatch: DispatchWithoutAction) {
     return ydocEvents
 }
 
-const singleplayerDispatch = (dispatch: DispatchWithoutAction, events: any[]) => {
+const singleplayerDispatch = (dispatch: any, events: any[]) => {
     // console.log('sp dispatch', events)
     events.forEach(event => dispatch(event))
 }
@@ -162,18 +161,18 @@ const multiplayerDispatch = (ydocEvents: any, events: any[] = []) => {
 export default function OngoingIncident() {
     const [incident, dispatch] = useReducer(incidentReducer, initialDefault)
     let isMultiplayer = false
-    const [dispatcher, setDispatcher] = useState(null)
+    const [dispatcher, setDispatcher] = useState({} as any) // TODO: hack, fix this?
 
     // Setup Single or Multiplayer Dispatching
     useEffect(() => {
         const params = new URLSearchParams(window.location.search)
         if (params.get('disableMultiplayer')) {
             isMultiplayer = false
-            setDispatcher(()=>{return singleplayerDispatch.bind(this, dispatch)})
+            setDispatcher(()=>{return singleplayerDispatch.bind(null, dispatch)})
         } else {
             isMultiplayer = true
             let ydocEvents = setupMultiplayer(dispatch)
-            setDispatcher(()=>{return multiplayerDispatch.bind(this, ydocEvents)})
+            setDispatcher(()=>{return multiplayerDispatch.bind(null, ydocEvents)})
         }
         if (Notification.permission == 'granted') {
             Notification.requestPermission().then((newPermission)=>{
@@ -187,7 +186,7 @@ export default function OngoingIncident() {
     })
 
     const [notificationPermission, setNotificationPermission] = useState(false)
-    const toggleNotifications = (event) => {
+    const toggleNotifications = (event: any) => {
         if (!notificationPermission) {
             setNotificationPermission(false)
         }

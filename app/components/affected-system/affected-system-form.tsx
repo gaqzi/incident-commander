@@ -4,17 +4,17 @@ import {Button} from "antd";
 import {useEffect} from "react";
 
 interface props {
-    affectedSystem?: AffectedSystem,
-    onSubmit?: (AffectedSystem) => void,
+    affectedSystem?: AffectedSystem | null,
+    onSubmit?: (affectedSystem: AffectedSystem) => void,
     onCancel?: () => void,
 }
 
 export default function AffectedSystemForm( { affectedSystem, onSubmit, onCancel }: props ) {
     const { register, handleSubmit, reset, formState: { errors }, setFocus } = useForm({
-        defaultValues: affectedSystem
+        defaultValues: affectedSystem || {}
     })
 
-    const myOnSubmit = (data) => {
+    const myOnSubmit = (data: any) => {
         reset()
         onSubmit && onSubmit(data)
     }
@@ -33,7 +33,6 @@ export default function AffectedSystemForm( { affectedSystem, onSubmit, onCancel
             <div>
                 <input
                     type="text"
-                    name="what"
                     placeholder="Payment redirections"
                     data-test="new-affected-system__what"
                     autoFocus
