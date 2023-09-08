@@ -89,6 +89,7 @@ jobs:
           cache: 'npm'
 
       - run: npm install
+      - run: rm next.config.js && mv next.config.js.gh_pages next.config.js
       - run: npm run build
         env:
           # YJS_SOCKET_SERVER: 'wss://long-river-3855.fly.dev'
