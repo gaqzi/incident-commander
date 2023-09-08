@@ -9,28 +9,32 @@ Cypress.Keyboard.defaults({
 //   return cy.get(`[data-test="${target}"] ${suffix}`)
 // }
 
+const URL = 'http://127.0.0.1:5432/incident/ongoing?disableMultiplayer=true'
+
 function getDataTest (ids, suffix = '') {
+  // OMG WTF: learing: cy.get seems to mutate a global state that all cy.get.shoulds are evaluated against!
+  // This means you can't hold a reference to this
   let selector = `[data-test="${ids}"]`
   if (Array.isArray(ids)) {
     selector = ids.reduce((accum, id) => accum + `[data-test="${id}"] `, '')
   }
-  if (suffix.startsWith('>')) {
-    return cy.get(selector + '>' + suffix.substring(1))
+  if (suffix != '') {
+    return cy.get('body').find(selector + ' ' + suffix)
   }
-  return cy.get(selector + ' ' + suffix)
+  return cy.get('body').find(selector + ' ' + suffix)
 }
 
 function submitIncident (what, when, where, impact, shouldUseDefaultActions) {
-  getDataTest('new-incident__what').type(what)
-  getDataTest('new-incident__when').type(when)
-  getDataTest('new-incident__where').type(where)
-  getDataTest('new-incident__impact').type(impact)
+  getDataTest('summary__input__what').type(what)
+  getDataTest('summary__input__when').clear().type(when)
+  getDataTest('summary__input__where').type(where)
+  getDataTest('summary__input__impact').type(impact)
   if (shouldUseDefaultActions) {
-    getDataTest('new-incident__add-default-actions').check()
+    getDataTest('summary__add-default-actions').check()
   } else {
-    getDataTest('new-incident__add-default-actions').uncheck()
+    getDataTest('summary__add-default-actions').uncheck()
   }
-  getDataTest('new-incident__submit').click()
+  getDataTest('summary__submit').click()
 }
 
 function addActionToIncident ({ what = 'action-what', who = 'action-who', link = 'http://example.com', minutes = 10, isMitigating = false }) {
@@ -50,12 +54,12 @@ function addActionToIncident ({ what = 'action-what', who = 'action-who', link =
 
 describe('Creating a New Incident', () => {
   beforeEach(() => {
-    cy.visit('http://127.0.0.1:5432/?disableMultiplayer=true') // TODO: dont use hardcoded port
+    cy.visit(URL) // TODO: dont use hardcoded port
   })
 
   it('creates a new incident - without default actions', () => {
     const what = 'This is the what'
-    const when = 'This is the when'
+    const when = '2021-01-02 11:22:00'
     const where = 'This is the where'
     const impact = 'This is the impact'
 
@@ -63,17 +67,21 @@ describe('Creating a New Incident', () => {
 
     // Summary
     const summary = getDataTest('summary')
+    summary.should('contain.text', what)
     summary.should('contain.text', when)
     summary.should('contain.text', where)
     summary.should('contain.text', impact)
 
     // Affected Systems
-    getDataTest('affected-systems__active').should('contain.text', what)
-    getDataTest('affected-systems__past').get('li').should('have.length.of', 0)
+    getDataTest('affected-systems__listing__active', 'li')
+      .should('have.lengthOf', 1)
+      .should('contain.text', what)
 
-    // Actions
-    getDataTest('actions__active').get('active-action').should('have.length.of', 0)
-    getDataTest('past-actions li').should('have.length.of', 0)
+      .find('[data-test="actions__active"] li')
+      .should('have.lengthOf', 0)
+
+    getDataTest('affected-systems__listing__past', 'li')
+      .should('have.lengthOf', 0)
   })
 
   it('creates a new incident - with default actions', () => {
@@ -84,11 +92,56 @@ describe('Creating a New Incident', () => {
 
     submitIncident(what, when, where, impact, true)
 
-    const activeActions = getDataTest('actions__active')
-    activeActions.get('active-action').should('have.length.of', 3)
-    activeActions.should('contain.text', 'Was there a recent deploy?')
-    activeActions.should('contain.text', 'Was a feature flag toggled recently?')
-    activeActions.should('contain.text', 'Has there been an infrastructure changed recently?')
+    // TODO file a bug with Cypress.  should('have.length.of',...) silently passes but is invalid.  'have.length.eq' seems to work, as does 'have.lengthOf'
+
+    getDataTest('affected-system__past')
+      .should('not.exist')
+
+    getDataTest('affected-system__active')
+      .should('have.lengthOf', 1)
+      .should('contain.text', 'Was a feature flag toggled recently?')
+      .should('contain.text', 'Has there been an infrastructure changed recently?')
+  })
+})
+
+describe('Ongoing Incident: Managing the Summary', () => {
+  const what = 'This is the what'
+  const when = 'This is the when'
+  const where = 'This is the where'
+  const impact = 'This is the impact'
+
+  beforeEach(() => {
+    cy.visit(URL) // TODO: dont use hardcoded port
+    submitIncident(what, when, where, impact, false)
+  })
+
+  it('lets you edit the incident summary attributes', () => {
+    // Showing the form
+    getDataTest('affected-systems__listing__active').should('contain.text', what)
+    getDataTest('summary__input__what').should('not.exist')
+    getDataTest('summary', '>span').trigger('mouseover')
+    getDataTest('button-edit-summary').click()
+
+    const newWhat = 'new what'
+    const newWhen = 'new when'
+    const newWhere = 'new where'
+    const newImpact = 'new impact'
+
+    getDataTest('summary__input__what').clear().type(newWhat)
+    getDataTest('summary__input__when').clear().type(newWhen)
+    getDataTest('summary__input__where').clear().type(newWhere)
+    getDataTest('summary__input__impact').clear().type(newImpact)
+    getDataTest('summary__submit').click()
+
+    getDataTest('summary')
+      .should('contain.text', newWhat)
+      .should('contain.text', newWhen)
+      .should('contain.text', newWhere)
+      .should('contain.text', newImpact)
+      .should('not.contain.text', what)
+      .should('not.contain.text', when)
+      .should('not.contain.text', where)
+      .should('not.contain.text', impact)
   })
 })
 
@@ -99,46 +152,52 @@ describe('Ongoing Incident: Managing Affected Components', () => {
   const impact = 'This is the impact'
 
   beforeEach(() => {
-    cy.visit('http://127.0.0.1:5432/?disableMultiplayer=true') // TODO: dont use hardcoded port
+    cy.visit(URL) // TODO: dont use hardcoded port
     submitIncident(what, when, where, impact, false)
   })
 
   it('lets you add another affected component', () => {
     const newWhat = 'Another what'
+    getDataTest('btn-add-affected-system').click()
     getDataTest('new-affected-system__what').type(newWhat)
     getDataTest('new-affected-system__submit').click()
 
-    getDataTest('affected-systems__active', '>ul>li').should('have.length', 2)
-    getDataTest('affected-systems__active', 'ul li').should('contain.text', newWhat)
+    getDataTest('affected-systems__listing__active', '>ul>li')
+      .should('have.length', 2)
+      .should('contain.text', newWhat)
   })
 
   it('lets you edit the text of an add affected component', () => {
-    // Showing & Cancelling update dialog
-    getDataTest('affected-systems__active').should('contain.text', what)
-    getDataTest('update-affected-system__dialog').should('not.be.visible')
-    getDataTest('affected-systems__active').contains(what).rightclick()
-    getDataTest('update-affected-system__dialog').should('be.visible')
-    getDataTest('update-affected-system__cancel').click()
+    // Showing the form
+    getDataTest('affected-systems__listing__active').should('contain.text', what)
+    // getDataTest('summary__input__what').should('not.exist')
+    getDataTest('affected-system-what').trigger('mouseover')
+    getDataTest('button-edit-affected-system').click()
 
-    // Changing via the dialog
     const newWhat = 'changed to this'
-    getDataTest('affected-systems__active').contains(what).rightclick()
-    getDataTest('update-affected-system__what').clear().type(newWhat)
-    getDataTest('update-affected-system__submit').click()
-    getDataTest('affected-systems__active').should('not.contain.text', what)
-    getDataTest('affected-systems__active').should('contain.text', newWhat)
-    getDataTest('affected-systems__active').should('have.length', 1)
+    getDataTest('new-affected-system__what').clear().type(newWhat)
+    getDataTest('new-affected-system__submit').click()
+
+    getDataTest('affected-systems__listing__active')
+      .should('not.contain.text', what)
+      .should('contain.text', newWhat)
+      .find('li')
+      .should('have.length', 1)
   })
 
   it('lets you resolve an affected component', () => {
-    getDataTest('affected-systems__active', '>ul>li').should('have.length', 1)
-    getDataTest('affected-systems__past', '>ul>li').should('have.length', 0)
+    getDataTest('affected-systems__listing__active', '>ul>li').should('have.length', 1)
+    getDataTest('affected-systems__listing__past', '>ul>li').should('not.exist')
 
-    getDataTest('affected-systems__active').contains(what).get('[data-test="affected-system__resolve"]').click()
+    getDataTest('affected-systems__listing__active')
+      .contains(what)
+      .trigger('mouseover')
+      .get('[data-test="button-resolve-affected-system"]')
+      .click()
 
-    getDataTest('affected-systems__active', '>ul>li').should('have.length', 0)
-    getDataTest('affected-systems__past', '>ul>li').should('have.length', 1)
-    getDataTest('affected-systems__past').should('contain.text', what)
+    getDataTest('affected-systems__listing__active', '>ul>li').should('not.exist')
+    getDataTest('affected-systems__listing__past', '>ul>li').should('have.length', 1)
+    getDataTest('affected-systems__listing__past').should('contain.text', what)
   })
 })
 
@@ -149,12 +208,12 @@ describe('Ongoing Incident: Managing Actions', () => {
   const impact = 'This is the impact'
 
   beforeEach(() => {
-    cy.visit('http://127.0.0.1:5432/?disableMultiplayer=true') // TODO: dont use hardcoded port
+    cy.visit(URL) // TODO: dont use hardcoded port
     submitIncident(what, when, where, impact, false)
   })
 
   it('lets you add an action', () => {
-    getDataTest('actions__active').get('li').should('have.length.of', 0)
+    getDataTest('actions__active', 'li').should('not.exist')
 
     const what = 'a new action'
     const who = 'john doe'
@@ -162,7 +221,7 @@ describe('Ongoing Incident: Managing Actions', () => {
     const minutes = 10
     addActionToIncident({ who, what, link, minutes, isMitigating: false })
 
-    getDataTest('actions__active').get('li').should('have.length.of', 1)
+    getDataTest('actions__active', 'li').should('have.lengthOf', 1)
     const action = getDataTest('actions__active').within(el => el.get('li')).first()
     action.should('contain.text', what)
     action.should('contain.text', who)
@@ -173,39 +232,30 @@ describe('Ongoing Incident: Managing Actions', () => {
   it('lets you edit the text of an active action', () => {
     const what = 'old what'
     addActionToIncident({ what })
-    const activeActions = getDataTest('actions__active')
 
-    // This is how you type into prompts with Cypress =-\
-    const newWhat = 'an updated action text'
-    cy.window().then(function (win) {
-      cy.stub(win, 'prompt').returns(newWhat)
-    })
+    const newWhat = 'new what'
+    getDataTest('active_action__what').trigger('mouseover')
+    getDataTest('action__edit').click()
+    getDataTest('new-action__what').clear().type(newWhat)
+    getDataTest('new-action__submit').click()
 
-    // Prompt response stubbed above...
-    const action = activeActions.getDataTest('active_action__what').first()
-    action.rightclick()
-
-    action.should('not.contain.text', what)
-    action.should('contain.text', newWhat)
+    getDataTest('active_action__what')
+      .should('not.contain.text', what)
+      .should('contain.text', newWhat)
   })
 
   it('lets you edit the link of an active action', () => {
     const linkVal = 'http://google.com'
     addActionToIncident({ link: linkVal })
-    const activeActions = getDataTest('actions__active')
 
-    // This is how you type into prompts with Cypress =-\
     const newLinkVal = 'http://example.com'
-    cy.window().then(function (win) {
-      cy.stub(win, 'prompt').returns(newLinkVal)
-    })
+    getDataTest('active_action__link').trigger('mouseover')
+    getDataTest('action__edit').click()
+    getDataTest('new-action__link').clear().type(newLinkVal)
 
-    // Prompt response stubbed above...
-    const link = activeActions.getDataTest('active_action__link').first()
-    link.rightclick()
+    getDataTest('new-action__submit').click()
 
-    const anchor = link.get('a').first()
-    anchor.invoke('attr', 'href').should('equal', newLinkVal)
+    getDataTest('active_action__link').should('have.attr', 'href', newLinkVal)
   })
 
   it('lets you reset or edit the timer of an active action', () => {
@@ -213,97 +263,101 @@ describe('Ongoing Incident: Managing Actions', () => {
     addActionToIncident({ minutes })
 
     const getCountdownDisplay = () => {
-      return getDataTest('actions__active', 'countdown-display').first()
+      return getDataTest('actions__active', '[data-test="countdown-display-wrapper"]').first()
     }
 
     cy.wait(1 * 1000)
 
     // capture value, wait a teensy bit to see the value change
-    getCountdownDisplay().invoke('attr', 'seconds').then(parseInt).as('initialMins')
-    getCountdownDisplay().invoke('attr', 'seconds').then(parseInt).as('initialSecs')
+    getCountdownDisplay().within(() => cy.get('.minutes').invoke('text').then(parseInt).as('initialMins'))
+    getCountdownDisplay().within(() => cy.get('.seconds').invoke('text').then(parseInt).as('initialSecs'))
     cy.wait(3 * 1000)
 
     // look at value after waiting
-    getCountdownDisplay().invoke('attr', 'minutes').then(parseInt).as('waitedMins')
-    getCountdownDisplay().invoke('attr', 'seconds').then(parseInt).as('waitedSecs')
+    getCountdownDisplay().within(() => cy.get('.minutes').invoke('text').then(parseInt).as('waitedMins'))
+    getCountdownDisplay().within(() => cy.get('.seconds').invoke('text').then(parseInt).as('waitedSecs'))
 
     // expect to be lower
     cy.then(function () {
       expect(this.waitedMins * 60 + this.waitedSecs).to.be.below(this.initialMins * 60 + this.initialSecs)
     })
 
-    // now left-click to reset timer
-    getCountdownDisplay().click()
+    // now restart timer
+    getCountdownDisplay().within(() => cy.get('[data-test="countdown-display"]').trigger('mouseover'))
+    getDataTest('countdown-timer__restart').click()
+    cy.wait(1 * 1000)
 
-    // get the reset timer vals
-    getCountdownDisplay().invoke('attr', 'minutes').then(parseInt).as('resetMins')
-    getCountdownDisplay().invoke('attr', 'seconds').then(parseInt).as('resetSecs')
+    // get the restart timer vals
+    getCountdownDisplay().within(() => cy.get('.minutes').invoke('text').then(parseInt).as('restartMins'))
+    getCountdownDisplay().within(() => cy.get('.seconds').invoke('text').then(parseInt).as('restartSecs'))
 
     // expect them to be higher
     cy.then(function () {
-      expect(this.resetMins * 60 + this.resetSecs).to.be.above(this.waitedMins * 60 + this.waitedSecs)
+      expect(this.restartMins * 60 + this.restartSecs).to.be.above(this.waitedMins * 60 + this.waitedSecs)
     })
 
-    // now right-click to set new value to timer
-    // This is how you type into prompts with Cypress =-\
+    // now set new value to timer
     const newMinutes = 20
-    cy.window().then(function (win) {
-      cy.stub(win, 'prompt').returns(newMinutes)
-    })
-    getCountdownDisplay().rightclick()
+    getCountdownDisplay().trigger('mouseover')
+    getDataTest('countdown-timer__edit').click()
+    getDataTest('countdown-timer__minutes').clear().type(newMinutes)
+    getDataTest('countdown-timer-form__submit').click()
+    cy.wait(1 * 1000)
 
     // get the new values
-    getCountdownDisplay().invoke('attr', 'minutes').then(parseInt).as('newMins')
-    getCountdownDisplay().invoke('attr', 'seconds').then(parseInt).as('newSecs')
+    getCountdownDisplay().within(() => cy.get('.minutes').invoke('text').then(parseInt).as('newMins'))
+    getCountdownDisplay().within(() => cy.get('.seconds').invoke('text').then(parseInt).as('newSecs'))
 
     // expect them to be what we just set
     cy.then(function () {
-      expect(this.newMins * 60 + this.newSecs).to.equal(newMinutes * 60)
+      // doing a range here just because we'r dealing with timing code
+      expect(this.newMins * 60 + this.newSecs).to.be.greaterThan(newMinutes * 60 - 10)
+      expect(this.newMins * 60 + this.newSecs).to.be.lessThan(newMinutes * 60 + 1)
     })
   })
 
   it('lets you toggle an active action as mitigating or not', () => {
     addActionToIncident({ isMitigating: false })
-    const activeAction = getDataTest('actions__active', 'ul').first()
-    const mitigatingInput = activeAction.getDataTest('action__is-mitigating')
-    mitigatingInput.should('not.be.checked')
+    getDataTest('action__is-mitigating')
+      .should('not.be.checked')
 
-    mitigatingInput.check()
-    mitigatingInput.should('be.checked')
+    getDataTest('active_action__what').trigger('mouseover')
+    getDataTest('action__edit').click()
+    getDataTest('new-action__is-mitigating').check()
+    getDataTest('new-action__submit').click()
+    getDataTest('action__is-mitigating').should('be.checked')
   })
 
   it('lets you finish an action as a success or a failure', () => {
     addActionToIncident({ what: 'Will be a success' })
     addActionToIncident({ what: 'Will be a failure' })
 
-    let pastActionsList = getDataTest('actions__past', 'ul')
-    pastActionsList.should('not.contain.text', 'Will be a success')
-    pastActionsList.should('not.contain.text', '✔️')
+    getDataTest('actions__inactive', 'li').should('not.exist')
 
+    // click mark as success
+    getDataTest('active_action__what').first().trigger('mouseover')
     getDataTest('active_action__succeeded').first().click()
 
-    pastActionsList = getDataTest('actions__past', 'ul')
-    pastActionsList.should('contain.text', 'Will be a success')
-    pastActionsList.should('contain.text', '✔️')
-    pastActionsList.should('not.contain.text', 'Will be a failure')
-    pastActionsList.should('not.contain.text', '❌')
+    getDataTest('actions__inactive', 'li')
+      .should('contain.text', 'Will be a success')
+      .should('contain.text', 'Success')
+      .should('not.contain.text', 'Will be a failure')
+      .should('not.contain.text', 'Failure')
 
-    const failureAction = getDataTest('actions__active', 'ul li').first()
-
-    // Failure click will prompt for reason
-    // This is how you type into prompts with Cypress =-\
+    // click mark as failure
+    // need to stub the prompt...
     const failureReason = 'This is the failure reason'
-    cy.window().then(function (win) {
+    cy.window().then((win) => {
       cy.stub(win, 'prompt').returns(failureReason)
     })
 
-    // Do the click
-    failureAction.getDataTest('active_action__failed').first().click()
+    getDataTest('active_action__what').first().trigger('mouseover')
+    getDataTest('active_action__failed').first().click()
 
-    pastActionsList = getDataTest('actions__past', 'ul')
-    pastActionsList.should('contain.text', 'Will be a failure')
-    pastActionsList.should('contain.text', '❌')
-    pastActionsList.should('contain.text', failureReason)
+    getDataTest('actions__inactive', 'li')
+      .should('contain.text', 'Will be a failure')
+      .should('contain.text', 'Failure')
+      .should('contain.text', failureReason) // TODO
   })
 })
 
@@ -314,7 +368,7 @@ describe('Ongoing Incident: Status Updates', () => {
   const impact = 'This is the impact'
 
   beforeEach(() => {
-    cy.visit('http://127.0.0.1:5432/?disableMultiplayer=true') // TODO: dont use hardcoded port
+    cy.visit(URL) // TODO: dont use hardcoded port
     submitIncident(what, when, where, impact, false)
   })
 
@@ -325,10 +379,10 @@ describe('Ongoing Incident: Status Updates', () => {
         cy.stub(win.navigator.clipboard, 'writeText', (text) => { clipboardText = text })
       })
 
-      getDataTest('business-update')
+      getDataTest('button-business-update')
         .click()
         .then(() => expect(clipboardText).to.eq(
-          `*Investigating* Since ${when} we are seeing ${what} in ${where} impacting ${impact}.\n\n*Current status:*\n- 🔴 ${what}`
+          `Business Update\n*Investigating*\nSince ${when} we are seeing ${what} in ${where} impacting ${impact}.\n\n*Current status:*\n- 🔴 ${what}`
         ))
     })
   })
@@ -337,22 +391,32 @@ describe('Ongoing Incident: Status Updates', () => {
     it('provides the status, summary, affected components, current actions', () => {
       addActionToIncident({ what: 'The Action', who: 'The Who', link: 'http://example.com/', minutes: 10, isMitigating: true })
       addActionToIncident({ what: 'A failed action', who: 'The Whom', link: 'http://example.com/', minutes: 10, isMitigating: true })
+
+      // Mark action as failed
       cy.window().then((win) => cy.stub(win, 'prompt').returns('Was not destined to be.'))
-      cy.get('active-action[what="A failed action"] [data-test="active_action__failed"]').click()
+      getDataTest('active_action__what').eq(1).trigger('mouseover')
+      getDataTest('active_action__failed').click()
 
       let clipboardText = ''
       cy.window().then(function (win) {
         cy.stub(win.navigator.clipboard, 'writeText', (text) => { clipboardText = text })
       })
 
-      getDataTest('tech-update')
+      const expected = '' +
+              `Tech Update\n*Investigating*\nSince ${when} we are seeing ${what} in ${where} impacting ${impact}.` +
+              `\n\n*Current status:*\n- 🔴 ${what}` +
+              '\n    *Actions:*\n' +
+              '    - The Action (@The Who) [More info](http://example.com/)' +
+              // '\n\n*Past actions:*\n- ❌ A failed action (The Whom) [More info](http://example.com/)\n    - Was not destined to be.'
+              '\n' +
+              '\n    *Past Actions:*' +
+              '\n    - ❌ A failed action (@The Whom) [More info](http://example.com/) -- Was not destined to be.'
+
+      getDataTest('button-tech-update')
         .click()
-        .then(() => expect(clipboardText).to.eq(
-          `*Investigating* Since ${when} we are seeing ${what} in ${where} impacting ${impact}.` +
-          `\n\n*Current status:*\n- 🔴 ${what}` +
-          '\n\n*Actions:*\n- The Action (The Who) [More info](http://example.com/)' +
-          '\n\n*Past actions:*\n- ❌ A failed action (The Whom) [More info](http://example.com/)\n    - Was not destined to be.'
-        ))
+        .then(() => {
+          expect(clipboardText).to.eq(expected)
+        })
     })
   })
 })
