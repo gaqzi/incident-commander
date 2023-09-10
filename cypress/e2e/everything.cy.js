@@ -102,6 +102,21 @@ describe('Creating a New Incident', () => {
       .should('contain.text', 'Was a feature flag toggled recently?')
       .should('contain.text', 'Has there been an infrastructure changed recently?')
   })
+
+  it('can select the status through the keyboard', () => {
+    getDataTest('summary__select__status')
+      .click()
+      .type('monitor{enter}')
+    const what = 'This is the what'
+    const when = 'This is the when'
+    const where = 'This is the where'
+    const impact = 'This is the impact'
+
+    submitIncident(what, when, where, impact, true)
+
+    getDataTest('summary', '.status')
+      .should('contain.text', 'Monitoring')
+  })
 })
 
 describe('Ongoing Incident: Managing the Summary', () => {
