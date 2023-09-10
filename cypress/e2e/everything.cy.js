@@ -244,6 +244,12 @@ describe('Ongoing Incident: Managing Actions', () => {
     action.within(el => el.get('input[data-test="action__is-mitigating"')).should('not.be.checked')
   })
 
+  it('allows you to start typing the what without clicking on the field', () => {
+    getDataTest('actions__active__add_action').click()
+
+    getDataTest('new-action__what').should('be.focused')
+  })
+
   it('lets you edit the text of an active action', () => {
     const what = 'old what'
     addActionToIncident({ what })
