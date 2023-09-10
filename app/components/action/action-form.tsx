@@ -21,6 +21,7 @@ export default function ActionForm({ action, onSubmit, onCancel } : props) {
             <div className="flex flex-col mb-2">
                 <label className="block" htmlFor="newActionWhat">What are we trying?</label>
                 <input
+                    autoFocus
                     className="block"
                     type="text"
                     id="newActionWhat"
