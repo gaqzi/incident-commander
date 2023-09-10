@@ -137,11 +137,13 @@ describe('Ongoing Incident: Managing the Summary', () => {
     getDataTest('summary', '>span').trigger('mouseover')
     getDataTest('button-edit-summary').click()
 
+    const newStatus = 'Monitoring'
     const newWhat = 'new what'
     const newWhen = 'new when'
     const newWhere = 'new where'
     const newImpact = 'new impact'
 
+    getDataTest('summary__select__status').click().type(`${newStatus}{enter}`)
     getDataTest('summary__input__what').clear().type(newWhat)
     getDataTest('summary__input__when').clear().type(newWhen)
     getDataTest('summary__input__where').clear().type(newWhere)
@@ -149,6 +151,7 @@ describe('Ongoing Incident: Managing the Summary', () => {
     getDataTest('summary__submit').click()
 
     getDataTest('summary')
+      .should('contain.text', newStatus)
       .should('contain.text', newWhat)
       .should('contain.text', newWhen)
       .should('contain.text', newWhere)
