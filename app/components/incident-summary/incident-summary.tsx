@@ -116,14 +116,12 @@ export default function IncidentSummary({incident, showForm}: {incident: Inciden
                           <Button data-test="button-edit-summary" type="text" icon={<EditOutlined />} onClick={onSummaryEditClick}>Edit</Button>
                         }
                         >
-                        <strong>Since</strong> <span className="when">{summary.whenUtcString}</span>
+                        <strong className="status">[{summary.status}]</strong>
+                        &nbsp;<strong>Since</strong> <span className="when">{summary.whenUtcString}</span>
                         &nbsp;<strong>we are seeing</strong> <span className="what">{summary.what}</span>
                         &nbsp;<strong>in</strong> <span className="where">{summary.where}</span>
                         &nbsp;<strong>impacting</strong> <span className="impact">{summary.impact}</span>.
                       </Popover>
-                    </div>
-                    <div>
-                      <strong className="status">Current Status: {summary.status}</strong>
                     </div>
                 </>
             }
