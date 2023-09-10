@@ -16,6 +16,7 @@
   },
   "scripts": {
     "dev": "next dev -p 5432",
+    "dev:e2e": "cypress open",
     "build": "next build",
     "start": "next start",
     "lint": "next lint"
