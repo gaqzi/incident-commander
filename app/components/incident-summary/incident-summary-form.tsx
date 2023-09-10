@@ -54,6 +54,7 @@ export default function IncidentSummaryForm(props : Props) {
             <div className="flex flex-col mb-2">
                 <label htmlFor="summaryStatus">Status</label>
                 <Select
+                    showSearch
                     defaultValue={summary?.status}
                     // style={{ width: 120 }}
                     onChange={handleStatusSelect}
