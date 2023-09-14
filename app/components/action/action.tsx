@@ -107,7 +107,7 @@ export default function Action({action}: props) {
                           action.who ?
                           <span><br/>@<span className="who italic" data-test="active_action__who">{action.who}</span></span>
                           :
-                          <span className="italic">Unassigned</span>
+                          <span className="italic"><br/>Unassigned</span>
                         }
                     </span>
                 </Popover>
