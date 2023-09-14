@@ -227,7 +227,7 @@ export default function OngoingIncident() {
             <IncidentSummary incident={incident} showForm={incident.summary._isNew}></IncidentSummary>
 
             <section data-test="affected-systems__listing__active">
-                <h3>Affected Systems</h3>
+                <h3>Ongoing Issues</h3>
 
                 <section className="affected-systems__new">
                     {
@@ -253,7 +253,7 @@ export default function OngoingIncident() {
                 <ul className="grid grid-cols-3 gap-4">
                     {
                         incident.affectedSystems.filter(s => s.status == 'Active').map(s => {
-                            return <li key={s.id} className="border-solid border-2 border-black">
+                            return <li key={s.id}>
                                 <AffectedSystem affectedSystem={s} />
                             </li>
                         })

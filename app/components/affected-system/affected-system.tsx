@@ -41,6 +41,7 @@ export default function AffectedSystem({affectedSystem}: {affectedSystem: Affect
     return (
         <Card 
             title={affectedSystem.what} 
+            className="shadow-md"
             extra={
                 <Tooltip title="Edit Affected System">
                     <EditOutlined key="edit" data-test="button-edit-affected-system" onClick={onEditClick} />
