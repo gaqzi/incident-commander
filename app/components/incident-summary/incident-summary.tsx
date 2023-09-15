@@ -109,7 +109,7 @@ export default function IncidentSummary({incident, showForm}: {incident: Inciden
                 <>
                     <h2>Summary</h2>
 
-                    <div className="message max-w-xl" data-test="summary">
+                    <div className="message" data-test="summary">
                       <Popover
                         title="Actions"
                         content={
