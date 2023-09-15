@@ -6,7 +6,7 @@ import Action from "@/app/components/action/action";
 import {useContext, useState} from "react";
 import {IncidentDispatchContext} from "@/app/contexts/incident-context";
 import ActionForm from "@/app/components/action/action-form";
-import {Button, Popover, Typography} from "antd";
+import {Button, Card, List, Popover, Tooltip, Typography} from "antd";
 import {CheckOutlined, EditOutlined, PlusOutlined} from "@ant-design/icons";
 import {uuidv4} from "lib0/random";
 const { Text } = Typography;
@@ -39,7 +39,26 @@ export default function AffectedSystem({affectedSystem}: {affectedSystem: Affect
     }
 
     return (
-        <section data-test={`affected-system__${affectedSystem.status == 'Active' ? 'active' : 'past'}`}>
+        <Card 
+            title={affectedSystem.what} 
+            className="shadow-md"
+            extra={
+                <Tooltip title="Edit Affected System">
+                    <EditOutlined key="edit" data-test="button-edit-affected-system" onClick={onEditClick} />
+                </Tooltip>
+            } 
+            data-test={`affected-system__${affectedSystem.status == 'Active' ? 'active' : 'past'}`}
+            actions={[
+                <Tooltip title="Resolve Affected System" key="btn_resolve">
+                    <CheckOutlined key="resolve" data-test="button-resolve-affected-system" onClick={resolve} />
+                </Tooltip>,
+
+                <Tooltip title="Add Action" key="btn_add_action">
+                    <PlusOutlined key="add-action" data-test="actions__active__add_action" onClick={() => { setShowNewActionForm(true) }} />
+                </Tooltip>,
+              ]}
+        >
+            <div>
             {
                 showSelfForm &&
                 <AffectedSystemForm
@@ -50,29 +69,7 @@ export default function AffectedSystem({affectedSystem}: {affectedSystem: Affect
             }
 
             {
-                !showSelfForm &&
-                <div className="p-1">
-                    <Popover content={
-                        <>
-                            <Button data-test="button-resolve-affected-system" className="block" icon={<CheckOutlined/>} onClick={resolve}>Resolve</Button>
-                            <Button data-test="button-edit-affected-system" className="block" icon={<EditOutlined/>} onClick={onEditClick}>Edit</Button>
-                        </>
-                    }>
-                      <div data-test="affected-system-what" className="bg-slate-500 -m-1 p-1 text-white">{affectedSystem.what}</div>
-                    </Popover>
-
-                      <div className="bg-slate-500 -m-1 p-1">
-                          {!showNewActionForm &&
-                            <Button 
-                                style={{color: 'white'}} type="dashed" size="small" icon={<PlusOutlined/>} onClick={() => { setShowNewActionForm(true) }}
-                                data-test="actions__active__add_action"
-                            >
-                              Add Action
-                            </Button>
-                          }
-                      </div>
-
-                    <section className="mt-2">
+                    <section>
                         {
                           showNewActionForm &&
                           <div className="mb-4 pb-4 border-solid border-b-4 border-slate-400">
@@ -84,33 +81,41 @@ export default function AffectedSystem({affectedSystem}: {affectedSystem: Affect
                           </div>
                         }
 
-                        <ul data-test="actions__active">
-                            {
-                                affectedSystem.actions?.filter(a => a.status == 'Active').map((action) => {
-                                    return (
-                                        <li key={action.id} className="mb-2 border-solid pb-2 border-b-2 border-slate-30 last:border-b-0 last:pb-0">
-                                            <Action action={action} />
-                                        </li>
-                                    )
-                                })
-                            }
-                        </ul>
+                        <section>
+                            <h4 className="font-bold">Active Actions</h4>
 
-                        <ul data-test="actions__inactive">
-                            {
-                                affectedSystem.actions?.filter(a => a.status != 'Active').map((action) => {
-                                    return (
-                                        <li key={action.id} className="mb-2 border-solid pb-2 border-b-2 border-slate-30 last:border-b-0 last:pb-0">
-                                            <Action action={action} />
-                                        </li>
-                                    )
-                                })
-                            }
-                        </ul>
+                            <ul data-test="actions__active">
+                                {
+                                    affectedSystem.actions?.filter(a => a.status == 'Active').map((action) => {
+                                        return (
+                                            <li key={action.id} className="mb-2 border-none pb-2 border-b-2 border-slate-30 last:border-b-0 last:pb-0">
+                                                <Action action={action} />
+                                            </li>
+                                        )
+                                    })
+                                }
+                            </ul>
+                        </section>
+
+                        <section className="mt-4 text-slate-400">
+                            <h4 className="font-bold underlined">Completed Actions</h4>
+
+                            <ul data-test="actions__inactive">
+                                {
+                                    affectedSystem.actions?.filter(a => a.status != 'Active').map((action) => {
+                                        return (
+                                            <li key={action.id} className="mb-2 border-solid pb-2 border-b-2 border-slate-30 last:border-b-0 last:pb-0">
+                                                <Action action={action} />
+                                            </li>
+                                        )
+                                    })
+                                }
+                            </ul>
+                        </section>
                     </section>
-                </div>
             }
+            </div>
 
-        </section>
+        </Card>
     )
 }

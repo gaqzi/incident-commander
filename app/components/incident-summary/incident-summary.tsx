@@ -109,12 +109,7 @@ export default function IncidentSummary({incident, showForm}: {incident: Inciden
                 <>
                     <h2>Summary</h2>
 
-                  <div className="incident-summary__actions">
-                    <Button data-test="button-business-update" onClick={copyBusinessUpdate}>Copy Business Update</Button>
-                    <Button data-test="button-tech-update" onClick={copyTechUpdate}>Copy Tech Update</Button>
-                  </div>
-
-                    <div className="message max-w-xl" data-test="summary">
+                    <div className="message" data-test="summary">
                       <Popover
                         title="Actions"
                         content={
@@ -128,10 +123,16 @@ export default function IncidentSummary({incident, showForm}: {incident: Inciden
                       </Popover>
                     </div>
                     <div>
-                      <strong className="status">{summary.status}</strong>
+                      <strong className="status">Current Status: {summary.status}</strong>
                     </div>
                 </>
             }
+
+
+                  <div className="incident-summary__actions mt-4">
+                    <Button data-test="button-business-update" onClick={copyBusinessUpdate}>Copy Business Update</Button>
+                    <Button data-test="button-tech-update" onClick={copyTechUpdate}>Copy Tech Update</Button>
+                  </div>
 
 
             {
@@ -139,7 +140,7 @@ export default function IncidentSummary({incident, showForm}: {incident: Inciden
                 <IncidentSummaryForm summary={summary} onSubmit={updateSummary} onCancel={cancelSummaryForm}/>
             }
 
-            <div className="incident-summary__links">
+            <div className="incident-summary__links mt-4">
                 <h3>
                     Resources
                     <Button type="text" size={"small"} icon={<PlusOutlined />} onClick={addResourceLinkClick}>Add Resource</Button>

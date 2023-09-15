@@ -116,10 +116,8 @@ export default function CountdownTimer({id, durationInMinutes, label, onComplete
         {
           !showForm &&
           <span data-test="countdown-display">
-            -
-            <span className="minutes">{minutes}</span>
-            :
-            <span className="seconds">{seconds}</span>
+            <span className="minutes">{minutes}</span>m
+            <span className="seconds">{seconds}</span>s
         </span>
         }
     </Popover>

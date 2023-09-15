@@ -224,10 +224,12 @@ export default function OngoingIncident() {
                 </Button>
             </header>
 
-            <IncidentSummary incident={incident} showForm={incident.summary._isNew}></IncidentSummary>
+            <div className="mt-2">
+                <IncidentSummary incident={incident} showForm={incident.summary._isNew}></IncidentSummary>
+            </div>
 
-            <section data-test="affected-systems__listing__active">
-                <h3>Affected Systems</h3>
+            <section className="mt-8" data-test="affected-systems__listing__active">
+                <h3>Ongoing Issues</h3>
 
                 <section className="affected-systems__new">
                     {
@@ -253,7 +255,7 @@ export default function OngoingIncident() {
                 <ul className="grid grid-cols-3 gap-4">
                     {
                         incident.affectedSystems.filter(s => s.status == 'Active').map(s => {
-                            return <li key={s.id} className="border-solid border-2 border-black">
+                            return <li key={s.id}>
                                 <AffectedSystem affectedSystem={s} />
                             </li>
                         })
@@ -261,13 +263,13 @@ export default function OngoingIncident() {
                 </ul>
             </section>
 
-            <section data-test="affected-systems__listing__past">
+            <section className="mt-8" data-test="affected-systems__listing__past">
                 <h3>Resolved Issues</h3>
 
                 <ul className="grid grid-cols-3 gap-4">
                     {
                         incident.affectedSystems.filter(s => s.status == 'Resolved').map(s => {
-                            return <li key={s.id} className="border-solid border-2 border-black">
+                            return <li key={s.id}>
                                 <AffectedSystem affectedSystem={s} />
                             </li>
                         })

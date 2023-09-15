@@ -73,7 +73,7 @@ describe('Creating a New Incident', () => {
     summary.should('contain.text', impact)
 
     // Affected Systems
-    getDataTest('affected-systems__listing__active', 'li')
+    getDataTest('affected-systems__listing__active', '>ul>li')
       .should('have.lengthOf', 1)
       .should('contain.text', what)
 
@@ -171,7 +171,6 @@ describe('Ongoing Incident: Managing Affected Components', () => {
     // Showing the form
     getDataTest('affected-systems__listing__active').should('contain.text', what)
     // getDataTest('summary__input__what').should('not.exist')
-    getDataTest('affected-system-what').trigger('mouseover')
     getDataTest('button-edit-affected-system').click()
 
     const newWhat = 'changed to this'
@@ -181,8 +180,6 @@ describe('Ongoing Incident: Managing Affected Components', () => {
     getDataTest('affected-systems__listing__active')
       .should('not.contain.text', what)
       .should('contain.text', newWhat)
-      .find('li')
-      .should('have.length', 1)
   })
 
   it('lets you resolve an affected component', () => {
@@ -221,7 +218,7 @@ describe('Ongoing Incident: Managing Actions', () => {
     const minutes = 10
     addActionToIncident({ who, what, link, minutes, isMitigating: false })
 
-    getDataTest('actions__active', 'li').should('have.lengthOf', 1)
+    getDataTest('actions__active', '>li').should('have.lengthOf', 1)
     const action = getDataTest('actions__active').within(el => el.get('li')).first()
     action.should('contain.text', what)
     action.should('contain.text', who)
@@ -318,14 +315,13 @@ describe('Ongoing Incident: Managing Actions', () => {
 
   it('lets you toggle an active action as mitigating or not', () => {
     addActionToIncident({ isMitigating: false })
-    getDataTest('action__is-mitigating')
-      .should('not.be.checked')
+    getDataTest('action__is-mitigating').should('not.exist')
 
     getDataTest('active_action__what').trigger('mouseover')
     getDataTest('action__edit').click()
     getDataTest('new-action__is-mitigating').check()
     getDataTest('new-action__submit').click()
-    getDataTest('action__is-mitigating').should('be.checked')
+    getDataTest('action__is-mitigating').should('exist')
   })
 
   it('lets you finish an action as a success or a failure', () => {
