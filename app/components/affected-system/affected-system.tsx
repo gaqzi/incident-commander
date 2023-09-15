@@ -49,11 +49,11 @@ export default function AffectedSystem({affectedSystem}: {affectedSystem: Affect
             } 
             data-test={`affected-system__${affectedSystem.status == 'Active' ? 'active' : 'past'}`}
             actions={[
-                <Tooltip title="Resolve Affected System">
+                <Tooltip title="Resolve Affected System" key="btn_resolve">
                     <CheckOutlined key="resolve" data-test="button-resolve-affected-system" onClick={resolve} />
                 </Tooltip>,
 
-                <Tooltip title="Add Action">
+                <Tooltip title="Add Action" key="btn_add_action">
                     <PlusOutlined key="add-action" data-test="actions__active__add_action" onClick={() => { setShowNewActionForm(true) }} />
                 </Tooltip>,
               ]}
