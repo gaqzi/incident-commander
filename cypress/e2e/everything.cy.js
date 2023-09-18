@@ -134,7 +134,6 @@ describe('Ongoing Incident: Managing the Summary', () => {
     // Showing the form
     getDataTest('affected-systems__listing__active').should('contain.text', what)
     getDataTest('summary__input__what').should('not.exist')
-    getDataTest('summary', '>span').trigger('mouseover')
     getDataTest('button-edit-summary').click()
 
     const newStatus = 'Monitoring'
