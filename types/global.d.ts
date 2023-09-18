@@ -42,6 +42,7 @@ declare global {
         what: string
         status?: string
         actions?: Action[]
+        addDefaultActions?: boolean
     }
 
     type ResourceLink = {

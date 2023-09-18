@@ -5,7 +5,7 @@ import {useContext, useState, useEffect} from "react";
 import {IncidentDispatchContext} from "@/app/contexts/incident-context";
 import ResourceLinkForm from "@/app/components/resource-link/resource-link-form";
 import IncidentSummaryForm from "@/app/components/incident-summary/incident-summary-form";
-import { Button, Modal, Popover } from "antd"
+import { Button, Modal, Popover, Tooltip } from "antd"
 import {EditOutlined, PlusOutlined} from "@ant-design/icons";
 import {Incident} from "@/app/components/ongoing-incident/reducer";
 import {uuidv4} from "lib0/random";
@@ -110,18 +110,15 @@ export default function IncidentSummary({incident, showForm}: {incident: Inciden
                     <h2>Summary</h2>
 
                     <div className="message" data-test="summary">
-                      <Popover
-                        title="Actions"
-                        content={
-                          <Button data-test="button-edit-summary" type="text" icon={<EditOutlined />} onClick={onSummaryEditClick}>Edit</Button>
-                        }
-                        >
                         <strong className="status">[{summary.status}]</strong>
                         &nbsp;<strong>Since</strong> <span className="when">{summary.whenUtcString}</span>
                         &nbsp;<strong>we are seeing</strong> <span className="what">{summary.what}</span>
                         &nbsp;<strong>in</strong> <span className="where">{summary.where}</span>
                         &nbsp;<strong>impacting</strong> <span className="impact">{summary.impact}</span>.
-                      </Popover>
+
+                        <Tooltip title="Edit Summary">
+                            <EditOutlined className="ml-2" data-test="button-edit-summary" title="Edit Summary" onClick={onSummaryEditClick} />
+                        </Tooltip>
                     </div>
                 </>
             }

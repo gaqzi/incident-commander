@@ -113,16 +113,20 @@ export default function IncidentSummaryForm(props : Props) {
                     />
                 </div>
 
-            <div>
-                <label htmlFor="summaryAddDefaultActions">Add default actions?</label>
-                <input
-                    className="ml-2"
-                    type="checkbox"
-                    id="summaryAddDefaultActions"
-                    data-test="summary__add-default-actions"
-                    {...register("addDefaultActions")}
-                />
-            </div>
+            { 
+                summary?.whenUtcString == "Thu, 01 Jan 1970 00:00:00 GMT" 
+                && 
+                <div>
+                    <label htmlFor="summaryAddDefaultActions">Add default actions?</label>
+                    <input
+                        className="ml-2"
+                        type="checkbox"
+                        id="summaryAddDefaultActions"
+                        data-test="summary__add-default-actions"
+                        {...register("addDefaultActions")}
+                    />
+                </div>
+            }
 
             <Button
                 size="small"
@@ -137,7 +141,7 @@ export default function IncidentSummaryForm(props : Props) {
                 type="default"
                 size="small"
                 htmlType="reset"
-                className="cancel"
+                className="cancel ml-2"
                 data-test="summary__cancel"
                 onClick={onCancel}
             >
