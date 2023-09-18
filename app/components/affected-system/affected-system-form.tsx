@@ -11,7 +11,7 @@ interface props {
 
 export default function AffectedSystemForm( { affectedSystem, onSubmit, onCancel }: props ) {
     const { register, handleSubmit, reset, formState: { errors }, setFocus } = useForm({
-        defaultValues: affectedSystem || {}
+        defaultValues: ({...affectedSystem, addDefaultActions: true }  || { addDefaultActions: true })
     })
 
     const myOnSubmit = (data: any) => {
@@ -41,7 +41,13 @@ export default function AffectedSystemForm( { affectedSystem, onSubmit, onCancel
             </div>
 
             <div className="flex flex-col mb-2">
-                <label htmlFor="summaryWhat">TODO - Add Use Default Actions</label>
+                <label htmlFor="summaryAddDefaultActions">Add default actions?</label>
+                <input
+                    className="ml-2"
+                    type="checkbox"
+                    data-test="new-affected-system__add-default-actions"
+                    {...register("addDefaultActions")}
+                />
             </div>
 
 

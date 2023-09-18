@@ -169,7 +169,22 @@ const resolveActionSuccess = (incident: Incident, actionId: string) => {
 const addAffectedSystem = (incident: Incident, newSystem: AffectedSystem): Incident => {
     let updatedIncident = JSON.parse(JSON.stringify(incident))
     const status = 'Active'
-    const actions = newSystem.actions ?? []
+    let actions = newSystem.actions ?? []
+
+    if (newSystem.addDefaultActions) {
+        const affectedSystemId = newSystem.id
+
+        actions = actions.concat(config.defaultActions.map((what, index) => {
+            return {
+                id: `${affectedSystemId}_action_default_${index}`,
+                status: 'Active',
+                isMitigating: true,
+                what,
+                affectedSystemId
+            }
+        }))
+    }
+
     updatedIncident.affectedSystems.push({...newSystem, status, actions})
     return updatedIncident
 }
