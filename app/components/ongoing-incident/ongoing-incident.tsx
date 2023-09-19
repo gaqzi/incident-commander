@@ -3,6 +3,7 @@
 import {useEffect, useReducer, useState} from 'react'
 import {useForm} from 'react-hook-form'
 import * as Y from 'yjs'
+import { IndexeddbPersistence } from 'y-indexeddb'
 import { WebsocketProvider } from 'y-websocket'
 import {incidentReducer} from "@/app/components/ongoing-incident/reducer";
 
@@ -121,9 +122,19 @@ function setupMultiplayer(dispatch: any) {
         window.location.search = params.toString()
     }
 
-    const ydoc = new Y.Doc()
+    const websocket_host = params.get('yjs_socket_host') || process.env.NEXT_PUBLIC_YJS_SOCKET_SERVER
     const room = params.get('room') as string
-    const websocketProvider = new WebsocketProvider(process.env.NEXT_PUBLIC_YJS_SOCKET_SERVER as string, room, ydoc)
+
+    const ydoc = new Y.Doc()
+
+    // We persist the document content across sessions
+    const indexeddbProvider = new IndexeddbPersistence(room, ydoc)
+    // indexeddbProvider.on('synced', () => {
+    //     console.log('content from the database is loaded')
+    // })
+    // TODO: what if we can't store to localstorage? Should we throw a warning, error?
+
+    const websocketProvider = new WebsocketProvider(websocket_host as string, room, ydoc)
     websocketProvider.on('status', (event: any) => {
         console.log('YJS WebSocket Provider: ', event.status) // logs "connected" or "disconnected"
     })
