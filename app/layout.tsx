@@ -65,7 +65,7 @@ export default function RootLayout({
       { process.env.NEXT_PUBLIC_GA_ID && 
         <>
             <Script async src={gtag} />
-            <Script
+            <Script id="google_analytics_init"
                 dangerouslySetInnerHTML={{
                     __html: `
                     window.dataLayer = window.dataLayer || [];
