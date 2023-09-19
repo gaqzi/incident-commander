@@ -197,8 +197,11 @@ export default function OngoingIncident() {
     })
 
     const [notificationPermission, setNotificationPermission] = useState(false)
+    useEffect(() => {
+        setNotificationPermission(Notification.permission == 'granted')
+    }, [])
     const toggleNotifications = (event: any) => {
-        if (!notificationPermission) {
+        if (notificationPermission) {
             setNotificationPermission(false)
         }
         else {
@@ -218,6 +221,7 @@ export default function OngoingIncident() {
         dispatcher([{type: 'add_affected_system', payload: {...affectedSystem, id: `system_${uuidv4()}`}}])
         setAffectedSystemFormVisible(false)
     }
+
 
     return (
         <NotificationsContext.Provider value={notificationPermission}>
