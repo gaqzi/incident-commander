@@ -3,6 +3,7 @@
 import './globals.css'
 import { Inter } from 'next/font/google'
 import Link from "next/link";
+import Script from "next/script"
 
 import type { MenuProps } from 'antd';
 import { Menu } from 'antd';
@@ -56,8 +57,28 @@ export default function RootLayout({
 }) {
     const router = useRouter()
     const pathname = usePathname()
+    const gtag = `https://www.googletagmanager.com/gtag/js?id=${process.env.NEXT_PUBLIC_GA_ID}`;
+
     return (
     <html lang="en">
+      <head></head>
+      { process.env.NEXT_PUBLIC_GA_ID && 
+        <>
+            <Script async src={gtag} />
+            <Script
+                dangerouslySetInnerHTML={{
+                    __html: `
+                    window.dataLayer = window.dataLayer || [];
+                    function gtag(){dataLayer.push(arguments);}
+                    gtag('js', new Date());
+                    gtag('config', '${process.env.NEXT_PUBLIC_GA_ID}', {
+                        page_path: window.location.pathname
+                    });
+                    `,
+                }}
+            />
+        </>
+      }
       <body className={inter.className}>
         <nav>
             <Menu onClick={onMenuClick.bind(null, router, pathname)} selectedKeys={[getMenuItemByPath(pathname)?.key as string]} mode="horizontal" items={items} />
