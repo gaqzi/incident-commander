@@ -116,6 +116,7 @@ export default function IncidentSummary({incident, showForm}: {incident: Inciden
                     </h2>
 
                     <div className="message" data-test="summary">
+                        <strong className="status">[{summary.status}]</strong>
                         <table>
                             <tbody>
                                 <tr><td>Since:</td>  <td><span className="when">{summary.whenUtcString}</span></td></tr>
