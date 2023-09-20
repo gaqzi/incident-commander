@@ -28,16 +28,20 @@ export default function Home() {
           Then, <strong>share your incident URL with anyone for realtime &quot;multi-player&quot; editing</strong> of the incident.
         </p>
 
-        <h1 className="mt-4">We're on GitHub</h1>
+        <h1 className="mt-4">We&apos;re on GitHub</h1>
         <p className="mt-2">
           You can <a href="https://github.com/gaqzi/incident-commander">find the code on GitHub</a>.
         </p>
         <p className="mt-2">
           Bug reports and feature requests are most welcome!
-          Please <a href="https://github.com/gaqzi/incident-commander/issues">give us feedbck via GitHub issues.</a></p>
+          Please <a href="https://github.com/gaqzi/incident-commander/issues">give us feedback via GitHub issues.</a></p>
 
-        <h1 className="mt-4">What does it look like?</h1>
-        <p className="mt-2">Here&apos;s a sample screenshot:</p>
+        <h1 className="mt-4">What does it look like and how does it work?</h1>
+
+        <p className="mt-2">Here&apos;s a short demo video:</p>
+        <iframe width="560" height="315" src="https://www.youtube.com/embed/1F2GK-zinls?si=v5sz4lFqz6izkeIS" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
+
+        <p className="mt-2">And here&apos;s a sample screenshot:</p>
         <p className="mt-2">
           <Image priority alt="screenshot" src={screenshot} className="border-t-4 border-l-4 border-r-8 border-b-8 border-black" />
         </p>
