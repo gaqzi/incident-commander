@@ -107,18 +107,24 @@ export default function IncidentSummary({incident, showForm}: {incident: Inciden
             {
                 !showSummaryForm &&
                 <>
-                    <h2>Summary</h2>
+                    <h2>
+                        Summary
 
-                    <div className="message" data-test="summary">
-                        <strong className="status">[{summary.status}]</strong>
-                        &nbsp;<strong>Since</strong> <span className="when">{summary.whenUtcString}</span>
-                        &nbsp;<strong>we are seeing</strong> <span className="what">{summary.what}</span>
-                        &nbsp;<strong>in</strong> <span className="where">{summary.where}</span>
-                        &nbsp;<strong>impacting</strong> <span className="impact">{summary.impact}</span>.
-
-                        <Tooltip title="Edit Summary">
+                        <Tooltip title="Edit Summary" className="text-sm font-normal">
                             <EditOutlined className="ml-2" data-test="button-edit-summary" title="Edit Summary" onClick={onSummaryEditClick} />
                         </Tooltip>
+                    </h2>
+
+                    <div className="message" data-test="summary">
+                        <table>
+                            <tbody>
+                                <tr><td>Since:</td>  <td><span className="when">{summary.whenUtcString}</span></td></tr>
+                                <tr><td>What:</td>   <td><span className="what">{summary.what}</span></td></tr>
+                                <tr><td>Where:</td>  <td><span className="where">{summary.where}</span></td></tr>
+                                <tr><td className="pr-2">Impact:</td> <td><span className="impact">{summary.impact}</span></td></tr>
+                            </tbody>
+                        </table>
+
                     </div>
                 </>
             }
