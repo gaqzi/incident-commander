@@ -100,7 +100,7 @@ describe('Creating a New Incident', () => {
     getDataTest('affected-system__active')
       .should('have.lengthOf', 1)
       .should('contain.text', 'Was a feature flag toggled recently?')
-      .should('contain.text', 'Has there been an infrastructure changed recently?')
+      .should('contain.text', 'Has there been an infrastructure change recently?')
   })
 
   it('can select the status through the keyboard', () => {

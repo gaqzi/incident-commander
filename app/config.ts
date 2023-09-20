@@ -5,7 +5,7 @@ export default {
     defaultActions: [
       'Was there a recent deploy?',
       'Was a feature flag toggled recently?',
-      'Has there been an infrastructure changed recently?'
+      'Has there been an infrastructure change recently?'
     ],
   
     // In most cases the incident goes through all of these states to reach a successful conclusion.
