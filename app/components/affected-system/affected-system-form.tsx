@@ -26,12 +26,12 @@ export default function AffectedSystemForm( { affectedSystem, onSubmit, onCancel
     return (
         <form
             onSubmit={handleSubmit(myOnSubmit)}
+            className="mb-4"
         >
-            <div>
+            <div className="flex flex-col mb-2">
                 <label>What is not working?</label>
-            </div>
-            <div>
                 <input
+                    className="block"
                     type="text"
                     placeholder="Payment redirections"
                     data-test="new-affected-system__what"
@@ -40,25 +40,29 @@ export default function AffectedSystemForm( { affectedSystem, onSubmit, onCancel
                 />
             </div>
 
-            <div className="flex flex-col mb-2">
-                <label htmlFor="summaryAddDefaultActions">Add default actions?</label>
-                <input
-                    className="ml-2"
-                    type="checkbox"
-                    data-test="new-affected-system__add-default-actions"
-                    {...register("addDefaultActions")}
-                />
-            </div>
+            { 
+                ! affectedSystem?.id &&
+                <div className="flex flex-col mb-2">
+                    <label htmlFor="summaryAddDefaultActions">Add default actions?</label>
+                    <input
+                        className="ml-2 block"
+                        type="checkbox"
+                        data-test="new-affected-system__add-default-actions"
+                        {...register("addDefaultActions")}
+                    />
+                </div>
+            }
 
 
-            <div>
+            <div className="mt-1">
                 <Button
                     type="primary"
                     size="small"
                     htmlType="submit"
+                    className="mr-1"
                     data-test="new-affected-system__submit"
                 >
-                    Add!
+                    { affectedSystem?.id ? 'Update' : 'Add' }
                 </Button>
 
                 <Button
