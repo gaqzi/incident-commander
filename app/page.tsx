@@ -39,7 +39,7 @@ export default function Home() {
         <h1 className="mt-4">What does it look like and how does it work?</h1>
 
         <p className="mt-2">Here&apos;s a short demo video:</p>
-        <iframe width="560" height="315" src="https://www.youtube.com/embed/1F2GK-zinls?si=v5sz4lFqz6izkeIS" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
+        <iframe className="border-0" width="560" height="315" src="https://www.youtube.com/embed/1F2GK-zinls?si=v5sz4lFqz6izkeIS" title="YouTube video player" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowFullScreen></iframe>
 
         <p className="mt-2">And here&apos;s a sample screenshot:</p>
         <p className="mt-2">
