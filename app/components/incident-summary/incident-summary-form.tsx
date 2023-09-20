@@ -68,6 +68,7 @@ export default function IncidentSummaryForm(props : Props) {
             <div className="flex flex-col mb-2">
                     <label htmlFor="summaryWhat">What is wrong?</label>
                     <input
+                        autoFocus
                         type="text"
                         id="summaryWhat"
                         data-test="summary__input__what"

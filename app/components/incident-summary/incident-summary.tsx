@@ -105,6 +105,11 @@ export default function IncidentSummary({incident, showForm}: {incident: Inciden
     return (
         <div>
             {
+                showSummaryForm &&
+                <IncidentSummaryForm summary={summary} onSubmit={updateSummary} onCancel={cancelSummaryForm}/>
+            }
+
+            {
                 !showSummaryForm &&
                 <>
                     <h2>
@@ -127,40 +132,35 @@ export default function IncidentSummary({incident, showForm}: {incident: Inciden
                         </table>
 
                     </div>
+
+                    <div className="incident-summary__actions mt-4">
+                        <Button data-test="button-business-update" onClick={copyBusinessUpdate}>Copy Business Update</Button>
+                        <Button data-test="button-tech-update" onClick={copyTechUpdate}>Copy Tech Update</Button>
+                    </div>
+
+
+
+                    <div className="incident-summary__links mt-4">
+                        <h3>
+                            Resources
+                            <Button type="text" size={"small"} icon={<PlusOutlined />} onClick={addResourceLinkClick}>Add Resource</Button>
+                        </h3>
+
+                        <Modal
+                            title="Edit Resource Link"
+                            open={resourceLinkFormVisible}
+                            onCancel={onResourceLinkFormCancel}
+                            footer={null}
+                        >
+                        <ResourceLinkForm resourceLink={undefined} onSubmit={addResourceLink} onCancel={onResourceLinkFormCancel}/>
+                        </Modal>
+
+                        <ul className="incident-summary__links__list">
+                            { summary.resourceLinks.map(l => <li key={l.url} className="inline-block mr-4"><ResourceLink resourceLink={l}/> </li>) }
+                        </ul>
+                    </div>
                 </>
             }
-
-
-                  <div className="incident-summary__actions mt-4">
-                    <Button data-test="button-business-update" onClick={copyBusinessUpdate}>Copy Business Update</Button>
-                    <Button data-test="button-tech-update" onClick={copyTechUpdate}>Copy Tech Update</Button>
-                  </div>
-
-
-            {
-                showSummaryForm &&
-                <IncidentSummaryForm summary={summary} onSubmit={updateSummary} onCancel={cancelSummaryForm}/>
-            }
-
-            <div className="incident-summary__links mt-4">
-                <h3>
-                    Resources
-                    <Button type="text" size={"small"} icon={<PlusOutlined />} onClick={addResourceLinkClick}>Add Resource</Button>
-                </h3>
-
-                <Modal
-                    title="Edit Resource Link"
-                    open={resourceLinkFormVisible}
-                    onCancel={onResourceLinkFormCancel}
-                    footer={null}
-                >
-                  <ResourceLinkForm resourceLink={undefined} onSubmit={addResourceLink} onCancel={onResourceLinkFormCancel}/>
-                </Modal>
-
-                <ul className="incident-summary__links__list">
-                    { summary.resourceLinks.map(l => <li key={l.url} className="inline-block mr-4"><ResourceLink resourceLink={l}/> </li>) }
-                </ul>
-            </div>
 
         </div>
     )
