@@ -242,60 +242,66 @@ export default function OngoingIncident() {
                 <IncidentSummary incident={incident} showForm={incident.summary._isNew}></IncidentSummary>
             </div>
 
-            <section className="mt-8" data-test="affected-systems__listing__active">
-                <h3 className="mb-2">Ongoing Issues
+            
+            {
+                ! incident.summary._isNew &&
+                <>
+                    <section className="mt-8" data-test="affected-systems__listing__active">
+                        <h3 className="mb-2">Ongoing Issues
 
-                {
-                    ! affectedSystemFormVisible &&
-                    <Button data-test="btn-add-affected-system" type="text" size="small" icon={<PlusOutlined/>} onClick={addAffectedSystemClick}>Add Issue</Button>
-                }
-                </h3>
-
-                <section className="affected-systems__new">
-                    {
-                        <Modal
-                            title="Add Affected System"
-                            open={affectedSystemFormVisible}
-                            onCancel={onAffectedSystemFormCancel}
-                            footer={null}
-                        >
-                            <AffectedSystemForm
-                                affectedSystem={null}
-                                onSubmit={addAffectedSystem}
-                                onCancel={onAffectedSystemFormCancel}
-                            />
-                        </Modal>
-                    }
-                </section>
-
-                <ul className="grid grid-cols-3 gap-4">
-                    {
-                        incident.affectedSystems.filter(s => s.status == 'Active').map(s => {
-                            return <li key={s.id}>
-                                <AffectedSystem affectedSystem={s} />
-                            </li>
-                        })
-                    }
-                </ul>
-            </section>
-
-            { 
-                incident.affectedSystems.filter(s => s.status == 'Resolved').length > 0 
-                &&
-
-                <section className="mt-8" data-test="affected-systems__listing__past">
-                    <h3>Resolved Issues</h3>
-
-                    <ul className="grid grid-cols-3 gap-4">
                         {
-                            incident.affectedSystems.filter(s => s.status == 'Resolved').map(s => {
-                                return <li key={s.id}>
-                                    <AffectedSystem affectedSystem={s} />
-                                </li>
-                            })
+                            ! affectedSystemFormVisible &&
+                            <Button data-test="btn-add-affected-system" type="text" size="small" icon={<PlusOutlined/>} onClick={addAffectedSystemClick}>Add Issue</Button>
                         }
-                    </ul>
-                </section>
+                        </h3>
+
+                        <section className="affected-systems__new">
+                            {
+                                <Modal
+                                    title="Add Affected System"
+                                    open={affectedSystemFormVisible}
+                                    onCancel={onAffectedSystemFormCancel}
+                                    footer={null}
+                                >
+                                    <AffectedSystemForm
+                                        affectedSystem={null}
+                                        onSubmit={addAffectedSystem}
+                                        onCancel={onAffectedSystemFormCancel}
+                                    />
+                                </Modal>
+                            }
+                        </section>
+
+                        <ul className="grid grid-cols-3 gap-4">
+                            {
+                                incident.affectedSystems.filter(s => s.status == 'Active').map(s => {
+                                    return <li key={s.id}>
+                                        <AffectedSystem affectedSystem={s} />
+                                    </li>
+                                })
+                            }
+                        </ul>
+                    </section>
+
+                    { 
+                        incident.affectedSystems.filter(s => s.status == 'Resolved').length > 0 
+                        &&
+
+                        <section className="mt-8" data-test="affected-systems__listing__past">
+                            <h3>Resolved Issues</h3>
+
+                            <ul className="grid grid-cols-3 gap-4">
+                                {
+                                    incident.affectedSystems.filter(s => s.status == 'Resolved').map(s => {
+                                        return <li key={s.id}>
+                                            <AffectedSystem affectedSystem={s} />
+                                        </li>
+                                    })
+                                }
+                            </ul>
+                        </section>
+                    }
+                    </>
             }
         </IncidentDispatchContext.Provider>
         </NotificationsContext.Provider>
