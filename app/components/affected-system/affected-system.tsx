@@ -98,7 +98,7 @@ export default function AffectedSystem({affectedSystem}: {affectedSystem: Affect
                         </section>
 
                         { 
-                            affectedSystem.actions?.filter(a => a.status != 'Active').length > 0
+                            affectedSystem.actions!.filter(a => a.status != 'Active').length > 0
                             &&
                             <section className="mt-4 text-slate-400">
                                 <h4 className="font-bold underlined">Completed Actions</h4>
