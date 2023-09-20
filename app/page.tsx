@@ -29,7 +29,7 @@ export default function Home() {
         <h1 className="mt-4">What does it look like?</h1>
         <p className="mt-2">Here&apos;s a sample screenshot:</p>
         <p className="mt-2">
-          <img src="/IncidentCommander_Screenshot.png" className="border-t-4 border-l-4 border-r-8 border-b-8 border-black" />
+          <Image height="871" width="845" priority alt="screenshot" src="/IncidentCommander_Screenshot.png" className="border-t-4 border-l-4 border-r-8 border-b-8 border-black" />
         </p>
       </>
   )
