@@ -41,7 +41,7 @@ export default function AffectedSystem({affectedSystem}: {affectedSystem: Affect
     return (
         <Card 
             title={affectedSystem.what} 
-            className="shadow-md"
+            className={affectedSystem.status == "Active" ? "shadow-lg" : ''}
             extra={
                 <Tooltip title="Edit Affected System">
                     <EditOutlined key="edit" data-test="button-edit-affected-system" onClick={onEditClick} />
@@ -97,21 +97,25 @@ export default function AffectedSystem({affectedSystem}: {affectedSystem: Affect
                             </ul>
                         </section>
 
-                        <section className="mt-4 text-slate-400">
-                            <h4 className="font-bold underlined">Completed Actions</h4>
+                        { 
+                            affectedSystem.actions?.filter(a => a.status != 'Active').length > 0
+                            &&
+                            <section className="mt-4 text-slate-400">
+                                <h4 className="font-bold underlined">Completed Actions</h4>
 
-                            <ul data-test="actions__inactive">
-                                {
-                                    affectedSystem.actions?.filter(a => a.status != 'Active').map((action) => {
-                                        return (
-                                            <li key={action.id} className="mb-2 border-solid pb-2 border-b-2 border-slate-30 last:border-b-0 last:pb-0">
-                                                <Action action={action} />
-                                            </li>
-                                        )
-                                    })
-                                }
-                            </ul>
-                        </section>
+                                <ul data-test="actions__inactive">
+                                    {
+                                        affectedSystem.actions?.filter(a => a.status != 'Active').map((action) => {
+                                            return (
+                                                <li key={action.id} className="mb-2 border-solid pb-2 border-b-2 border-slate-30 last:border-b-0 last:pb-0">
+                                                    <Action action={action} />
+                                                </li>
+                                            )
+                                        })
+                                    }
+                                </ul>
+                            </section>
+                        }
                     </section>
             }
             </div>
