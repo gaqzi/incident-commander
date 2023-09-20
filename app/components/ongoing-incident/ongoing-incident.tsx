@@ -229,7 +229,6 @@ export default function OngoingIncident() {
             {/*<button id="debug-create-incident">DEBUG: Create Incident</button>*/}
 
             <header>
-                <h1>Current Incident</h1>
                 <Button onClick={toggleNotifications}>
                     {
                         notificationPermission
