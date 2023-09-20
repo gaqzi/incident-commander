@@ -16,13 +16,13 @@ const items: MenuProps['items'] = [
         key: 'home',
     },
     {
-        label: 'New Incident',
-        key: 'new_incident',
+        label: 'Manage Incident',
+        key: 'manage_incident',
     },
 ]
 const pathsToKeys: any = {
     '/': 'home',
-    '/incident/ongoing' : 'new_incident',
+    '/incident/ongoing' : 'manage_incident',
 }
 
 const getMenuItemByPath = (path: string) => {
@@ -84,7 +84,7 @@ export default function RootLayout({
             <Menu onClick={onMenuClick.bind(null, router, pathname)} selectedKeys={[getMenuItemByPath(pathname)?.key as string]} mode="horizontal" items={items} />
         </nav>
 
-        <main className="container mx-auto px-4">
+        <main className="container mt-4 mx-auto">
             {children}
         </main>
       </body>
