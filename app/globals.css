@@ -43,6 +43,9 @@ body {
 .ant-btn-dashed {
   background-color:inherit !important;
 }
+.ant-card-head-title {
+  white-space: pre-wrap !important;
+}
 
 
 svg { vertical-align: baseline; }
