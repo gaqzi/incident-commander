@@ -123,7 +123,7 @@ export default function Action({action}: props) {
                             durationInMinutes={action.timerDurationInMinutes}
                             label={action.what}
                             onCompleted={(id, label)=> {
-                                if (notificationPermission && label) {
+                                if (notificationPermission && label && typeof Notification !== 'undefined') {
                                     new Notification(label) // eslint-disable-line no-new
                                 }
                             }}

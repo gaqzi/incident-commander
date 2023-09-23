@@ -185,7 +185,7 @@ export default function OngoingIncident() {
             let ydocEvents = setupMultiplayer(dispatch)
             setDispatcher(()=>{return multiplayerDispatch.bind(null, ydocEvents)})
         }
-        if (Notification.permission == 'granted') {
+        if (typeof Notification !== 'undefined' && Notification.permission == 'granted') {
             Notification.requestPermission().then((newPermission)=>{
                 setNotificationPermission(newPermission == 'granted')
             });
@@ -198,7 +198,7 @@ export default function OngoingIncident() {
 
     const [notificationPermission, setNotificationPermission] = useState(false)
     useEffect(() => {
-        setNotificationPermission(Notification.permission == 'granted')
+        setNotificationPermission(typeof Notification !== 'undefined' && Notification.permission == 'granted')
     }, [])
     const toggleNotifications = (event: any) => {
         if (notificationPermission) {
@@ -228,7 +228,7 @@ export default function OngoingIncident() {
         <IncidentDispatchContext.Provider value={dispatcher}>
             {/*<button id="debug-create-incident">DEBUG: Create Incident</button>*/}
 
-            <header>
+            <header hidden={typeof Notification === 'undefined'}>
                 <Button onClick={toggleNotifications}>
                     {
                         notificationPermission
