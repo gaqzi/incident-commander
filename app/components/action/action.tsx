@@ -16,10 +16,15 @@ export default function Action({action}: props) {
     const incidentReducer = useContext(IncidentDispatchContext)
     const notificationPermission = useContext(NotificationsContext)
     const updateAction = (data: Action) => {
-        // TODO emit event instead
-        // setAction(data)
-        setShowForm(false)
-        incidentReducer([{type: 'edit_action', payload: data}])
+      setShowForm(false)
+      if (data.timerDurationInMinutes && !data.timer) {
+        data.timer = {
+          durationInMinutes: data.timerDurationInMinutes,
+          isRunning: true,
+          startedAtUtc: new Date(new Date().valueOf() + 1000 * 60 * data.timerDurationInMinutes).toUTCString(),
+        }
+      }
+      incidentReducer([{type: 'edit_action', payload: data}])
     }
     const cancelForm = () => {
         setShowForm(false)
@@ -114,13 +119,13 @@ export default function Action({action}: props) {
 
                 <span className="action-group">
                     {
-                        action.timerDurationInMinutes &&
+                        action.timer &&
                         <div className="block">
                           <ClockCircleOutlined title="Timer" />
                           <div className="ml-2 inline-block">
                             <CountdownTimer
                             id={`countdown-${action.id}`}
-                            durationInMinutes={action.timerDurationInMinutes}
+                            {...action.timer}
                             label={action.what}
                             onCompleted={(id, label)=> {
                                 if (notificationPermission && label && typeof Notification !== 'undefined') {

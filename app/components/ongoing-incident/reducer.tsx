@@ -17,7 +17,7 @@ type EditAction = { type: 'edit_action', payload: Action }
 type ResolveActionPayload = { actionId: string, resolution: string }
 type ResolveActionSuccess = { type: 'resolve_action_success', payload: string }
 type ResolveActionFailure = { type: 'resolve_action_failure', payload: ResolveActionPayload }
-type UpdateActionTimer = { type: 'update_action_timer', payload: {minutes: number} }
+type UpdateActionTimer = { type: 'update_action_timer', payload: {minutes: number} } // TODO: unused?
 
 // Putting it all together...
 type IncidentEvents =
@@ -115,6 +115,7 @@ const updateResourceLink = (incident: Incident, updatedResourceLink: ResourceLin
 const addAction = (incident: Incident, newAction: Action): Incident => {
     let updatedIncident = JSON.parse(JSON.stringify(incident))
     const status = 'Active'
+
     const systemIndex = getIndexForSystemId(incident, newAction.affectedSystemId as string)
     if (systemIndex != -1) {
         updatedIncident.affectedSystems[systemIndex].actions.push({...newAction, status})
@@ -126,6 +127,7 @@ const addAction = (incident: Incident, newAction: Action): Incident => {
 
 const updateAction = (incident: Incident, updatedAction: Action): Incident => {
     let updatedIncident = JSON.parse(JSON.stringify(incident))
+
     const { systemIndex, actionIndex } = getIndexesForActionId(incident, updatedAction.id as string)
     if (actionIndex != -1) {
         updatedIncident.affectedSystems[systemIndex].actions[actionIndex] = updatedAction
