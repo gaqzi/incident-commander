@@ -1,22 +1,26 @@
 'use client'
 
-import {useEffect, useState} from "react";
+import {useContext, useEffect, useState} from "react";
 import {Button, Popover} from "antd";
 import {useForm} from "react-hook-form";
+import { IncidentDispatchContext } from "../contexts/incident-context";
 
 interface Props {
     id: string
+    action: Action
     durationInMinutes: number
+    startedAtUtc: string
+    isRunning: boolean
     onCompleted?: (id: string, message?: string) => void
     label?: string
 }
-export default function CountdownTimer({id, durationInMinutes, label, onCompleted}: Props) {
+export default function CountdownTimer({id, action, durationInMinutes, isRunning, startedAtUtc, label, onCompleted}: Props) {
     let timer: any
-    const [expiresAt, setExpiresAt] = useState((new Date(Date.now() + 1000 * 60 * durationInMinutes)).valueOf())
+    const incidentReducer = useContext(IncidentDispatchContext)
+    const [expiresAt, setExpiresAt] = useState((new Date(Date.parse(startedAtUtc))).valueOf())
     const [durationMins, setDurationMins] = useState(durationInMinutes)
     const [minutes, setMinutes] = useState(0)
     const [seconds, setSeconds] = useState(0)
-    const [isRunning, setIsRunning] = useState(true)
     const [showForm, setShowForm] = useState(false)
     const { register, handleSubmit, reset, formState: { errors } } = useForm({
         defaultValues: { durationMins: durationInMinutes }
@@ -32,14 +36,27 @@ export default function CountdownTimer({id, durationInMinutes, label, onComplete
         if (mins == null) {
             mins = durationMins
         }
-        setExpiresAt((new Date(Date.now() + 1000 * 60 * mins)).valueOf())
-        setIsRunning(true)
+        // setExpiresAt((new Date(Date.now() + 1000 * 60 * mins)).valueOf())
+        // setIsRunning(true)
+
+        // action.timer = {...action.timer!, startedAtUtc: ''}
+        // incidentReducer([{type: 'add_action', payload: {...action}}])
+
+        // if (data.timerDurationInMinutes && !data.timer) {
+        //     data.timer = {
+        //       durationInMinutes: data.timerDurationInMinutes,
+        //       startedAtUtc: new Date(new Date().valueOf() + 1000 * 60 * data.timerDurationInMinutes).toUTCString(),
+        //     }
+        //   }
     }
 
     const cancel = () => {
-        setIsRunning(false)
-        setMinutes(0)
-        setSeconds(0)
+        // setIsRunning(false)
+        // setMinutes(0)
+        // setSeconds(0)
+
+        action.timer = {...action.timer!, isRunning: false}
+        incidentReducer([{type: 'edit_action', payload: {...action}}])
     }
 
     const updateMinsSecs = () => {
