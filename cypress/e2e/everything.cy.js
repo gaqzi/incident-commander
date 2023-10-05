@@ -37,6 +37,13 @@ function submitIncident (what, when, where, impact, shouldUseDefaultActions) {
   getDataTest('summary__submit').click()
 }
 
+function addResourceLink(name, url) {
+  getDataTest('button-add-resource').click()
+  getDataTest('resource-link__name').clear().type(name)
+  getDataTest('resource-link__url').clear().type(url)
+  getDataTest('resource-link__submit').click()
+}
+
 function addActionToIncident ({ what = 'action-what', who = 'action-who', link = 'http://example.com', minutes = 10, isMitigating = false }) {
   getDataTest('actions__active__add_action').click()
   getDataTest('new-action__what').type(what)
@@ -380,6 +387,43 @@ describe('Ongoing Incident: Managing Actions', () => {
   })
 })
 
+describe('Ongoing Incident: Managing Resources', () => {
+  beforeEach(() => {
+    const what = 'This is the what'
+    const when = 'This is the when'
+    const where = 'This is the where'
+    const impact = 'This is the impact'
+
+    cy.visit(URL) // TODO: dont use hardcoded port
+    submitIncident(what, when, where, impact, false)
+  })
+
+  it('lets you add and edit resource links', () => {
+    addResourceLink('Link One', 'http://one.com')
+    getDataTest('incident-summary__resources', 'ul.incident-summary__links__list li')
+    .should('contain.text', 'Link One')
+    .within(() => {
+      cy.get('a').should('have.attr', 'href', "http://one.com")
+    })
+
+
+    // edit the link
+    getDataTest('incident-summary__resources', 'ul.incident-summary__links__list li').eq(0).trigger('mouseover')
+    getDataTest('button-edit-resource').click()
+
+    getDataTest('resource-link__name').clear().type('Link One Updated')
+    getDataTest('resource-link__url').clear().type('http://one-updated.com')
+    getDataTest('resource-link__submit').click()
+
+    getDataTest('incident-summary__resources', 'ul.incident-summary__links__list li')
+    .should('contain.text', 'Link One Updated')
+    .within(() => {
+      cy.get('a').should('have.attr', 'href', "http://one-updated.com")
+    })
+  })
+})
+
+
 describe('Ongoing Incident: Status Updates', () => {
   const what = 'This is the what'
   const when = 'This is the when'
@@ -407,7 +451,11 @@ describe('Ongoing Incident: Status Updates', () => {
   })
 
   describe('Tech Update', () => {
-    it('provides the status, summary, affected components, current actions', () => {
+    it('provides the status, summary, resources, affected components, current actions', () => {
+      // Make resource links
+      addResourceLink('Link One', 'http://one.com')
+      addResourceLink('Link Two', 'http://two.com')
+
       // Make Actives
       addActionToIncident({ what: '0 Active and Mitigating', who: 'Person 0', link: 'http://zero.com/', minutes: 0, isMitigating: true })
       addActionToIncident({ what: '1 Active and Not-Mitigating', who: 'Person 1', link: 'http://one.com/', minutes: 0, isMitigating: true })
@@ -449,6 +497,10 @@ describe('Ongoing Incident: Status Updates', () => {
               `Tech Update` +
               `\n*Investigating*` +
               `\nSince ${when} we are seeing ${what} in ${where} impacting ${impact}.` +
+              `\n` +
+              `\n*Resources:*` +
+              `\n- [Link One](http://one.com)` +
+              `\n- [Link Two](http://two.com)` +
               `\n` +
               `\n*Current status:*` +
               `\n- 🔴 ${what}` +
