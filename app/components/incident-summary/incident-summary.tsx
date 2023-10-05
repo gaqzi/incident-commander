@@ -57,12 +57,19 @@ export default function IncidentSummary({incident, showForm}: {incident: Inciden
 
             if (includeActions) {
                 // Note: We always still skip all actions where isMitigating is false
-                const activeActions = system.actions?.filter(a => a.status == 'Active' && a.isMitigating)
+                const activeActions = system.actions?.filter(a => a.status == 'Active')
                 const resolvedActions = system.actions?.filter(a => a.status != 'Active' && a.isMitigating)
                 if (activeActions!.length > 0) {
                     lines.push(`    *Actions:*`)
                     activeActions!.forEach(action => {
-                        lines.push(`    - ${action.what} (@${action.who})` + (action.link ? ` [More info](${action.link})` : ``))
+                        let line = `    - ${action.what}`
+                        if (action.who)  {
+                            line += ` (@${action.who})`
+                        }
+                        if (action.link) {
+                            line += ` [More info](${action.link})`
+                        }
+                        lines.push(line)
                     })
                 }
                 if (resolvedActions!.length > 0) {

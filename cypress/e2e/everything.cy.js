@@ -26,7 +26,7 @@ function getDataTest (ids, suffix = '') {
 
 function submitIncident (what, when, where, impact, shouldUseDefaultActions) {
   getDataTest('summary__input__what').type(what)
-  getDataTest('summary__input__when').clear().type(when)
+  getDataTest('summary__input__when').clear().type(when, {delay: 5})
   getDataTest('summary__input__where').type(where)
   getDataTest('summary__input__impact').type(impact)
   if (shouldUseDefaultActions) {
@@ -408,28 +408,57 @@ describe('Ongoing Incident: Status Updates', () => {
 
   describe('Tech Update', () => {
     it('provides the status, summary, affected components, current actions', () => {
-      addActionToIncident({ what: 'The Action', who: 'The Who', link: 'http://example.com/', minutes: 10, isMitigating: true })
-      addActionToIncident({ what: 'A failed action', who: 'The Whom', link: 'http://example.com/', minutes: 10, isMitigating: true })
+      // Make Actives
+      addActionToIncident({ what: '0 Active and Mitigating', who: 'Person 0', link: 'http://zero.com/', minutes: 0, isMitigating: true })
+      addActionToIncident({ what: '1 Active and Not-Mitigating', who: 'Person 1', link: 'http://one.com/', minutes: 0, isMitigating: true })
 
-      // Mark action as failed
-      cy.window().then((win) => cy.stub(win, 'prompt').returns('Was not destined to be.'))
-      getDataTest('active_action__what').eq(1).trigger('mouseover')
+      // Make Failds
+      addActionToIncident({ what: '2 Failed and Mitigating', who: 'Person 2', link: 'http://two.com/', minutes: 0, isMitigating: true })
+      addActionToIncident({ what: '3 Failed and Not-Mitigating', who: 'Person 3', link: 'http://three.com/', minutes: 0, isMitigating: false })
+
+      // Make Succeededs
+      addActionToIncident({ what: '4 Succeeded and Mitigating', who: 'Person 4', link: 'http://four.com/', minutes: 0, isMitigating: true })
+      addActionToIncident({ what: '5 Succeeded and Not-Mitigating', who: 'Person 5', link: 'http://five.com/', minutes: 0, isMitigating: false })
+
+      // Mark the succeededs as succeeded
+      let promptReturn
+      promptReturn = 'It worked.'
+      getDataTest('active_action__what').eq(4).trigger('mouseover')
+      getDataTest('active_action__succeeded').click()
+      getDataTest('active_action__what').eq(4).trigger('mouseover')
+      getDataTest('active_action__succeeded').click()
+
+      // Mark the failds as failed
+      promptReturn = 'It failed.'
+      cy.window().then((win) => cy.stub(win, 'prompt').returns(promptReturn))
+      getDataTest('active_action__what').eq(2).trigger('mouseover')
       getDataTest('active_action__failed').click()
+      getDataTest('active_action__what').eq(2).trigger('mouseover')
+      getDataTest('active_action__failed').click()
+
 
       let clipboardText = ''
       cy.window().then(function (win) {
         cy.stub(win.navigator.clipboard, 'writeText', (text) => { clipboardText = text })
       })
 
+      // All active actions should show up
+      // All mitigating non-active actions should show up
+      // Non-mitigating are only important while they are active, so we don't keep them for the stateless update once they are finished
       const expected = '' +
-              `Tech Update\n*Investigating*\nSince ${when} we are seeing ${what} in ${where} impacting ${impact}.` +
-              `\n\n*Current status:*\n- 🔴 ${what}` +
-              '\n    *Actions:*\n' +
-              '    - The Action (@The Who) [More info](http://example.com/)' +
-              // '\n\n*Past actions:*\n- ❌ A failed action (The Whom) [More info](http://example.com/)\n    - Was not destined to be.'
-              '\n' +
-              '\n    *Past Actions:*' +
-              '\n    - ❌ A failed action (@The Whom) [More info](http://example.com/) -- Was not destined to be.'
+              `Tech Update` +
+              `\n*Investigating*` +
+              `\nSince ${when} we are seeing ${what} in ${where} impacting ${impact}.` +
+              `\n` +
+              `\n*Current status:*` +
+              `\n- 🔴 ${what}` +
+              `\n    *Actions:*` +
+              `\n    - 0 Active and Mitigating (@Person 0) [More info](http://zero.com/)` +
+              `\n    - 1 Active and Not-Mitigating (@Person 1) [More info](http://one.com/)` +
+              `\n` +
+              `\n    *Past Actions:*` +
+              `\n    - ❌ 2 Failed and Mitigating (@Person 2) [More info](http://two.com/) -- It failed.` +
+              `\n    - ✔️ 4 Succeeded and Mitigating (@Person 4) [More info](http://four.com/)`
 
       getDataTest('button-tech-update')
         .click()
