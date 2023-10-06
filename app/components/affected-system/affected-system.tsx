@@ -35,12 +35,9 @@ export default function AffectedSystem({affectedSystem}: {affectedSystem: Affect
 
     const addAction = (data: any) => {
         setShowNewActionForm(false)
-        if (data.timerDurationInMinutes) {
-            data.timer = {
-                durationInMinutes: data.timerDurationInMinutes,
-                isRunning: true,
-                startedAtUtc: new Date(new Date().valueOf() + 1000 * 60 * data.timerDurationInMinutes).toUTCString(),
-            }
+        if (data.timer && data.timer.durationInMinutes > 0) {
+            data.timer.isRunning = true
+            data.timer.startedAtUtc = new Date(Date.now()).toUTCString()
         }
         incidentReducer([{type: 'add_action', payload: {...data, id: `action_${uuidv4()}` }}])
     }

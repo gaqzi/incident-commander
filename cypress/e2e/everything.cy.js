@@ -327,8 +327,8 @@ describe('Ongoing Incident: Managing Actions', () => {
     const newMinutes = 20
     getCountdownDisplay().trigger('mouseover')
     getDataTest('countdown-timer__edit').click()
-    getDataTest('countdown-timer__minutes').clear().type(newMinutes)
-    getDataTest('countdown-timer-form__submit').click()
+    getDataTest('new-action__minutes-between-updates').clear().type(newMinutes)
+    getDataTest('new-action__submit').click()
     cy.wait(1 * 1000)
 
     // get the new values

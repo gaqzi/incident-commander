@@ -9,7 +9,7 @@ interface Props {
     id: string
     action: Action
     onEditClick: () => void
-    onCompleted?: (id: string, message?: string) => void
+    onCompleted?: (id: string, message?: string, expiresAtMs?: number) => void
     label?: string
 }
 export default function CountdownTimer({id, action, label, onEditClick, onCompleted}: Props) {
@@ -60,7 +60,7 @@ export default function CountdownTimer({id, action, label, onEditClick, onComple
             setSeconds(seconds)
 
             if (minutes == 0 && seconds == 0) {
-                onCompleted && onCompleted(id, label)
+                onCompleted && onCompleted(action.id!, label, expiresAtMs)
                 clearInterval(timer)
             }
         }, 1000)
