@@ -42,11 +42,19 @@ export default function IncidentSummary({incident, showForm}: {incident: Inciden
         setResourceLinkFormVisible(false)
     }
 
-    const incidentReport = ({title, includeActions}: {title: string, includeActions: boolean}) => {
+    const incidentReport = ({title, includeActions, includeResources}: {title: string, includeActions: boolean, includeResources: boolean}) => {
         const { what, where, impact, whenUtcString, status } = incident.summary
         let lines = [title]
         lines.push(`*${status}*`)
         lines.push(`Since ${whenUtcString} we are seeing ${what} in ${where} impacting ${impact}.`)
+
+        if (includeResources) {
+            lines.push(``)
+            lines.push(`*Resources:*`)
+            incident.summary.resourceLinks.forEach(l => {
+                lines.push(`- [${l.name}](${l.url})`)
+            });
+        }
 
         lines.push(``)
         lines.push(`*Current status:*`)
@@ -98,13 +106,13 @@ export default function IncidentSummary({incident, showForm}: {incident: Inciden
     }
 
     const copyBusinessUpdate = async () => {
-        const update = incidentReport({title: 'Business Update', includeActions: false})
+        const update = incidentReport({title: 'Business Update', includeActions: false, includeResources: false})
         console.log(update)
         await navigator.clipboard.writeText(update)
     }
 
     const copyTechUpdate = async () => {
-        const update = incidentReport({title: 'Tech Update', includeActions: true})
+        const update = incidentReport({title: 'Tech Update', includeActions: true, includeResources: true})
         console.log(update)
         await navigator.clipboard.writeText(update)
     }
@@ -147,20 +155,23 @@ export default function IncidentSummary({incident, showForm}: {incident: Inciden
 
 
 
-                    <div className="incident-summary__links mt-4">
+                    <div data-test="incident-summary__resources" className="incident-summary__links mt-4">
                         <h3>
                             Resources
-                            <Button type="text" size={"small"} icon={<PlusOutlined />} onClick={addResourceLinkClick}>Add Resource</Button>
+                            <Button data-test="button-add-resource" type="text" size={"small"} icon={<PlusOutlined />} onClick={addResourceLinkClick}>Add Resource</Button>
                         </h3>
 
-                        <Modal
-                            title="Edit Resource Link"
-                            open={resourceLinkFormVisible}
-                            onCancel={onResourceLinkFormCancel}
-                            footer={null}
-                        >
-                        <ResourceLinkForm resourceLink={undefined} onSubmit={addResourceLink} onCancel={onResourceLinkFormCancel}/>
-                        </Modal>
+                        {
+                            resourceLinkFormVisible &&
+                            <Modal
+                                title="Edit Resource Link"
+                                open={resourceLinkFormVisible}
+                                onCancel={onResourceLinkFormCancel}
+                                footer={null}
+                            >
+                                <ResourceLinkForm resourceLink={undefined} onSubmit={addResourceLink} onCancel={onResourceLinkFormCancel}/>
+                            </Modal>
+                        }
 
                         <ul className="incident-summary__links__list">
                             { summary.resourceLinks.map(l => <li key={l.url} className="inline-block mr-4"><ResourceLink resourceLink={l}/> </li>) }

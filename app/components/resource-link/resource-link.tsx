@@ -39,7 +39,7 @@ export default function ResourceLink({resourceLink: resourceLink}: props) {
 
             {!showForm &&
               <div>
-                <Popover content={<Button type="text" icon={<EditOutlined />} onClick={onEditClick}>Edit</Button>} title="Actions">
+                <Popover content={<Button data-test="button-edit-resource" type="text" icon={<EditOutlined />} onClick={onEditClick}>Edit</Button>} title="Actions">
                   <a target="_blank" href={resourceLink.url}>{resourceLink.name}</a>
                 </Popover>
               </div>
