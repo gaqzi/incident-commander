@@ -8,60 +8,52 @@ import { IncidentDispatchContext } from "../contexts/incident-context";
 interface Props {
     id: string
     action: Action
-    durationInMinutes: number
-    startedAtUtc: string
-    isRunning: boolean
+    onEditClick: () => void
     onCompleted?: (id: string, message?: string) => void
     label?: string
 }
-export default function CountdownTimer({id, action, durationInMinutes, isRunning, startedAtUtc, label, onCompleted}: Props) {
+export default function CountdownTimer({id, action, label, onEditClick, onCompleted}: Props) {
     let timer: any
     const incidentReducer = useContext(IncidentDispatchContext)
-    const [expiresAt, setExpiresAt] = useState((new Date(Date.parse(startedAtUtc))).valueOf())
-    const [durationMins, setDurationMins] = useState(durationInMinutes)
+    const [expiresAt, setExpiresAt] = useState((new Date(Date.parse(action.timer!.startedAtUtc))).valueOf())
+    const [durationMins, setDurationMins] = useState(action.timerDurationInMinutes)
     const [minutes, setMinutes] = useState(0)
     const [seconds, setSeconds] = useState(0)
     const [showForm, setShowForm] = useState(false)
     const { register, handleSubmit, reset, formState: { errors } } = useForm({
-        defaultValues: { durationMins: durationInMinutes }
+        defaultValues: { durationMins: action.timer!.durationInMinutes }
     })
 
     const onSubmit = (data: {durationMins: number}) => {
         setDurationMins(data.durationMins)
         setShowForm(false)
-        restart(data.durationMins)
+        restart(durationMins)
     }
 
-    const restart = (mins?: number) => {
-        if (mins == null) {
-            mins = durationMins
+    const restart = (newDurationMins?: number) => {
+        action.timer = {
+            ...action.timer!, 
+            startedAtUtc: new Date(Date.now()).toUTCString(), 
+            isRunning: true,
         }
-        // setExpiresAt((new Date(Date.now() + 1000 * 60 * mins)).valueOf())
-        // setIsRunning(true)
-
-        // action.timer = {...action.timer!, startedAtUtc: ''}
-        // incidentReducer([{type: 'add_action', payload: {...action}}])
-
-        // if (data.timerDurationInMinutes && !data.timer) {
-        //     data.timer = {
-        //       durationInMinutes: data.timerDurationInMinutes,
-        //       startedAtUtc: new Date(new Date().valueOf() + 1000 * 60 * data.timerDurationInMinutes).toUTCString(),
-        //     }
-        //   }
-    }
-
-    const cancel = () => {
-        // setIsRunning(false)
-        // setMinutes(0)
-        // setSeconds(0)
-
-        action.timer = {...action.timer!, isRunning: false}
+        if (newDurationMins) {
+            action.timer.durationInMinutes = newDurationMins
+        }
         incidentReducer([{type: 'edit_action', payload: {...action}}])
     }
 
-    const updateMinsSecs = () => {
+    const cancel = () => {
+        action.timer = {
+            ...action.timer!, 
+            durationInMinutes: 0,
+            isRunning: false
+        }
+        incidentReducer([{type: 'edit_action', payload: {...action}}])
+    }
+
+    const updateMinsSecs = (expiresAtMs: number) => {
         timer = !timer && setInterval(() => {
-            let timeLeft = Math.max(0, Number(((expiresAt - Date.now()) / 1000).toFixed()))
+            let timeLeft = Math.max(0, Number(((expiresAtMs - Date.now()) / 1000).toFixed()))
             const seconds = timeLeft % 60
             const minutes = (timeLeft - seconds) / 60
             setMinutes(minutes)
@@ -69,20 +61,25 @@ export default function CountdownTimer({id, action, durationInMinutes, isRunning
 
             if (minutes == 0 && seconds == 0) {
                 onCompleted && onCompleted(id, label)
-                setIsRunning(false)
+                clearInterval(timer)
             }
         }, 1000)
     }
 
     useEffect(() => {
-        if (! isRunning) {
+        if (action.timer && !action.timer.isRunning) {
+            const seconds = 0
+            const minutes = 0
+            setMinutes(minutes)
+            setSeconds(seconds)
             clearInterval(timer)
         }
         else {
-            updateMinsSecs()
+            const expiresAtMs = new Date(Date.parse(action.timer!.startedAtUtc)).valueOf() + action.timer!.durationInMinutes * 60 * 1000
+            updateMinsSecs(expiresAtMs)
         }
         return () => { clearInterval(timer) }
-    }, [isRunning, expiresAt])
+    }, [action.timer])
 
     return (
     <div data-test="countdown-display-wrapper">
@@ -125,9 +122,9 @@ export default function CountdownTimer({id, action, durationInMinutes, isRunning
         <>
             <Button data-test="countdown-timer__restart" size="small" onClick={()=>restart()}>Restart</Button>
             {
-                isRunning && <Button data-test="countdown-timer__cancel" size="small" onClick={cancel}>Cancel</Button>
+                action.timer!.isRunning && <Button data-test="countdown-timer__cancel" size="small" onClick={cancel}>Cancel</Button>
             }
-            <Button data-test="countdown-timer__edit" size="small" onClick={()=>setShowForm(true)}>Edit</Button>
+            <Button data-test="countdown-timer__edit" size="small" onClick={onEditClick}>Edit</Button>
         </>
     }>
         {

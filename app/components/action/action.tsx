@@ -17,12 +17,9 @@ export default function Action({action}: props) {
     const notificationPermission = useContext(NotificationsContext)
     const updateAction = (data: Action) => {
       setShowForm(false)
-      if (data.timerDurationInMinutes && !data.timer) {
-        data.timer = {
-          durationInMinutes: data.timerDurationInMinutes,
-          isRunning: true,
-          startedAtUtc: new Date(new Date().valueOf() + 1000 * 60 * data.timerDurationInMinutes).toUTCString(),
-        }
+      if (data.timer && data.timer.durationInMinutes! >= 0) {
+        data.timer.isRunning = true
+        data.timer.startedAtUtc = new Date(Date.now()).toUTCString()
       }
       incidentReducer([{type: 'edit_action', payload: data}])
     }
@@ -124,8 +121,9 @@ export default function Action({action}: props) {
                           <ClockCircleOutlined title="Timer" />
                           <div className="ml-2 inline-block">
                             <CountdownTimer
+                            onEditClick={()=>{setShowForm(true)}}
                             id={`countdown-${action.id}`}
-                            {...action.timer}
+                            action={action}
                             label={action.what}
                             onCompleted={(id, label)=> {
                                 if (notificationPermission && label && typeof Notification !== 'undefined') {

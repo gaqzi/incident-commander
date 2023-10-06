@@ -60,7 +60,7 @@ export default function ActionForm({ action, onSubmit, onCancel } : props) {
                         type="text"
                         id="newActionWhen"
                         data-test="new-action__minutes-between-updates"
-                        {...register("timerDurationInMinutes")}
+                        {...register("timer.durationInMinutes")}
                     />
                 </div>
 
