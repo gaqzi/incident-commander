@@ -173,9 +173,12 @@ export default function OngoingIncident() {
     const [incident, dispatch] = useReducer(incidentReducer, initialDefault)
     let isMultiplayer = false
     const [dispatcher, setDispatcher] = useState({} as any) // TODO: hack, fix this?
+    const [supportsNotifications, setSupportsNotifications] = useState(false)
 
     // Setup Single or Multiplayer Dispatching
     useEffect(() => {
+        setSupportsNotifications(typeof Notification !== 'undefined') // useEffect only runs client-side. We'll use this to conditionally render Notification button section.
+
         const params = new URLSearchParams(window.location.search)
         if (params.get('disableMultiplayer')) {
             isMultiplayer = false
@@ -228,15 +231,18 @@ export default function OngoingIncident() {
         <IncidentDispatchContext.Provider value={dispatcher}>
             {/*<button id="debug-create-incident">DEBUG: Create Incident</button>*/}
 
-            <header hidden={typeof Notification === 'undefined'}>
-                <Button onClick={toggleNotifications}>
-                    {
-                        notificationPermission
-                            ? 'Disable Notifications'
-                            : 'Enable Notifications'
-                    }
-                </Button>
-            </header>
+            { 
+                supportsNotifications &&
+                <header>
+                    <Button onClick={toggleNotifications}>
+                        {
+                            notificationPermission
+                                ? 'Disable Notifications'
+                                : 'Enable Notifications'
+                        }
+                    </Button>
+                </header>
+            }
 
             <div className="mt-2">
                 <IncidentSummary incident={incident} showForm={incident.summary._isNew}></IncidentSummary>
