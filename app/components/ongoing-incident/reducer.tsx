@@ -10,6 +10,7 @@ type EditIncidentSummary = { type: 'edit_incident_summary', payload: IncidentSum
 type AddAffectedSystem = { type: 'add_affected_system', payload: AffectedSystem }
 type EditAffectedSystem = { type: 'edit_affected_system', payload: AffectedSystem }
 type ResolveAffectedSystem = { type: 'resolve_affected_system', payload: string }
+type UnresolveAffectedSystem = { type: 'unresolve_affected_system', payload: string }
 
 // Actions
 type AddAction = { type: 'add_action', payload: Action }
@@ -210,6 +211,11 @@ const resolveAffectedSystem = (incident: Incident, id: string) => {
     return updateAffectedSystem(incident, {...incident.affectedSystems[sIndex], status: 'Resolved'})
 }
 
+const unresolveAffectedSystem = (incident: Incident, id: string) => {
+    const sIndex = incident.affectedSystems.findIndex(s => s.id == id)
+    return updateAffectedSystem(incident, {...incident.affectedSystems[sIndex], status: 'Active'})
+}
+
 
 export const incidentReducer = (incident: Incident, event: IncidentEvents): Incident => {
     const {type, payload} = event
@@ -227,6 +233,8 @@ export const incidentReducer = (incident: Incident, event: IncidentEvents): Inci
             return updateAffectedSystem(incident, payload as AffectedSystem)
         case 'resolve_affected_system':
             return resolveAffectedSystem(incident, payload as string)
+        case 'unresolve_affected_system':
+            return unresolveAffectedSystem(incident, payload as string)
         case 'add_action':
             return addAction(incident, payload as Action)
         case 'edit_action':

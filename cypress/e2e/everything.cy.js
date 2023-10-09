@@ -169,7 +169,7 @@ describe('Ongoing Incident: Managing the Summary', () => {
   })
 })
 
-describe('Ongoing Incident: Managing Affected Components', () => {
+describe('Ongoing Incident: Managing Affected Systems', () => {
   const what = 'This is the what'
   const when = 'This is the when'
   const where = 'This is the where'
@@ -180,7 +180,7 @@ describe('Ongoing Incident: Managing Affected Components', () => {
     submitIncident(what, when, where, impact, false)
   })
 
-  it('lets you add another affected component', () => {
+  it('lets you add another affected system', () => {
     const newWhat = 'Another what'
     getDataTest('btn-add-affected-system').click()
     getDataTest('new-affected-system__what').type(newWhat)
@@ -191,7 +191,7 @@ describe('Ongoing Incident: Managing Affected Components', () => {
       .should('contain.text', newWhat)
   })
 
-  it('lets you edit the text of an add affected component', () => {
+  it('lets you edit the text of an add affected system', () => {
     // Showing the form
     getDataTest('affected-systems__listing__active').should('contain.text', what)
     // getDataTest('summary__input__what').should('not.exist')
@@ -206,7 +206,7 @@ describe('Ongoing Incident: Managing Affected Components', () => {
       .should('contain.text', newWhat)
   })
 
-  it('lets you resolve an affected component', () => {
+  it('lets you resolve and unresolve an affected system', () => {
     getDataTest('affected-systems__listing__active', '>ul>li').should('have.length', 1)
     getDataTest('affected-systems__listing__past', '>ul>li').should('not.exist')
 
@@ -219,6 +219,15 @@ describe('Ongoing Incident: Managing Affected Components', () => {
     getDataTest('affected-systems__listing__active', '>ul>li').should('not.exist')
     getDataTest('affected-systems__listing__past', '>ul>li').should('have.length', 1)
     getDataTest('affected-systems__listing__past').should('contain.text', what)
+
+    getDataTest('affected-systems__listing__past')
+      .contains(what)
+      .trigger('mouseover')
+      .get('[data-test="button-unresolve-affected-system"]')
+      .click()
+
+    getDataTest('affected-systems__listing__active', '>ul>li').should('have.length', 1)
+    getDataTest('affected-systems__listing__past', '>ul>li').should('not.exist')
   })
 })
 
