@@ -15,7 +15,6 @@ interface Props {
 export default function CountdownTimer({id, action, label, onEditClick, onCompleted}: Props) {
     let timer: any
     const incidentReducer = useContext(IncidentDispatchContext)
-    const [expiresAt, setExpiresAt] = useState((new Date(Date.parse(action.timer!.startedAtUtc))).valueOf())
     const [durationMins, setDurationMins] = useState(action.timerDurationInMinutes)
     const [minutes, setMinutes] = useState(0)
     const [seconds, setSeconds] = useState(0)
