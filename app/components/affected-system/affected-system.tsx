@@ -7,7 +7,7 @@ import {useContext, useState} from "react";
 import {IncidentDispatchContext} from "@/app/contexts/incident-context";
 import ActionForm from "@/app/components/action/action-form";
 import {Button, Card, List, Popover, Tooltip, Typography} from "antd";
-import {CheckOutlined, EditOutlined, PlusOutlined} from "@ant-design/icons";
+import {CheckOutlined, EditOutlined, PlusOutlined, UndoOutlined} from "@ant-design/icons";
 import {uuidv4} from "lib0/random";
 const { Text } = Typography;
 
@@ -33,6 +33,10 @@ export default function AffectedSystem({affectedSystem}: {affectedSystem: Affect
         incidentReducer([{type: 'resolve_affected_system', payload: affectedSystem.id}])
     }
 
+    const unresolve = () => {
+        incidentReducer([{type: 'unresolve_affected_system', payload: affectedSystem.id}])
+    }
+
     const addAction = (data: any) => {
         setShowNewActionForm(false)
         if (data.timer && data.timer.durationInMinutes > 0) {
@@ -41,6 +45,28 @@ export default function AffectedSystem({affectedSystem}: {affectedSystem: Affect
         }
         incidentReducer([{type: 'add_action', payload: {...data, id: `action_${uuidv4()}` }}])
     }
+
+    const ResolveAffectedSystem = <>
+            <Tooltip title="Resolve Affected System" key="btn_resolve">
+                <CheckOutlined key="resolve" data-test="button-resolve-affected-system" onClick={resolve} />
+            </Tooltip>
+        </>
+    
+    const UnresolveAffectedSystem =
+            <Tooltip title="Unresolve Affected System" key="btn_unresolve">
+                <UndoOutlined key="unresolve" data-test="button-unresolve-affected-system" onClick={unresolve} />
+            </Tooltip>
+
+    const AddAction = <>
+            <Tooltip title="Add Action" key="btn_add_action">
+                <PlusOutlined key="add-action" data-test="actions__active__add_action" onClick={() => { setShowNewActionForm(true) }} />
+            </Tooltip>
+        </>
+
+    const actions_list = affectedSystem.status == "Active"
+        ? [ResolveAffectedSystem, AddAction]
+        : [UnresolveAffectedSystem, AddAction]
+
 
     return (
         <Card 
@@ -52,15 +78,7 @@ export default function AffectedSystem({affectedSystem}: {affectedSystem: Affect
                 </Tooltip>
             } 
             data-test={`affected-system__${affectedSystem.status == 'Active' ? 'active' : 'past'}`}
-            actions={[
-                <Tooltip title="Resolve Affected System" key="btn_resolve">
-                    <CheckOutlined key="resolve" data-test="button-resolve-affected-system" onClick={resolve} />
-                </Tooltip>,
-
-                <Tooltip title="Add Action" key="btn_add_action">
-                    <PlusOutlined key="add-action" data-test="actions__active__add_action" onClick={() => { setShowNewActionForm(true) }} />
-                </Tooltip>,
-              ]}
+            actions={actions_list}
         >
             <div>
             {
