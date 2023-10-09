@@ -30,11 +30,17 @@ declare global {
         what: string
         who?: string
         link?: string
-        timerDurationInMinutes?: number
+        timer?: Timer
         isMitigating: boolean
         status: string
         resolution?: string
         affectedSystemId?: string
+    }
+     
+    type Timer = {
+        durationInMinutes: number
+        startedAtUtc: string
+        isRunning: boolean
     }
 
     type AffectedSystem = {
