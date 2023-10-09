@@ -354,9 +354,13 @@ describe('Ongoing Incident: Managing Actions', () => {
     getDataTest('action__is-mitigating').should('exist')
   })
 
-  it('lets you finish an action as a success or a failure', () => {
-    addActionToIncident({ what: 'Will be a success' })
-    addActionToIncident({ what: 'Will be a failure' })
+  it('lets you finish an action as a success or a failure, and cancels their timers', () => {
+    const getCountdownDisplay = () => {
+      return getDataTest('actions__active', '[data-test="countdown-display-wrapper"]').first()
+    }
+
+    addActionToIncident({ what: 'Will be a success', minutes: 2 })
+    addActionToIncident({ what: 'Will be a failure', minutes: 2 })
 
     getDataTest('actions__inactive', 'li').should('not.exist')
 
@@ -383,7 +387,32 @@ describe('Ongoing Incident: Managing Actions', () => {
     getDataTest('actions__inactive', 'li')
       .should('contain.text', 'Will be a failure')
       .should('contain.text', 'Failure')
-      .should('contain.text', failureReason) // TODO
+      .should('contain.text', failureReason)
+
+    cy.wait(1 * 1000)
+
+    // capture first inactive action timer value
+    getDataTest('actions__inactive', '[data-test="countdown-display-wrapper"]').eq(0).within(() => {
+      cy.get('.minutes').invoke('text').then(parseInt).as('finishedMins')
+      cy.get('.seconds').invoke('text').then(parseInt).as('finishedSecs')
+    })
+    // expect timer values to be 0m0s
+    cy.then(function () {
+      expect(this.finishedMins).to.eq(0)
+      expect(this.finishedSecs).to.eq(0)
+    })
+
+    // capture remaining inactive action timer value
+    getDataTest('actions__inactive', '[data-test="countdown-display-wrapper"]').eq(1).within(() => {
+      cy.get('.minutes').invoke('text').then(parseInt).as('finishedMins')
+      cy.get('.seconds').invoke('text').then(parseInt).as('finishedSecs')
+    })
+
+    // expect timer values to be 0m0s
+    cy.then(function () {
+      expect(this.finishedMins).to.eq(0)
+      expect(this.finishedSecs).to.eq(0)
+    })
   })
 })
 
