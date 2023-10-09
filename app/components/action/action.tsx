@@ -34,7 +34,7 @@ export default function Action({action}: props) {
     const notificationPermission = useContext(NotificationsContext)
     const updateAction = (data: Action) => {
       setShowForm(false)
-      if (data.timer && data.timer.durationInMinutes! >= 0) {
+      if (data.timer && data.timer.durationInMinutes! >= 0 && data.timer.durationInMinutes != action.timer?.durationInMinutes) {
         data.timer.isRunning = true
         data.timer.startedAtUtc = new Date(Date.now()).toUTCString()
       }

@@ -15,7 +15,7 @@ interface Props {
 export default function CountdownTimer({id, action, label, onEditClick, onCompleted}: Props) {
     let timer: any
     const incidentReducer = useContext(IncidentDispatchContext)
-    const [durationMins, setDurationMins] = useState(action.timerDurationInMinutes)
+    const [durationMins, setDurationMins] = useState(action.timer!.durationInMinutes)
     const [minutes, setMinutes] = useState(0)
     const [seconds, setSeconds] = useState(0)
     const [showForm, setShowForm] = useState(false)
@@ -26,7 +26,9 @@ export default function CountdownTimer({id, action, label, onEditClick, onComple
     const onSubmit = (data: {durationMins: number}) => {
         setDurationMins(data.durationMins)
         setShowForm(false)
-        restart(durationMins)
+        if (durationMins != action.timer?.durationInMinutes) {
+            restart(durationMins)
+        }
     }
 
     const restart = (newDurationMins?: number) => {
