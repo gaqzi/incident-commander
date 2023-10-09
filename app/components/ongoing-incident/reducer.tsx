@@ -10,6 +10,7 @@ type EditIncidentSummary = { type: 'edit_incident_summary', payload: IncidentSum
 type AddAffectedSystem = { type: 'add_affected_system', payload: AffectedSystem }
 type EditAffectedSystem = { type: 'edit_affected_system', payload: AffectedSystem }
 type ResolveAffectedSystem = { type: 'resolve_affected_system', payload: string }
+type UnresolveAffectedSystem = { type: 'unresolve_affected_system', payload: string }
 
 // Actions
 type AddAction = { type: 'add_action', payload: Action }
@@ -23,7 +24,7 @@ type UpdateActionTimer = { type: 'update_action_timer', payload: {minutes: numbe
 type IncidentEvents =
       EditIncidentSummary
     | AddIncidentResourceLink | EditIncidentResourceLink
-    | AddAffectedSystem | EditAffectedSystem | ResolveAffectedSystem
+    | AddAffectedSystem | EditAffectedSystem | ResolveAffectedSystem | UnresolveAffectedSystem
     | AddAction | EditAction | ResolveActionSuccess | ResolveActionFailure
     | UpdateActionTimer
 
