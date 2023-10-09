@@ -145,7 +145,8 @@ const resolveActionFailure = (incident: Incident, payload: ResolveActionPayload)
         const affectedSystem = incident.affectedSystems[systemIndex]
         if (affectedSystem && affectedSystem.actions) {
             const action = affectedSystem.actions[actionIndex]
-            updatedIncident.affectedSystems[systemIndex].actions[actionIndex] = {...action, status: 'Failure', resolution }
+            const timer = action.timer
+            updatedIncident.affectedSystems[systemIndex].actions[actionIndex] = {...action, status: 'Failure', resolution, timer: {...timer, isRunning: false, durationInMinutes: 0 }}
         }
         return updatedIncident
     }
@@ -160,7 +161,8 @@ const resolveActionSuccess = (incident: Incident, actionId: string) => {
         const affectedSystem = incident.affectedSystems[systemIndex]
         if (affectedSystem && affectedSystem.actions) {
             const action = affectedSystem.actions[actionIndex]
-            updatedIncident.affectedSystems[systemIndex].actions[actionIndex] = {...action, status: 'Success'}
+            const timer = action.timer
+            updatedIncident.affectedSystems[systemIndex].actions[actionIndex] = {...action, status: 'Success', timer: {...timer, isRunning: false, durationInMinutes: 0 }}
         }
         return updatedIncident
     }
