@@ -7,6 +7,23 @@ import CountdownTimer from "@/app/components/countdown-timer";
 import {Button, Popover, Tooltip} from "antd";
 import {CheckOutlined, ClockCircleOutlined, CloseOutlined, EditOutlined, InfoCircleOutlined, CheckCircleOutlined, MoreOutlined, MenuOutlined } from "@ant-design/icons";
 
+
+const NOTIFICATION_REMEMBERING_LOCALSTORAGE_KEY = 'previousNotifications'
+function rememberNotification(id: string) {
+  // if (! localStorage.getItem(KEY)) {
+  //   localStorage.setItem(KEY, JSON.stringify({}))
+  // }
+  // TODO: consider how to clean old ones up. Perhaps store id along with a TTL and clean up old entries every so often?
+  let previousNotifications = JSON.parse(localStorage.getItem(NOTIFICATION_REMEMBERING_LOCALSTORAGE_KEY) || "{}")
+  previousNotifications[id] = true
+  localStorage.setItem(NOTIFICATION_REMEMBERING_LOCALSTORAGE_KEY, JSON.stringify(previousNotifications))
+}
+function didAlreadyNotify(id: string) {
+  let previousNotifications = JSON.parse(localStorage.getItem(NOTIFICATION_REMEMBERING_LOCALSTORAGE_KEY) || "{}")
+  return previousNotifications[id]
+}
+
+
 interface props {
     action: Action
 }
@@ -16,10 +33,12 @@ export default function Action({action}: props) {
     const incidentReducer = useContext(IncidentDispatchContext)
     const notificationPermission = useContext(NotificationsContext)
     const updateAction = (data: Action) => {
-        // TODO emit event instead
-        // setAction(data)
-        setShowForm(false)
-        incidentReducer([{type: 'edit_action', payload: data}])
+      setShowForm(false)
+      if (data.timer && data.timer.durationInMinutes! >= 0) {
+        data.timer.isRunning = true
+        data.timer.startedAtUtc = new Date(Date.now()).toUTCString()
+      }
+      incidentReducer([{type: 'edit_action', payload: data}])
     }
     const cancelForm = () => {
         setShowForm(false)
@@ -114,17 +133,24 @@ export default function Action({action}: props) {
 
                 <span className="action-group">
                     {
-                        action.timerDurationInMinutes &&
+                        action.timer &&
                         <div className="block">
                           <ClockCircleOutlined title="Timer" />
                           <div className="ml-2 inline-block">
                             <CountdownTimer
+                            onEditClick={()=>{setShowForm(true)}}
                             id={`countdown-${action.id}`}
-                            durationInMinutes={action.timerDurationInMinutes}
+                            action={action}
                             label={action.what}
-                            onCompleted={(id, label)=> {
+                            onCompleted={(id, label, expiresAtMs)=> {
                                 if (notificationPermission && label && typeof Notification !== 'undefined') {
+                                  // We don't want to alert for the same notification id twice (browser refresh, etc)
+                                  // so we'll track ones we've already notified for in localstorage
+                                  const notificationId = action.id! + expiresAtMs?.toString()
+                                  if (!didAlreadyNotify(notificationId)) {
                                     new Notification(label) // eslint-disable-line no-new
+                                    rememberNotification(action.id! + expiresAtMs?.toString())
+                                  }
                                 }
                             }}
                             />

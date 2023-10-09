@@ -139,10 +139,10 @@ export default function IncidentSummary({incident, showForm}: {incident: Inciden
                         <strong className="status">[{summary.status}]</strong>
                         <table>
                             <tbody>
-                                <tr><td>Since:</td>  <td><span className="when">{summary.whenUtcString}</span></td></tr>
-                                <tr><td>What:</td>   <td><span className="what">{summary.what}</span></td></tr>
-                                <tr><td>Where:</td>  <td><span className="where">{summary.where}</span></td></tr>
-                                <tr><td className="pr-2">Impact:</td> <td><span className="impact">{summary.impact}</span></td></tr>
+                                <tr><td>Since:</td><td><span className="when">{summary.whenUtcString}</span></td></tr>
+                                <tr><td>What:</td><td><span className="what">{summary.what}</span></td></tr>
+                                <tr><td>Where:</td><td><span className="where">{summary.where}</span></td></tr>
+                                <tr><td className="pr-2">Impact:</td><td><span className="impact">{summary.impact}</span></td></tr>
                             </tbody>
                         </table>
 
