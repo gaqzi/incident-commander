@@ -6,7 +6,7 @@
     "@tailwindcss/forms": "^0.5.3",
     "@types/gtag.js": "^0.0.13",
     "buffer": "^6.0.3",
-    "chai": "^4.3.8",
+    "chai": "^4.3.10",
     "cypress": "13.2.0",
     "mocha": "^10.2.0",
     "parcel": "^2.9.3",

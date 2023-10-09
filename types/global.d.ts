@@ -30,7 +30,6 @@ declare global {
         what: string
         who?: string
         link?: string
-        timerDurationInMinutes: number
         timer?: Timer
         isMitigating: boolean
         status: string
