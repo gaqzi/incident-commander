@@ -130,7 +130,7 @@ export default function CountdownTimer({id, action, label, onEditClick, onComple
     }>
         {
           !showForm &&
-          <span data-test="countdown-display">
+          <span data-test="countdown-display" className={ minutes == 0 && seconds == 0 ? "animate-ping bg-red-500 text-white" : "" }>
             <span className="minutes">{minutes}</span>m
             <span className="seconds">{seconds}</span>s
         </span>
