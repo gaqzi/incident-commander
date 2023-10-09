@@ -6,7 +6,7 @@
     "@tailwindcss/forms": "^0.5.3",
     "@types/gtag.js": "^0.0.14",
     "buffer": "^6.0.3",
-    "chai": "^4.3.8",
+    "chai": "^4.3.10",
     "cypress": "13.2.0",
     "mocha": "^10.2.0",
     "parcel": "^2.9.3",
@@ -28,8 +28,8 @@
     "antd": "^5.6.4",
     "autoprefixer": "10.4.14",
     "dayjs": "^1.11.10",
-    "eslint": "8.50.0",
-    "eslint-config-next": "13.4.19",
+    "eslint": "8.51.0",
+    "eslint-config-next": "13.5.4",
     "next": "13.4.19",
     "postcss": "8.4.31",
     "react": "18.2.0",
@@ -41,6 +41,6 @@
     "y-indexeddb": "^9.0.11",
     "y-webrtc": "^10.2.4",
     "y-websocket": "^1.5.0",
-    "yjs": "^13.6.7"
+    "yjs": "^13.6.8"
   }
 }
