@@ -24,7 +24,7 @@ type UpdateActionTimer = { type: 'update_action_timer', payload: {minutes: numbe
 type IncidentEvents =
       EditIncidentSummary
     | AddIncidentResourceLink | EditIncidentResourceLink
-    | AddAffectedSystem | EditAffectedSystem | ResolveAffectedSystem
+    | AddAffectedSystem | EditAffectedSystem | ResolveAffectedSystem | UnresolveAffectedSystem
     | AddAction | EditAction | ResolveActionSuccess | ResolveActionFailure
     | UpdateActionTimer
 
