@@ -28,7 +28,7 @@
     "antd": "^5.10.1",
     "autoprefixer": "10.4.16",
     "dayjs": "^1.11.10",
-    "eslint": "8.51.0",
+    "eslint": "8.52.0",
     "eslint-config-next": "13.5.4",
     "next": "13.4.19",
     "postcss": "8.4.31",
