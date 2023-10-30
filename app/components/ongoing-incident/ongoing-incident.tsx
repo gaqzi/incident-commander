@@ -10,7 +10,7 @@ import {incidentReducer} from "@/app/components/ongoing-incident/reducer";
 import IncidentSummary from "@/app/components/incident-summary/incident-summary";
 import AffectedSystem from "@/app/components/affected-system/affected-system";
 import AffectedSystemForm from "@/app/components/affected-system/affected-system-form";
-import {NotificationsContext, IncidentDispatchContext, nullDispatch} from "@/app/contexts/incident-context";
+import {NotificationsContext, IncidentDispatchContext, nullDispatch, YDocContext, YDocMultiplayerProviderContext } from "@/app/contexts/incident-context";
 import ResourceLink from "@/app/components/resource-link/resource-link";
 import { Button, Modal } from "antd"
 import {PlusOutlined} from "@ant-design/icons";
@@ -29,10 +29,13 @@ let initialDefault = {
     }
 };
 
+const ydoc = new Y.Doc()
+
+
 
 // Multiplayer Stuff ===================
 
-function setupMultiplayer(dispatch: any) {
+function setupMultiplayer(dispatch: any, setYdocProvider: any) {
     // If we don't have a room and password, create them and refresh window so they're on the query string
     const params = new URLSearchParams(window.location.search)
     if (!params.get('room')) {
@@ -48,7 +51,7 @@ function setupMultiplayer(dispatch: any) {
     const websocket_host = params.get('yjs_socket_host') || process.env.NEXT_PUBLIC_YJS_SOCKET_SERVER
     const room = params.get('room') as string
 
-    const ydoc = new Y.Doc()
+    // const ydoc = new Y.Doc()
 
     // We persist the document content across sessions
     const indexeddbProvider = new IndexeddbPersistence(room, ydoc)
@@ -58,6 +61,7 @@ function setupMultiplayer(dispatch: any) {
     // TODO: what if we can't store to localstorage? Should we throw a warning, error?
 
     const websocketProvider = new WebsocketProvider(websocket_host as string, room, ydoc)
+    setYdocProvider(websocketProvider)
     websocketProvider.on('status', (event: any) => {
         console.log('YJS WebSocket Provider: ', event.status) // logs "connected" or "disconnected"
     })
@@ -97,6 +101,7 @@ export default function OngoingIncident() {
     let isMultiplayer = false
     const [dispatcher, setDispatcher] = useState({} as any) // TODO: hack, fix this?
     const [supportsNotifications, setSupportsNotifications] = useState(false)
+    const [ydocProvider, setYdocProvider] = useState({} as WebsocketProvider)
 
     // Setup Single or Multiplayer Dispatching
     useEffect(() => {
@@ -108,7 +113,7 @@ export default function OngoingIncident() {
             setDispatcher(()=>{return singleplayerDispatch.bind(null, dispatch)})
         } else {
             isMultiplayer = true
-            let ydocEvents = setupMultiplayer(dispatch)
+            let ydocEvents = setupMultiplayer(dispatch, setYdocProvider)
             setDispatcher(()=>{return multiplayerDispatch.bind(null, ydocEvents)})
         }
         if (typeof Notification !== 'undefined' && Notification.permission == 'granted') {
@@ -152,6 +157,8 @@ export default function OngoingIncident() {
     return (
         <NotificationsContext.Provider value={notificationPermission}>
         <IncidentDispatchContext.Provider value={dispatcher}>
+        <YDocContext.Provider value={ydoc}>
+        <YDocMultiplayerProviderContext.Provider value={ydocProvider}>
             {/*<button id="debug-create-incident">DEBUG: Create Incident</button>*/}
 
             { 
@@ -231,6 +238,8 @@ export default function OngoingIncident() {
                     }
                     </>
             }
+        </YDocMultiplayerProviderContext.Provider>
+        </YDocContext.Provider>
         </IncidentDispatchContext.Provider>
         </NotificationsContext.Provider>
     )
