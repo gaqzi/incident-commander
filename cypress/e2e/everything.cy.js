@@ -44,17 +44,12 @@ function addResourceLink(name, url) {
   getDataTest('resource-link__submit').click()
 }
 
-function addActionToIncident ({ what = 'action-what', who = 'action-who', link = 'http://example.com', minutes = 10, isMitigating = false }) {
+function addActionToIncident ({ what = 'action-what', who = 'action-who', link = 'http://example.com', minutes = 10}) {
   getDataTest('actions__active__add_action').click()
   getDataTest('new-action__what').type(what)
   getDataTest('new-action__who').type(who)
   getDataTest('new-action__link').type(link)
   getDataTest('new-action__minutes-between-updates').clear().type(minutes)
-  if (isMitigating) {
-    getDataTest('new-action__is-mitigating').check()
-  } else {
-    getDataTest('new-action__is-mitigating').uncheck()
-  }
 
   getDataTest('new-action__submit').click()
 }
@@ -249,14 +244,13 @@ describe('Ongoing Incident: Managing Actions', () => {
     const who = 'john doe'
     const link = 'http://example.com'
     const minutes = 10
-    addActionToIncident({ who, what, link, minutes, isMitigating: false })
+    addActionToIncident({ who, what, link, minutes })
 
     getDataTest('actions__active', '>li').should('have.lengthOf', 1)
     const action = getDataTest('actions__active').within(el => el.get('li')).first()
     action.should('contain.text', what)
     action.should('contain.text', who)
     action.within(el => el.get(`a[href="${link}"]`)).should('be.visible')
-    action.within(el => el.get('input[data-test="action__is-mitigating"')).should('not.be.checked')
   })
 
   it('allows you to start typing the what without clicking on the field', () => {
@@ -352,30 +346,20 @@ describe('Ongoing Incident: Managing Actions', () => {
     })
   })
 
-  it('lets you toggle an active action as mitigating or not', () => {
-    addActionToIncident({ isMitigating: false })
-    getDataTest('action__is-mitigating').should('not.exist')
-
-    getDataTest('active_action__what').trigger('mouseover')
-    getDataTest('action__edit').click()
-    getDataTest('new-action__is-mitigating').check()
-    getDataTest('new-action__submit').click()
-    getDataTest('action__is-mitigating').should('exist')
-  })
-
-  it('lets you finish an action as a success or a failure, and cancels their timers', () => {
+  it('lets you finish an action as a chore, success, or failure, and cancels their timers', () => {
     const getCountdownDisplay = () => {
       return getDataTest('actions__active', '[data-test="countdown-display-wrapper"]').first()
     }
 
     addActionToIncident({ what: 'Will be a success', minutes: 2 })
     addActionToIncident({ what: 'Will be a failure', minutes: 2 })
+    addActionToIncident({ what: 'Will be a chore', minutes: 2 })
 
     getDataTest('actions__inactive', 'li').should('not.exist')
 
     // click mark as success
     getDataTest('active_action__what').first().trigger('mouseover')
-    getDataTest('active_action__succeeded').first().click()
+    getDataTest('action__resolve_success').first().click({force: true})
 
     getDataTest('actions__inactive', 'li')
       .should('contain.text', 'Will be a success')
@@ -391,12 +375,26 @@ describe('Ongoing Incident: Managing Actions', () => {
     })
 
     getDataTest('active_action__what').first().trigger('mouseover')
-    getDataTest('active_action__failed').first().click()
+    getDataTest('action__resolve_failure').first().click({force: true})
 
     getDataTest('actions__inactive', 'li')
       .should('contain.text', 'Will be a failure')
       .should('contain.text', 'Failure')
       .should('contain.text', failureReason)
+
+
+    // click mark as chore
+    getDataTest('active_action__what').first().trigger('mouseover')
+    getDataTest('action__resolve_chore').first().click({force: true})
+
+    getDataTest('actions__inactive', 'li')
+      .should('contain.text', 'Will be a success')
+      .should('contain.text', 'Success')
+      .should('contain.text', 'Will be a failure')
+      .should('contain.text', 'Failure')
+      .should('contain.text', 'Will be a chore')
+      .should('contain.text', 'Chore')
+
 
     cy.wait(1 * 1000)
 
@@ -411,8 +409,20 @@ describe('Ongoing Incident: Managing Actions', () => {
       expect(this.finishedSecs).to.eq(0)
     })
 
-    // capture remaining inactive action timer value
+    // capture next inactive action timer value
     getDataTest('actions__inactive', '[data-test="countdown-display-wrapper"]').eq(1).within(() => {
+      cy.get('.minutes').invoke('text').then(parseInt).as('finishedMins')
+      cy.get('.seconds').invoke('text').then(parseInt).as('finishedSecs')
+    })
+
+    // expect timer values to be 0m0s
+    cy.then(function () {
+      expect(this.finishedMins).to.eq(0)
+      expect(this.finishedSecs).to.eq(0)
+    })
+
+    // capture last inactive action timer value
+    getDataTest('actions__inactive', '[data-test="countdown-display-wrapper"]').eq(2).within(() => {
       cy.get('.minutes').invoke('text').then(parseInt).as('finishedMins')
       cy.get('.seconds').invoke('text').then(parseInt).as('finishedSecs')
     })
@@ -495,32 +505,26 @@ describe('Ongoing Incident: Status Updates', () => {
       addResourceLink('Link Two', 'http://two.com')
 
       // Make Actives
-      addActionToIncident({ what: '0 Active and Mitigating', who: 'Person 0', link: 'http://zero.com/', minutes: 0, isMitigating: true })
-      addActionToIncident({ what: '1 Active and Not-Mitigating', who: 'Person 1', link: 'http://one.com/', minutes: 0, isMitigating: true })
+      addActionToIncident({ what: '0 Active', who: 'Person 0', link: 'http://zero.com/', minutes: 0 })
 
-      // Make Failds
-      addActionToIncident({ what: '2 Failed and Mitigating', who: 'Person 2', link: 'http://two.com/', minutes: 0, isMitigating: true })
-      addActionToIncident({ what: '3 Failed and Not-Mitigating', who: 'Person 3', link: 'http://three.com/', minutes: 0, isMitigating: false })
+      // Make Inactives
+      addActionToIncident({ what: '1 Chore', who: 'Person 1', link: 'http://one.com/', minutes: 0 })
+      addActionToIncident({ what: '2 Succeeded', who: 'Person 2', link: 'http://two.com/', minutes: 0 })
+      addActionToIncident({ what: '3 Failed', who: 'Person 3', link: 'http://three.com/', minutes: 0 })
 
-      // Make Succeededs
-      addActionToIncident({ what: '4 Succeeded and Mitigating', who: 'Person 4', link: 'http://four.com/', minutes: 0, isMitigating: true })
-      addActionToIncident({ what: '5 Succeeded and Not-Mitigating', who: 'Person 5', link: 'http://five.com/', minutes: 0, isMitigating: false })
+      // Finish Chore and Succeeded
+      // promptReturn = 'It worked.'
+      getDataTest('active_action__what').eq(1).trigger('mouseover')
+      getDataTest('action__resolve_chore').click({force: true})
+      getDataTest('active_action__what').eq(1).trigger('mouseover')
+      getDataTest('action__resolve_success').click({force: true})
 
-      // Mark the succeededs as succeeded
+      // Finish Failed
       let promptReturn
-      promptReturn = 'It worked.'
-      getDataTest('active_action__what').eq(4).trigger('mouseover')
-      getDataTest('active_action__succeeded').click()
-      getDataTest('active_action__what').eq(4).trigger('mouseover')
-      getDataTest('active_action__succeeded').click()
-
-      // Mark the failds as failed
       promptReturn = 'It failed.'
       cy.window().then((win) => cy.stub(win, 'prompt').returns(promptReturn))
-      getDataTest('active_action__what').eq(2).trigger('mouseover')
-      getDataTest('active_action__failed').click()
-      getDataTest('active_action__what').eq(2).trigger('mouseover')
-      getDataTest('active_action__failed').click()
+      getDataTest('active_action__what').eq(1).trigger('mouseover')
+      getDataTest('action__resolve_failure').click({force: true})
 
 
       let clipboardText = ''
@@ -529,8 +533,8 @@ describe('Ongoing Incident: Status Updates', () => {
       })
 
       // All active actions should show up
-      // All mitigating non-active actions should show up
-      // Non-mitigating are only important while they are active, so we don't keep them for the stateless update once they are finished
+      // All non-Chore non-active actions should show up
+      // Chores are only important while they are active, so we don't keep them for the stateless update once they are finished
       const expected = '' +
               `Tech Update` +
               `\n*Investigating*` +
@@ -543,12 +547,11 @@ describe('Ongoing Incident: Status Updates', () => {
               `\n*Current status:*` +
               `\n- 🔴 ${what}` +
               `\n    *Actions:*` +
-              `\n    - 0 Active and Mitigating (@Person 0) [More info](http://zero.com/)` +
-              `\n    - 1 Active and Not-Mitigating (@Person 1) [More info](http://one.com/)` +
+              `\n    - 0 Active (@Person 0) [More info](http://zero.com/)` +
               `\n` +
               `\n    *Past Actions:*` +
-              `\n    - ❌ 2 Failed and Mitigating (@Person 2) [More info](http://two.com/) -- It failed.` +
-              `\n    - ✔️ 4 Succeeded and Mitigating (@Person 4) [More info](http://four.com/)`
+              `\n    - ✔️ 2 Succeeded (@Person 2) [More info](http://two.com/)` +
+              `\n    - ❌ 3 Failed (@Person 3) [More info](http://three.com/) -- It failed.` 
 
       getDataTest('button-tech-update')
         .click()

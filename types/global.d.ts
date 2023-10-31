@@ -31,7 +31,6 @@ declare global {
         who?: string
         link?: string
         timer?: Timer
-        isMitigating: boolean
         status: string
         resolution?: string
         affectedSystemId?: string
