@@ -108,7 +108,7 @@ export default function Action({action}: props) {
             </Radio.Button>
 
             <Radio.Button value="Failure" data-test="action__resolve_failure">
-              <DislikeOutlined className="mr-1" /> This Didn't Help
+              <DislikeOutlined className="mr-1" /> This Didn&apos;t Help
             </Radio.Button>
           </Radio.Group>
         </>
