@@ -86,7 +86,7 @@ export default function Action({action}: props) {
           <Button 
             className="block mb-1" 
             type="link"
-            size="medium" 
+            size="middle"
             icon={<EditOutlined/>} 
             onClick={onEditClick}
             data-test="action__edit"
