@@ -64,9 +64,10 @@ export default function IncidentSummary({incident, showForm}: {incident: Inciden
             lines.push(`- ${statusIcon} ${system.what}`)
 
             if (includeActions) {
-                // Note: We always still skip all actions where isMitigating is false
+                // We want all active actions
                 const activeActions = system.actions?.filter(a => a.status == 'Active')
-                const resolvedActions = system.actions?.filter(a => a.status != 'Active' && a.isMitigating)
+                // And all resolved actions that are not a Chore
+                const resolvedActions = system.actions?.filter(a => a.status == 'Success' || a.status == 'Failure')
                 if (activeActions!.length > 0) {
                     lines.push(`    *Actions:*`)
                     activeActions!.forEach(action => {

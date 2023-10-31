@@ -16,8 +16,10 @@ type UnresolveAffectedSystem = { type: 'unresolve_affected_system', payload: str
 type AddAction = { type: 'add_action', payload: Action }
 type EditAction = { type: 'edit_action', payload: Action }
 type ResolveActionPayload = { actionId: string, resolution: string }
+type ResolveActionChore = { type: 'resolve_action_chore', payload: string }
 type ResolveActionSuccess = { type: 'resolve_action_success', payload: string }
 type ResolveActionFailure = { type: 'resolve_action_failure', payload: ResolveActionPayload }
+type UnresolveAction = { type: 'unresolve_action', payload: string }
 type UpdateActionTimer = { type: 'update_action_timer', payload: {minutes: number} } // TODO: unused?
 
 // Putting it all together...
@@ -25,7 +27,7 @@ type IncidentEvents =
       EditIncidentSummary
     | AddIncidentResourceLink | EditIncidentResourceLink
     | AddAffectedSystem | EditAffectedSystem | ResolveAffectedSystem
-    | AddAction | EditAction | ResolveActionSuccess | ResolveActionFailure
+    | AddAction | EditAction | ResolveActionChore | ResolveActionSuccess | ResolveActionFailure | UnresolveAction
     | UpdateActionTimer
 
 
@@ -84,7 +86,6 @@ const editIncidentSummary = (incident: Incident, updatedSummary: IncidentSummary
                 updatedIncident = addAction(updatedIncident, {
                     id: `action_default_${index}`,
                     status: 'Active',
-                    isMitigating: true,
                     what,
                     affectedSystemId
                 })
@@ -155,6 +156,22 @@ const resolveActionFailure = (incident: Incident, payload: ResolveActionPayload)
     throw new Error(`Could not find action with id ${actionId} within incident: ${JSON.stringify(incident)}`)
 }
 
+const resolveActionChore = (incident: Incident, actionId: string) => {
+    let updatedIncident = JSON.parse(JSON.stringify(incident))
+    const { systemIndex, actionIndex } = getIndexesForActionId(incident, actionId)
+    if (actionIndex != -1) {
+        const affectedSystem = incident.affectedSystems[systemIndex]
+        if (affectedSystem && affectedSystem.actions) {
+            const action = affectedSystem.actions[actionIndex]
+            const timer = action.timer
+            updatedIncident.affectedSystems[systemIndex].actions[actionIndex] = {...action, status: 'Chore', timer: {...timer, isRunning: false, durationInMinutes: 0 }}
+        }
+        return updatedIncident
+    }
+
+    throw new Error(`Could not find action with id ${actionId} within incident: ${JSON.stringify(incident)}`)
+}
+
 const resolveActionSuccess = (incident: Incident, actionId: string) => {
     let updatedIncident = JSON.parse(JSON.stringify(incident))
     const { systemIndex, actionIndex } = getIndexesForActionId(incident, actionId)
@@ -164,6 +181,22 @@ const resolveActionSuccess = (incident: Incident, actionId: string) => {
             const action = affectedSystem.actions[actionIndex]
             const timer = action.timer
             updatedIncident.affectedSystems[systemIndex].actions[actionIndex] = {...action, status: 'Success', timer: {...timer, isRunning: false, durationInMinutes: 0 }}
+        }
+        return updatedIncident
+    }
+
+    throw new Error(`Could not find action with id ${actionId} within incident: ${JSON.stringify(incident)}`)
+}
+
+const unresolveAction = (incident: Incident, actionId: string) => {
+    let updatedIncident = JSON.parse(JSON.stringify(incident))
+    const { systemIndex, actionIndex } = getIndexesForActionId(incident, actionId)
+    if (actionIndex != -1) {
+        const affectedSystem = incident.affectedSystems[systemIndex]
+        if (affectedSystem && affectedSystem.actions) {
+            const action = affectedSystem.actions[actionIndex]
+            const timer = action.timer
+            updatedIncident.affectedSystems[systemIndex].actions[actionIndex] = {...action, status: 'Active', timer: {...timer, isRunning: false, durationInMinutes: 0 }}
         }
         return updatedIncident
     }
@@ -183,7 +216,6 @@ const addAffectedSystem = (incident: Incident, newSystem: AffectedSystem): Incid
             return {
                 id: `${affectedSystemId}_action_default_${index}`,
                 status: 'Active',
-                isMitigating: true,
                 what,
                 affectedSystemId
             }
@@ -239,10 +271,14 @@ export const incidentReducer = (incident: Incident, event: IncidentEvents): Inci
             return addAction(incident, payload as Action)
         case 'edit_action':
             return updateAction(incident, payload as Action)
+        case 'resolve_action_chore':
+            return resolveActionChore(incident, payload as string)
         case 'resolve_action_success':
             return resolveActionSuccess(incident, payload as string)
         case 'resolve_action_failure':
             return resolveActionFailure(incident, payload as ResolveActionPayload)
+        case 'unresolve_action':
+            return unresolveAction(incident, payload as string)
         default: {
             throw Error(`Unknown event type: ${type} payload:${payload}`);
         }

@@ -64,17 +64,6 @@ export default function ActionForm({ action, onSubmit, onCancel } : props) {
                     />
                 </div>
 
-                <div className="flex flex-col mb-2">
-                    <label>
-                        Is mitigating?
-                        <input
-                            type="checkbox"
-                            data-test="new-action__is-mitigating"
-                            {...register("isMitigating")}
-                        />
-                    </label>
-                </div>
-
             <input
                 type="hidden"
                 {...register("affectedSystemId")}

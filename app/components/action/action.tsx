@@ -1,11 +1,11 @@
 'use client'
 
 import ActionForm from "@/app/components/action/action-form";
-import {useContext, useState} from "react";
+import {Children, Component, PropsWithChildren, useContext, useState} from "react";
 import {IncidentDispatchContext, NotificationsContext} from "@/app/contexts/incident-context";
 import CountdownTimer from "@/app/components/countdown-timer";
-import {Button, Popover, Tooltip} from "antd";
-import {CheckOutlined, ClockCircleOutlined, CloseOutlined, EditOutlined, InfoCircleOutlined, CheckCircleOutlined, MoreOutlined, MenuOutlined } from "@ant-design/icons";
+import {Button, Popover, Radio, Tooltip} from "antd";
+import {CheckOutlined, ClockCircleOutlined, EditOutlined, LikeOutlined, DislikeOutlined, CheckCircleOutlined, MoreOutlined, MenuOutlined } from "@ant-design/icons";
 
 
 const NOTIFICATION_REMEMBERING_LOCALSTORAGE_KEY = 'previousNotifications'
@@ -28,6 +28,8 @@ interface props {
     action: Action
 }
 
+
+
 export default function Action({action}: props) {
     const [showForm, setShowForm] = useState(false)
     const incidentReducer = useContext(IncidentDispatchContext)
@@ -47,6 +49,14 @@ export default function Action({action}: props) {
         setShowForm(true)
     }
 
+    const unresolveAction = () => {
+        incidentReducer([{type: 'unresolve_action', payload: action.id}])
+    }
+
+    const resolveActionChore = () => {
+        incidentReducer([{type: 'resolve_action_chore', payload: action.id}])
+    }
+
     const resolveActionSuccess = () => {
         incidentReducer([{type: 'resolve_action_success', payload: action.id}])
     }
@@ -59,6 +69,65 @@ export default function Action({action}: props) {
         incidentReducer([{type: 'resolve_action_failure', payload: { actionId: action.id, resolution } }])
     }
 
+    const updateActionStatus = (e: any) => {
+      switch(e.target.value) {
+        case 'Active': unresolveAction(); break;
+        case 'Chore': resolveActionChore(); break;
+        case 'Success': resolveActionSuccess(); break;
+        case 'Failure': resolveActionFailure(); break;
+        default: console.error(`Don't know how to handle updating action to status ${e.target.value}`)
+      }
+    }
+
+
+    const ButtonsPopover = (props: PropsWithChildren) => {
+      return <Popover content={
+        <>
+          <Button 
+            className="block mb-1" 
+            type="link"
+            size="medium" 
+            icon={<EditOutlined/>} 
+            onClick={onEditClick}
+            data-test="action__edit"
+            >
+              Edit Action
+          </Button>
+
+          <Radio.Group defaultValue={action.status} buttonStyle="solid" onChange={updateActionStatus}>
+            <Radio.Button value="Active" data-test="action__reactivate">
+              Active
+            </Radio.Button>
+
+            <Radio.Button value="Chore" data-test="action__resolve_chore">
+              <CheckOutlined className="mr-1" /> Was Chore
+            </Radio.Button>
+
+            <Radio.Button value="Success" data-test="action__resolve_success">
+              <LikeOutlined className="mr-1" /> This Helped
+            </Radio.Button>
+
+            <Radio.Button value="Failure" data-test="action__resolve_failure">
+              <DislikeOutlined className="mr-1" /> This Didn't Help
+            </Radio.Button>
+          </Radio.Group>
+        </>
+        }
+        >
+          {props.children}
+        </Popover>
+    }
+
+    const icon = () => {
+      switch (action.status) {
+        case 'Active':  return <></>;
+        case 'Chore':   return <CheckOutlined />;
+        case 'Success': return <LikeOutlined />;
+        case 'Failure': return <DislikeOutlined />;
+        default:        return <></>;
+      }
+    }
+
     return (
         <section>
             {showForm &&
@@ -67,53 +136,10 @@ export default function Action({action}: props) {
             {!showForm &&
               <div className="flex flex-row">
                 <div className="basis-11/12">
-                <Popover
-                  content={
-                      <>
-                          <Button 
-                            className="block" 
-                            size="small" 
-                            icon={<EditOutlined/>} 
-                            onClick={onEditClick}
-                            data-test="action__edit"
-                            >
-                              Edit Action
-                          </Button>
+                <ButtonsPopover>
+                    {icon()}
 
-                          <Button
-                            className="block finish action success"
-                            icon={<CheckOutlined/>}
-                            size="small"
-                            data-test="active_action__succeeded"
-                            onClick={resolveActionSuccess}
-                        >
-                            Mark Success
-                        </Button>
-
-                        <Button
-                        className="block finish action failed"
-                        icon={<CloseOutlined/>}
-                        size="small"
-                        data-test="active_action__failed"
-                        onClick={resolveActionFailure}
-                        >
-                            Mark Failure
-                        </Button>
-                      </>
-                  }
-                >
-                  {
-                    action.isMitigating?
-                    <Tooltip title="This might mitigate things" className="mr-2">
-                      <CheckCircleOutlined title="Is Mitigating" data-test="action__is-mitigating" />
-                    </Tooltip>
-                    :
-                    <Tooltip title="We want more info" className="mr-2">
-                      <InfoCircleOutlined title="Provides Info" />
-                    </Tooltip>
-                  }
-
-                    <span className="description">
+                    <span className="ml-1">
                           <span className="what" data-test="active_action__what">{action.what}</span>
 
                           {
@@ -129,7 +155,7 @@ export default function Action({action}: props) {
                           <span className="italic"><br/>Unassigned</span>
                         }
                     </span>
-                </Popover>
+                </ButtonsPopover>
 
                 <span className="action-group">
                     {
@@ -169,43 +195,9 @@ export default function Action({action}: props) {
                 </div>
 
                 <div className="basis-1/12">
-                  <Popover
-                    content={
-                        <>
-                            <Button 
-                              className="block" 
-                              size="small" 
-                              icon={<EditOutlined/>} 
-                              onClick={onEditClick}
-                              data-test="action__edit"
-                              >
-                                Edit Action
-                            </Button>
-
-                            <Button
-                              className="block finish action success"
-                              icon={<CheckOutlined/>}
-                              size="small"
-                              data-test="active_action__succeeded"
-                              onClick={resolveActionSuccess}
-                          >
-                              Mark Success
-                          </Button>
-
-                          <Button
-                          className="block finish action failed"
-                          icon={<CloseOutlined/>}
-                          size="small"
-                          data-test="active_action__failed"
-                          onClick={resolveActionFailure}
-                          >
-                              Mark Failure
-                          </Button>
-                        </>
-                    }
-                  >
+                  <ButtonsPopover>
                     <MoreOutlined title="Actions..." className="p-2" />
-                  </Popover>
+                  </ButtonsPopover>
                 </div>
               </div>
             }
