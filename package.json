@@ -5,6 +5,8 @@
   "devDependencies": {
     "@tailwindcss/forms": "^0.5.3",
     "@types/gtag.js": "^0.0.14",
+    "@types/node": "20.6.5",
+    "@types/quill": "^2.0.13",
     "buffer": "^6.0.3",
     "chai": "^4.3.10",
     "cypress": "13.2.0",
@@ -12,8 +14,7 @@
     "parcel": "^2.10.1",
     "process": "^0.11.10",
     "standard": "^17.1.0",
-    "testdouble": "^3.20.0",
-    "@types/node": "20.6.5"
+    "testdouble": "^3.20.0"
   },
   "scripts": {
     "dev": "next dev -p 5432",

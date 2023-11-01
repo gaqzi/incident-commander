@@ -164,6 +164,25 @@ describe('Ongoing Incident: Managing the Summary', () => {
   })
 })
 
+describe('Ongoing Incident: Collaborating in the shared notepad', () => {
+  const what = 'This is the what'
+  const when = 'This is the when'
+  const where = 'This is the where'
+  const impact = 'This is the impact'
+
+  beforeEach(() => {
+    cy.visit(URL) // TODO: dont use hardcoded port
+    submitIncident(what, when, where, impact, false)
+  })
+
+  it('lets you write in a notepad', () => {
+    // Note: we aren't simulating anything in multiplayer for these tests, so the fact that this is a multiplayer notepad isnt tested yet
+    getDataTest('notes').type('Hello there')
+    getDataTest('notes').should('have.text', 'Hello there')
+  })
+})
+
+
 describe('Ongoing Incident: Managing Affected Systems', () => {
   const what = 'This is the what'
   const when = 'This is the when'

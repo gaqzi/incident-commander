@@ -31,10 +31,6 @@ type IncidentEvents =
     | UpdateActionTimer
 
 
-export type Incident = {
-    summary: IncidentSummary
-    affectedSystems: AffectedSystem[]
-}
 
 const getIndexesForActionId = (incident: Incident, id: string) => {
     let systemIndex = -1

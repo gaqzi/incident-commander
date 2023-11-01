@@ -6,7 +6,6 @@ import * as Y from 'yjs'
 import { IndexeddbPersistence } from 'y-indexeddb'
 import { WebsocketProvider } from 'y-websocket'
 import {incidentReducer} from "@/app/components/ongoing-incident/reducer";
-
 import IncidentSummary from "@/app/components/incident-summary/incident-summary";
 import AffectedSystem from "@/app/components/affected-system/affected-system";
 import AffectedSystemForm from "@/app/components/affected-system/affected-system-form";
@@ -15,19 +14,6 @@ import ResourceLink from "@/app/components/resource-link/resource-link";
 import { Button, Modal } from "antd"
 import {PlusOutlined} from "@ant-design/icons";
 import {uuidv4} from "lib0/random";
-
-let initialDefault = {
-    affectedSystems: [],
-    summary: {
-        _isNew: true,
-        impact: "",
-        whenUtcString: "Thu, 01 Jan 1970 00:00:00 GMT",
-        what: "",
-        where: "",
-        status: "Investigating",
-        resourceLinks:[]
-    }
-};
 
 const ydoc = new Y.Doc()
 
@@ -97,6 +83,23 @@ const multiplayerDispatch = (ydocEvents: any, events: any[] = []) => {
 
 
 export default function OngoingIncident() {
+    const params = new URLSearchParams(window.location.search)
+    
+    const initialDefault = {
+        affectedSystems: [],
+        id: params.get('room'),
+        summary: {
+            _isNew: true,
+            impact: "",
+            whenUtcString: "Thu, 01 Jan 1970 00:00:00 GMT",
+            what: "",
+            where: "",
+            status: "Investigating",
+            resourceLinks:[]
+        }
+    };
+
+
     const [incident, dispatch] = useReducer(incidentReducer, initialDefault)
     let isMultiplayer = false
     const [dispatcher, setDispatcher] = useState({} as any) // TODO: hack, fix this?

@@ -1,14 +1,18 @@
 'use client'
 
 import ResourceLink from "@/app/components/resource-link/resource-link";
-import {useContext, useState, useEffect} from "react";
-import {IncidentDispatchContext} from "@/app/contexts/incident-context";
+import {useContext, useState, useEffect, useCallback} from "react";
+import {IncidentDispatchContext, YDocContext, YDocMultiplayerProviderContext} from "@/app/contexts/incident-context";
 import ResourceLinkForm from "@/app/components/resource-link/resource-link-form";
 import IncidentSummaryForm from "@/app/components/incident-summary/incident-summary-form";
 import { Button, Modal, Popover, Tooltip } from "antd"
 import {EditOutlined, PlusOutlined} from "@ant-design/icons";
-import {Incident} from "@/app/components/ongoing-incident/reducer";
 import {uuidv4} from "lib0/random";
+import { QuillBinding } from 'y-quill'
+import Quill from 'quill'
+import QuillCursors from 'quill-cursors'
+
+Quill.register('modules/cursors', QuillCursors)
 
 export default function IncidentSummary({incident, showForm}: {incident: Incident, showForm: boolean}) {
     const summary = incident.summary
@@ -18,6 +22,30 @@ export default function IncidentSummary({incident, showForm}: {incident: Inciden
     useEffect(()=>{
         setShowSummaryForm(incident.summary._isNew)
     }, [incident])
+
+
+    const ydoc = useContext(YDocContext)
+    const ydocProvider = useContext(YDocMultiplayerProviderContext)
+    const ytext = ydoc.getText(`${incident.id}__quill`)
+
+    const editorRef = useCallback((node: any) => {
+        if (node !== null) {
+
+        const editor = new Quill(node, {
+            modules: {
+              cursors: true,
+              toolbar: false,
+              history: {
+                userOnly: true
+              }
+            },
+            placeholder: 'Type notes here if you need them...',
+            theme: 'snow' // or 'bubble'
+          })
+        
+        new QuillBinding(ytext, editor, ydocProvider!.awareness) //@ts-ignore
+        }
+    }, [])
 
     const updateSummary = (data: any) => { // TODO: fix sig
         setShowSummaryForm(false)
@@ -178,8 +206,14 @@ export default function IncidentSummary({incident, showForm}: {incident: Inciden
                             { summary.resourceLinks.map(l => <li key={l.url} className="inline-block mr-4"><ResourceLink resourceLink={l}/> </li>) }
                         </ul>
                     </div>
+
+                    <h3 className="mt-2">Notes</h3>
+                    <section className="border-solid border-2 border-slate-200">
+                        <div ref={editorRef} data-test="notes"></div>
+                    </section>
                 </>
             }
+
 
         </div>
     )
