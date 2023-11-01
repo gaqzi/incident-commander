@@ -87,7 +87,8 @@ const editIncidentSummary = (incident: Incident, updatedSummary: IncidentSummary
                     id: `action_default_${index}`,
                     status: 'Active',
                     what,
-                    affectedSystemId
+                    affectedSystemId,
+                    timer: { durationInMinutes: 0, isRunning: false, startedAtUtc: '' }
                 })
             })
         }
