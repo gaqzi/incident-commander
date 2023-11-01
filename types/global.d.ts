@@ -66,4 +66,10 @@ declare global {
         resourceLinks: ResourceLink[]
         addDefaultActions?: boolean
     }
+
+    type Incident = {
+        id: string
+        summary: IncidentSummary
+        affectedSystems: AffectedSystem[]
+    }
 }

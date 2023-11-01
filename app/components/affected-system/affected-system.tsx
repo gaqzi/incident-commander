@@ -9,36 +9,12 @@ import ActionForm from "@/app/components/action/action-form";
 import {Button, Card, List, Popover, Tooltip, Typography} from "antd";
 import {CheckOutlined, EditOutlined, PlusOutlined, UndoOutlined} from "@ant-design/icons";
 import {uuidv4} from "lib0/random";
-import { QuillBinding } from 'y-quill'
-import Quill from 'quill'
-import QuillCursors from 'quill-cursors'
 
-Quill.register('modules/cursors', QuillCursors)
 
 export default function AffectedSystem({affectedSystem}: {affectedSystem: AffectedSystem}) {
     const [showSelfForm, setShowSelfForm] = useState(false)
     const [showNewActionForm, setShowNewActionForm] = useState(false)
     const incidentReducer = useContext(IncidentDispatchContext)
-    const ydoc = useContext(YDocContext)
-    const ydocProvider = useContext(YDocMultiplayerProviderContext)
-    const ytext = ydoc.getText(`${affectedSystem.id}__quill`)
-    const editorRef = useRef(null)
-
-    useEffect(()=>{
-        const editor = new Quill(editorRef.current, {
-            modules: {
-              cursors: true,
-              toolbar: false,
-              history: {
-                userOnly: true
-              }
-            },
-            placeholder: 'Start collaborating...',
-            theme: 'snow' // or 'bubble'
-          })
-        
-        const binding = new QuillBinding(ytext, editor, ydocProvider!.awareness) //@ts-ignore
-    })
 
     const onEditClick = () => {
         setShowSelfForm(true)
@@ -126,9 +102,6 @@ export default function AffectedSystem({affectedSystem}: {affectedSystem: Affect
                               />
                           </div>
                         }
-                        <section className="border-solid border-b-2 border-slate-400">
-                            <div ref={editorRef} data-test="notes"></div>
-                        </section>
 
                         <section>
                             <h4 className="font-bold">Active Actions</h4>
