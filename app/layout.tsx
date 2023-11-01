@@ -3,6 +3,7 @@
 import './globals.css'
 import { Inter } from 'next/font/google'
 import Link from "next/link";
+import Head from "next/head";
 import Script from "next/script"
 
 import type { MenuProps } from 'antd';
@@ -61,9 +62,9 @@ export default function RootLayout({
 
     return (
     <html lang="en">
-      <head>
+      <Head>
         <link rel="stylesheet" href="//cdn.quilljs.com/1.3.6/quill.bubble.css" />
-      </head>
+      </Head>
       { process.env.NEXT_PUBLIC_GA_ID && 
         <>
             <Script async src={gtag} />
