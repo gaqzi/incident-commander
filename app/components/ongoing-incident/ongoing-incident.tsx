@@ -82,12 +82,10 @@ const multiplayerDispatch = (ydocEvents: any, events: any[] = []) => {
 // End Multiplayer Stuff ===================
 
 
-export default function OngoingIncident() {
-    const params = new URLSearchParams(window.location.search)
-    
+export default function OngoingIncident({incidentId}: {incidentId: string}) {
     const initialDefault = {
         affectedSystems: [],
-        id: params.get('room'),
+        id: incidentId,
         summary: {
             _isNew: true,
             impact: "",

@@ -9,10 +9,6 @@ import { Button, Modal, Popover, Tooltip } from "antd"
 import {EditOutlined, PlusOutlined} from "@ant-design/icons";
 import {uuidv4} from "lib0/random";
 import { QuillBinding } from 'y-quill'
-import Quill from 'quill'
-import QuillCursors from 'quill-cursors'
-
-Quill.register('modules/cursors', QuillCursors)
 
 export default function IncidentSummary({incident, showForm}: {incident: Incident, showForm: boolean}) {
     const summary = incident.summary
@@ -28,8 +24,13 @@ export default function IncidentSummary({incident, showForm}: {incident: Inciden
     const ydocProvider = useContext(YDocMultiplayerProviderContext)
     const ytext = ydoc.getText(`${incident.id}__quill`)
 
-    const editorRef = useCallback((node: any) => {
+    const editorRef = useCallback(async (node: any) => {
         if (node !== null) {
+
+        // We need to load Quill dynamically here because it only works client-side
+        const Quill = (await import('quill')).default
+        const QuillCursors = (await import('quill-cursors')).default
+        Quill.register('modules/cursors', QuillCursors)
 
         const editor = new Quill(node, {
             modules: {
@@ -43,7 +44,7 @@ export default function IncidentSummary({incident, showForm}: {incident: Inciden
             theme: 'snow' // or 'bubble'
           })
         
-        new QuillBinding(ytext, editor, ydocProvider!.awareness) //@ts-ignore
+        new QuillBinding(ytext, editor, ydocProvider!['awareness'])
         }
     }, [])
 
