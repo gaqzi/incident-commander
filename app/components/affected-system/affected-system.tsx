@@ -129,7 +129,7 @@ export default function AffectedSystem({affectedSystem}: {affectedSystem: Affect
                                     {
                                         affectedSystem.actions?.filter(a => a.status != 'Active').map((action) => {
                                             return (
-                                                <li key={action.id} className="mb-2 border-solid pb-2 border-b-2 border-slate-30 last:border-b-0 last:pb-0">
+                                                <li key={action.id} className="mb-2 border-solid border-0 pb-2 border-b-2 border-slate-30 last:border-b-0 last:pb-0">
                                                     <Action action={action} />
                                                 </li>
                                             )

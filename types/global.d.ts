@@ -34,6 +34,13 @@ declare global {
         status: string
         resolution?: string
         affectedSystemId?: string
+        timeline?: TimelineItem[]
+    }
+
+    type TimelineItem = {
+        id: string
+        timestampUtc: string
+        text: string
     }
      
     type Timer = {

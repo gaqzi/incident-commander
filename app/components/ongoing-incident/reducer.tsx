@@ -9,26 +9,32 @@ type EditIncidentSummary = { type: 'edit_incident_summary', payload: IncidentSum
 // Affected Systems
 type AddAffectedSystem = { type: 'add_affected_system', payload: AffectedSystem }
 type EditAffectedSystem = { type: 'edit_affected_system', payload: AffectedSystem }
+
 type ResolveAffectedSystem = { type: 'resolve_affected_system', payload: string }
 type UnresolveAffectedSystem = { type: 'unresolve_affected_system', payload: string }
 
 // Actions
 type AddAction = { type: 'add_action', payload: Action }
 type EditAction = { type: 'edit_action', payload: Action }
+
 type ResolveActionPayload = { actionId: string, resolution: string }
 type ResolveActionChore = { type: 'resolve_action_chore', payload: string }
 type ResolveActionSuccess = { type: 'resolve_action_success', payload: string }
 type ResolveActionFailure = { type: 'resolve_action_failure', payload: ResolveActionPayload }
 type UnresolveAction = { type: 'unresolve_action', payload: string }
-type UpdateActionTimer = { type: 'update_action_timer', payload: {minutes: number} } // TODO: unused?
+
+type AddActionTimelineItem = { type: 'add_action_timeline_item', payload: TimelineItem }
+type EditActionTimelineItem = { type: 'add_action_timeline_item', payload: TimelineItem }
+type RemoveActionTimelineItem = { type: 'add_action_timeline_item', payload: string }
 
 // Putting it all together...
 type IncidentEvents =
       EditIncidentSummary
     | AddIncidentResourceLink | EditIncidentResourceLink
     | AddAffectedSystem | EditAffectedSystem | ResolveAffectedSystem | UnresolveAffectedSystem
-    | AddAction | EditAction | ResolveActionChore | ResolveActionSuccess | ResolveActionFailure | UnresolveAction
-    | UpdateActionTimer
+    | AddAction | EditAction 
+    | ResolveActionChore | ResolveActionSuccess | ResolveActionFailure | UnresolveAction 
+    | AddActionTimelineItem | EditActionTimelineItem | RemoveActionTimelineItem
 
 
 
