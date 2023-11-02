@@ -4,7 +4,7 @@ import ActionForm from "@/app/components/action/action-form";
 import {Children, Component, PropsWithChildren, useContext, useState} from "react";
 import {IncidentDispatchContext, NotificationsContext} from "@/app/contexts/incident-context";
 import CountdownTimer from "@/app/components/countdown-timer";
-import {Button, Popover, Radio, Tooltip} from "antd";
+import {Button, Collapse, CollapseProps, ConfigProvider, Input, Popover, Radio, Space, Timeline, Tooltip} from "antd";
 import {CheckOutlined, ClockCircleOutlined, EditOutlined, LikeOutlined, DislikeOutlined, CheckCircleOutlined, MoreOutlined, MenuOutlined } from "@ant-design/icons";
 
 
@@ -128,14 +128,38 @@ export default function Action({action}: props) {
       }
     }
 
+    // const collapseItems: CollapseProps['items'] = [
+    //   {
+    //     key: '1',
+    //     label: 'This is panel header 1',
+    //     children: <p>{text}</p>,
+    //   },
+    // ];
+
+    const timelineTimestampClasses = "text-xs  font-light"
+    const timelineItems = [
+      { children: (<>The newest note.<br /> <span className={timelineTimestampClasses}>2023-01-02T11:22:33Z</span></>) },
+      { children: (<>This one is the middlest update. It's pretty long so we can see how that feels.<br /> <span className={timelineTimestampClasses}>2023-01-02T11:22:33Z</span></>) },
+      { children: (<>The oldest update is here<br /> <span className={timelineTimestampClasses}>2023-01-02T11:22:33Z</span></>) },
+    ]
+
+    const addTimelineForm = <>
+        <Space.Compact style={{ width: '100%' }}>
+          <Input className="" placeholder="Add action timeline note" /> <Button type="default">Add</Button> 
+        </Space.Compact>
+    </>
+    
+
     return (
         <section>
             {showForm &&
               <div className=""><ActionForm action={action} onSubmit={updateAction} onCancel={cancelForm}/></div>
             }
+
             {!showForm &&
               <div className="flex flex-row">
                 <div className="basis-11/12">
+                {/* What & Who ------------- */}
                 <ButtonsPopover>
                     {icon()}
 
@@ -157,6 +181,7 @@ export default function Action({action}: props) {
                     </span>
                 </ButtonsPopover>
 
+                {/* Timer ------------------ */}
                 <span className="action-group">
                     {
                         action.timer &&
@@ -184,6 +209,7 @@ export default function Action({action}: props) {
                         </div>
                     }
 
+                {/* Status ------------------ */}
                     {
                         action.status != 'Active' &&
                         <>
@@ -191,9 +217,36 @@ export default function Action({action}: props) {
                           <span className="block">{action.resolution}</span>
                         </>
                     }
+
+                {/* Timeline ------------------ */}
+                <ConfigProvider
+                  theme={{
+                    components: {
+                      Collapse: {
+                        headerPadding: 0,
+                        contentPadding: 0,
+                      },
+                    },
+                  }}
+                >
+                  <Collapse
+                    ghost
+                    collapsible="header"
+                    defaultActiveKey={['1']}
+                    items={[
+                      {
+                        key: '1',
+                        label: `Timeline`,
+                        children: <>{addTimelineForm}<div className="max-h-20 overflow-y-scroll"><Timeline className="mt-2" items={timelineItems} /></div></>,
+                      },
+                    ]}
+                  />
+                </ConfigProvider>
+
                 </span>
                 </div>
 
+                {/* Side Menu ----------------- */}
                 <div className="basis-1/12">
                   <ButtonsPopover>
                     <MoreOutlined title="Actions..." className="p-2" />

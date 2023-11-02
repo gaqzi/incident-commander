@@ -1,4 +1,4 @@
-@tailwind base;
+/* @tailwind base;
 
 @layer base {
   h1 {
@@ -13,7 +13,7 @@
   a {
     @apply text-blue-600 underline;
   }
-}
+} */
 
 @tailwind components;
 @tailwind utilities;
@@ -34,6 +34,15 @@
 
 body {
   padding: 20px;
+}
+
+ul {
+  margin: 0;
+  padding: 0;
+}
+
+ul li {
+  list-style-type: none;
 }
 
 /* Overriding tailwind preflight base styling which makes all btn bgs transparent and breaks ant button backgrounds */
