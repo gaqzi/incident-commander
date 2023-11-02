@@ -62,9 +62,9 @@ export default function RootLayout({
 
     return (
     <html lang="en">
-      <Head>
-        <link rel="stylesheet" href="//cdn.quilljs.com/1.3.6/quill.bubble.css" />
-      </Head>
+            <head>
+                <link rel="stylesheet" href="/quill.bubble.css" />
+            </head>
       { process.env.NEXT_PUBLIC_GA_ID && 
         <>
             <Script async src={gtag} />
