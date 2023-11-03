@@ -24,8 +24,8 @@ type ResolveActionFailure = { type: 'resolve_action_failure', payload: ResolveAc
 type UnresolveAction = { type: 'unresolve_action', payload: string }
 
 type AddActionTimelineItem = { type: 'add_action_timeline_item', payload: TimelineItem }
-type EditActionTimelineItem = { type: 'add_action_timeline_item', payload: TimelineItem }
-type RemoveActionTimelineItem = { type: 'add_action_timeline_item', payload: string }
+type EditActionTimelineItem = { type: 'edit_action_timeline_item', payload: TimelineItem }
+type RemoveActionTimelineItem = { type: 'remove_action_timeline_item', payload: string }
 
 // Putting it all together...
 type IncidentEvents =
@@ -251,6 +251,38 @@ const unresolveAffectedSystem = (incident: Incident, id: string) => {
     return updateAffectedSystem(incident, {...incident.affectedSystems[sIndex], status: 'Active'})
 }
 
+const addTimelineEntryToAction = (incident: Incident, timelineItem: TimelineItem) => {
+    let updatedIncident = JSON.parse(JSON.stringify(incident))
+    const { systemIndex, actionIndex } = getIndexesForActionId(incident, timelineItem.parentId)
+    if (actionIndex != -1) {
+        const affectedSystem = incident.affectedSystems[systemIndex]
+        if (affectedSystem && affectedSystem.actions) {
+            const action = affectedSystem.actions[actionIndex]
+            const timeline = action.timeline || []
+            updatedIncident.affectedSystems[systemIndex].actions[actionIndex] = {
+                ...action, 
+                timeline: [
+                    ...timeline,
+                    timelineItem
+                ]
+            }
+        }
+    }
+    
+    return updatedIncident
+}
+
+const editTimelineEntryforAction = (incident: Incident, timelineItem: TimelineItem) => {
+
+    return incident
+}
+
+const removeTimelineEntryFromAction = (incident: Incident, id: string) => {
+
+    return incident
+}
+
+
 
 export const incidentReducer = (incident: Incident, event: IncidentEvents): Incident => {
     const {type, payload} = event
@@ -282,6 +314,15 @@ export const incidentReducer = (incident: Incident, event: IncidentEvents): Inci
             return resolveActionFailure(incident, payload as ResolveActionPayload)
         case 'unresolve_action':
             return unresolveAction(incident, payload as string)
+        case 'add_action_timeline_item':
+            return addTimelineEntryToAction(incident, payload as TimelineItem)
+        case 'edit_action_timeline_item':
+            return editTimelineEntryForAction(incident, payload as TimelineItem)
+        case 'remove_action_timeline_item':
+            return removeTimelineEntryFromAction(incident, payload as string)
+
+
+
         default: {
             throw Error(`Unknown event type: ${type} payload:${payload}`);
         }
