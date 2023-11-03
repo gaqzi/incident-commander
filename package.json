@@ -17,6 +17,8 @@
     "testdouble": "^3.20.0"
   },
   "scripts": {
+    "cy:run" : "cypress run",
+    "cy:parallel" : "cypress-parallel -s cy:run -t 32 -d cypress/e2e -a '\"--config baseUrl=http://localhost:5432/\"'",
     "dev": "next dev -p 5432",
     "dev:e2e": "cypress open",
     "build": "next build",
@@ -28,6 +30,7 @@
     "@types/react-dom": "18.2.14",
     "antd": "^5.10.2",
     "autoprefixer": "10.4.16",
+    "cypress-parallel": "^0.13.0",
     "dayjs": "^1.11.10",
     "eslint": "8.52.0",
     "eslint-config-next": "13.5.4",

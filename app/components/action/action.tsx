@@ -212,9 +212,7 @@ export default function Action({action}: props) {
                 {/* Status ------------------ */}
                     {
                         action.status != 'Active' &&
-                        <>
-                          <span className="block">{action.status}</span>
-                          <span className="block">{action.resolution}</span>
+                        <>Completed: <span>{action.status}</span> <span className="block">{action.resolution}</span>
                         </>
                     }
 
@@ -237,7 +235,7 @@ export default function Action({action}: props) {
                       {
                         key: '1',
                         label: `Timeline`,
-                        children: <>{addTimelineForm}<div className="max-h-20 overflow-y-scroll"><Timeline className="mt-2" items={timelineItems} /></div></>,
+                        children: <>{addTimelineForm}<div className=""><Timeline className="mt-2" items={timelineItems} /></div></>,
                       },
                     ]}
                   />

@@ -6,7 +6,7 @@ import Action from "@/app/components/action/action";
 import {useContext, useState, useRef, useEffect} from "react";
 import {IncidentDispatchContext, YDocContext, YDocMultiplayerProviderContext} from "@/app/contexts/incident-context";
 import ActionForm from "@/app/components/action/action-form";
-import {Button, Card, List, Popover, Tooltip, Typography} from "antd";
+import {Button, Card, List, Popover, Space, Tooltip, Typography} from "antd";
 import {CheckOutlined, EditOutlined, PlusOutlined, UndoOutlined} from "@ant-design/icons";
 import {uuidv4} from "lib0/random";
 
@@ -46,26 +46,21 @@ export default function AffectedSystem({affectedSystem}: {affectedSystem: Affect
         incidentReducer([{type: 'add_action', payload: {...data, id: `action_${uuidv4()}` }}])
     }
 
-    const ResolveAffectedSystem = <>
-            <Tooltip title="Resolve Affected System" key="btn_resolve">
-                <CheckOutlined key="resolve" data-test="button-resolve-affected-system" onClick={resolve} />
-            </Tooltip>
-        </>
+    const ResolveAffectedSystem = <Button key="resolve" icon={<CheckOutlined />} data-test="button-resolve-affected-system" onClick={resolve}>Resolve</Button>
     
-    const UnresolveAffectedSystem =
-            <Tooltip title="Unresolve Affected System" key="btn_unresolve">
-                <UndoOutlined key="unresolve" data-test="button-unresolve-affected-system" onClick={unresolve} />
-            </Tooltip>
+    const UnresolveAffectedSystem = <Button key="unresolve" icon={<UndoOutlined />} data-test="button-unresolve-affected-system" onClick={unresolve}>Unresolve</Button>
 
-    const AddAction = <>
-            <Tooltip title="Add Action" key="btn_add_action">
-                <PlusOutlined key="add-action" data-test="actions__active__add_action" onClick={() => { setShowNewActionForm(true) }} />
-            </Tooltip>
-        </>
+    // const AddAction =
+    // <Button icon={<PlusOutlined /> data-test="actions__active__add_action" onClick={() => { setShowNewActionForm(true) }}></Button>
+    //         </Tooltip>
+
+    const EditAffectedSystem = 
+            <Button key="edit" icon={<EditOutlined />} data-test="button-edit-affected-system" onClick={onEditClick}>Edit</Button>
+
 
     const actions_list = affectedSystem.status == "Active"
-        ? [ResolveAffectedSystem, AddAction]
-        : [UnresolveAffectedSystem, AddAction]
+        ? [EditAffectedSystem, ResolveAffectedSystem]
+        : [EditAffectedSystem, UnresolveAffectedSystem]
 
 
     return (
@@ -73,12 +68,11 @@ export default function AffectedSystem({affectedSystem}: {affectedSystem: Affect
             title={affectedSystem.what} 
             className={affectedSystem.status == "Active" ? "shadow-lg" : ''}
             extra={
-                <Tooltip title="Edit Affected System">
-                    <EditOutlined key="edit" data-test="button-edit-affected-system" onClick={onEditClick} />
-                </Tooltip>
+                <Space.Compact block>
+                    {actions_list}
+                </Space.Compact>
             } 
             data-test={`affected-system__${affectedSystem.status == 'Active' ? 'active' : 'past'}`}
-            actions={actions_list}
         >
             <div>
             {
@@ -104,18 +98,22 @@ export default function AffectedSystem({affectedSystem}: {affectedSystem: Affect
                         }
 
                         <section>
-                            <h4 className="font-bold">Active Actions</h4>
-
-                            <ul data-test="actions__active">
+                            <ul data-test="actions__active" className="grid grid-cols-3 gap-4">
                                 {
                                     affectedSystem.actions?.filter(a => a.status == 'Active').map((action) => {
                                         return (
-                                            <li key={action.id} className="mb-2 border-none pb-2 border-b-2 border-slate-30 last:border-b-0 last:pb-0">
+                                            <li key={action.id} className="action mb-2 border-none pb-2 border-b-2 border-slate-30 last:border-b-0 last:pb-0">
                                                 <Action action={action} />
                                             </li>
                                         )
                                     })
                                 }
+
+                                <li key={`${affectedSystem.id}_add_action`}>
+                                    <Button data-test="actions__active__add_action" size="large" key="btn_add_action" icon={<PlusOutlined/>} onClick={() => { setShowNewActionForm(true) }}>
+                                        Add Action
+                                    </Button>
+                                </li>
                             </ul>
                         </section>
 
@@ -123,13 +121,11 @@ export default function AffectedSystem({affectedSystem}: {affectedSystem: Affect
                             affectedSystem.actions!.filter(a => a.status != 'Active').length > 0
                             &&
                             <section className="mt-4 text-slate-400">
-                                <h4 className="font-bold underlined">Completed Actions</h4>
-
-                                <ul data-test="actions__inactive">
+                                <ul data-test="actions__inactive" className="grid grid-cols-3 gap-4">
                                     {
                                         affectedSystem.actions?.filter(a => a.status != 'Active').map((action) => {
                                             return (
-                                                <li key={action.id} className="mb-2 border-solid border-0 pb-2 border-b-2 border-slate-30 last:border-b-0 last:pb-0">
+                                                <li key={action.id} className="action mb-2 border-solid border-0 pb-2 border-b-2 border-slate-30 last:border-b-0 last:pb-0">
                                                     <Action action={action} />
                                                 </li>
                                             )

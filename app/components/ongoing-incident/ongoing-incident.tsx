@@ -209,7 +209,7 @@ export default function OngoingIncident({incidentId}: {incidentId: string}) {
                             }
                         </section>
 
-                        <ul className="grid grid-cols-3 gap-4">
+                        <ul className="grid grid-cols-1 gap-4">
                             {
                                 incident.affectedSystems.filter(s => s.status == 'Active').map(s => {
                                     return <li key={s.id}>
@@ -223,10 +223,10 @@ export default function OngoingIncident({incidentId}: {incidentId: string}) {
                     { 
                         incident.affectedSystems.filter(s => s.status == 'Resolved').length > 0 
                         &&
-                        <section className="mt-8 border-t-2 border-dotted border-slate-200" data-test="affected-systems__listing__past">
+                        <section className="mt-8 border-0 border-t-2 border-dotted border-slate-200" data-test="affected-systems__listing__past">
                             <h3 className="mt-4 mb-2">Resolved Issues</h3>
 
-                            <ul className="grid grid-cols-3 gap-4">
+                            <ul className="grid grid-cols-1 gap-4">
                                 {
                                     incident.affectedSystems.filter(s => s.status == 'Resolved').map(s => {
                                         return <li key={s.id}>
