@@ -45,6 +45,21 @@ ul li {
   list-style-type: none;
 }
 
+/* Tailwind's Base has a lot of conflicts with some Ant Design styles, but we like Base's input styling so we will add that back under form */
+form [type='text'], form textarea, form select {
+  background-color: #fff;
+  border-color: #6b7280;
+  border-width: 1px;
+  border-radius: 0px;
+  padding-top: 0.5rem;
+  padding-right: 0.75rem;
+  padding-bottom: 0.5rem;
+  padding-left: 0.75rem;
+  font-size: 1rem;
+  line-height: 1.5rem;
+}
+
+
 /* Overriding tailwind preflight base styling which makes all btn bgs transparent and breaks ant button backgrounds */
 .ant-btn-primary:not([disabled]) {
   background-color:theme('colors.primary') !important;

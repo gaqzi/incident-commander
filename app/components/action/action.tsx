@@ -6,6 +6,7 @@ import {IncidentDispatchContext, NotificationsContext} from "@/app/contexts/inci
 import CountdownTimer from "@/app/components/countdown-timer";
 import {Button, Collapse, CollapseProps, ConfigProvider, Input, Popover, Radio, Space, Timeline, Tooltip} from "antd";
 import {CheckOutlined, ClockCircleOutlined, EditOutlined, LikeOutlined, DislikeOutlined, CheckCircleOutlined, MoreOutlined, MenuOutlined } from "@ant-design/icons";
+import {uuidv4} from "lib0/random";
 
 
 const NOTIFICATION_REMEMBERING_LOCALSTORAGE_KEY = 'previousNotifications'
@@ -128,24 +129,32 @@ export default function Action({action}: props) {
       }
     }
 
-    // const collapseItems: CollapseProps['items'] = [
-    //   {
-    //     key: '1',
-    //     label: 'This is panel header 1',
-    //     children: <p>{text}</p>,
-    //   },
-    // ];
+    const [timelineEntryText, setTimelineEntryText] = useState('')
+    const addTimelineEntry = () => {
+      const timelineEntry = {
+        id: `timeline_entry_${uuidv4()}`,
+        parentId: action.id,
+        timestampUtc: new Date().toUTCString(),
+        text: timelineEntryText,
+      }
+      incidentReducer([{type: 'add_action_timeline_item', payload: timelineEntry }])
+      setTimelineEntryText('')
+    }
 
     const timelineTimestampClasses = "text-xs  font-light"
-    const timelineItems = [
-      { children: (<>The newest note.<br /> <span className={timelineTimestampClasses}>2023-01-02T11:22:33Z</span></>) },
-      { children: (<>This one is the middlest update. It's pretty long so we can see how that feels.<br /> <span className={timelineTimestampClasses}>2023-01-02T11:22:33Z</span></>) },
-      { children: (<>The oldest update is here<br /> <span className={timelineTimestampClasses}>2023-01-02T11:22:33Z</span></>) },
-    ]
+    /* Make a list that looks like...
+    // [
+    //   { children: (<>Our timeline content</>) }
+    //   ...
+    // ]
+    */
+    const timelineItems = (action.timeline || [])
+      .map(i => { return { children: (<>{i.text}<br/><span className={timelineTimestampClasses}>{i.timestampUtc}</span></>) } })
+      .reverse()
 
     const addTimelineForm = <>
         <Space.Compact style={{ width: '100%' }}>
-          <Input className="" placeholder="Add action timeline note" /> <Button type="default">Add</Button> 
+          <Input onChange={(e)=>setTimelineEntryText(e.target.value)} className="" placeholder="Add action timeline note" /> <Button type="default" onClick={addTimelineEntry}>Add</Button> 
         </Space.Compact>
     </>
     
@@ -164,7 +173,7 @@ export default function Action({action}: props) {
                     {icon()}
 
                     <span className="ml-1">
-                          <span className="what" data-test="active_action__what">{action.what}</span>
+                          <span className="what font-bold" data-test="active_action__what">{action.what}</span>
 
                           {
                             action.link &&

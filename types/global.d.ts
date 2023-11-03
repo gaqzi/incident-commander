@@ -39,6 +39,7 @@ declare global {
 
     type TimelineItem = {
         id: string
+        parentId: string
         timestampUtc: string
         text: string
     }
