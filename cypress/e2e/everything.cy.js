@@ -79,7 +79,7 @@ describe('Creating a New Incident', () => {
       .should('have.lengthOf', 1)
       .should('contain.text', what)
 
-      .find('[data-test="actions__active"] li')
+      .find('[data-test="actions__active"] li.action')
       .should('have.lengthOf', 0)
 
     getDataTest('affected-systems__listing__past', 'li')
@@ -257,7 +257,7 @@ describe('Ongoing Incident: Managing Actions', () => {
   })
 
   it('lets you add an action', () => {
-    getDataTest('actions__active', 'li').should('not.exist')
+    getDataTest('actions__active', 'li.action').should('not.exist')
 
     const what = 'a new action'
     const who = 'john doe'
@@ -265,7 +265,7 @@ describe('Ongoing Incident: Managing Actions', () => {
     const minutes = 10
     addActionToIncident({ who, what, link, minutes })
 
-    getDataTest('actions__active', '>li').should('have.lengthOf', 1)
+    getDataTest('actions__active', '>li.action').should('have.lengthOf', 1)
     const action = getDataTest('actions__active').within(el => el.get('li')).first()
     action.should('contain.text', what)
     action.should('contain.text', who)
