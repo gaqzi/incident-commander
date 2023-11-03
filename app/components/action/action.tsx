@@ -7,6 +7,7 @@ import CountdownTimer from "@/app/components/countdown-timer";
 import {Button, Collapse, CollapseProps, ConfigProvider, Input, Popover, Radio, Space, Timeline, Tooltip} from "antd";
 import {CheckOutlined, ClockCircleOutlined, EditOutlined, LikeOutlined, DislikeOutlined, CheckCircleOutlined, MoreOutlined, MenuOutlined } from "@ant-design/icons";
 import {uuidv4} from "lib0/random";
+import TextArea from "antd/es/input/TextArea";
 
 
 const NOTIFICATION_REMEMBERING_LOCALSTORAGE_KEY = 'previousNotifications'
@@ -152,11 +153,21 @@ export default function Action({action}: props) {
       .map(i => { return { children: (<>{i.text}<br/><span className={timelineTimestampClasses}>{i.timestampUtc}</span></>) } })
       .reverse()
 
-    const addTimelineForm = <>
+    const addTimelineForm =
         <Space.Compact style={{ width: '100%' }}>
-          <Input onChange={(e)=>setTimelineEntryText(e.target.value)} className="" placeholder="Add action timeline note" /> <Button type="default" onClick={addTimelineEntry}>Add</Button> 
+          <TextArea 
+             autoSize 
+             className="rounded-none mb-2"
+             onChange={(e)=>setTimelineEntryText(e.target.value)}
+             onKeyDown={(e)=>{ if(e.key === 'Enter'){ addTimelineEntry(); e.preventDefault() } }}
+             value={timelineEntryText}
+             placeholder="Add action timeline note" 
+          /> 
+
+          <Button type="default" onClick={addTimelineEntry}>
+            Add
+          </Button> 
         </Space.Compact>
-    </>
     
 
     return (
