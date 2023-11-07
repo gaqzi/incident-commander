@@ -51,7 +51,7 @@ function addActionToIncident ({ what = 'action-what', who = 'action-who', link =
   getDataTest('new-action__link').type(link)
   getDataTest('new-action__minutes-between-updates').clear().type(minutes)
 
-  getDataTest('new-action__submit').click()
+  getDataTest('action-form__submit').click()
 }
 
 describe('Creating a New Incident', () => {
@@ -283,12 +283,12 @@ describe('Ongoing Incident: Managing Actions', () => {
     addActionToIncident({ what })
 
     const newWhat = 'new what'
-    getDataTest('active_action__what').trigger('mouseover')
+    getDataTest('action-card', ' .ant-card-extra .anticon-more').trigger('mouseover')
     getDataTest('action__edit').click()
     getDataTest('new-action__what').clear().type(newWhat)
-    getDataTest('new-action__submit').click()
+    getDataTest('action-form__submit').click()
 
-    getDataTest('active_action__what')
+    getDataTest('action-card', '>.ant-card-head')
       .should('not.contain.text', what)
       .should('contain.text', newWhat)
   })
@@ -298,11 +298,11 @@ describe('Ongoing Incident: Managing Actions', () => {
     addActionToIncident({ link: linkVal })
 
     const newLinkVal = 'http://example.com'
-    getDataTest('active_action__link').trigger('mouseover')
+    getDataTest('action-card', ' .ant-card-extra .anticon-more').trigger('mouseover')
     getDataTest('action__edit').click()
     getDataTest('new-action__link').clear().type(newLinkVal)
 
-    getDataTest('new-action__submit').click()
+    getDataTest('action-form__submit').click()
 
     getDataTest('active_action__link').should('have.attr', 'href', newLinkVal)
   })
@@ -350,7 +350,7 @@ describe('Ongoing Incident: Managing Actions', () => {
     getCountdownDisplay().trigger('mouseover')
     getDataTest('countdown-timer__edit').click()
     getDataTest('new-action__minutes-between-updates').clear().type(newMinutes)
-    getDataTest('new-action__submit').click()
+    getDataTest('action-form__submit').click()
     cy.wait(1 * 1000)
 
     // get the new values
@@ -377,7 +377,7 @@ describe('Ongoing Incident: Managing Actions', () => {
     getDataTest('actions__inactive', 'li').should('not.exist')
 
     // click mark as success
-    getDataTest('active_action__what').first().trigger('mouseover')
+    getDataTest('action-card', ' .ant-card-extra .anticon-more').first().trigger('mouseover')
     getDataTest('action__resolve_success').first().click({force: true})
 
     getDataTest('actions__inactive', 'li')
@@ -393,7 +393,7 @@ describe('Ongoing Incident: Managing Actions', () => {
       cy.stub(win, 'prompt').returns(failureReason)
     })
 
-    getDataTest('active_action__what').first().trigger('mouseover')
+    getDataTest('action-card', ' .ant-card-extra .anticon-more').first().trigger('mouseover')
     getDataTest('action__resolve_failure').first().click({force: true})
 
     getDataTest('actions__inactive', 'li')
@@ -403,7 +403,7 @@ describe('Ongoing Incident: Managing Actions', () => {
 
 
     // click mark as chore
-    getDataTest('active_action__what').first().trigger('mouseover')
+    getDataTest('action-card', ' .ant-card-extra .anticon-more').first().trigger('mouseover')
     getDataTest('action__resolve_chore').first().click({force: true})
 
     getDataTest('actions__inactive', 'li')
@@ -533,16 +533,16 @@ describe('Ongoing Incident: Status Updates', () => {
 
       // Finish Chore and Succeeded
       // promptReturn = 'It worked.'
-      getDataTest('active_action__what').eq(1).trigger('mouseover')
+      getDataTest('action-card', ' .ant-card-extra .anticon-more').eq(1).trigger('mouseover')
       getDataTest('action__resolve_chore').click({force: true})
-      getDataTest('active_action__what').eq(1).trigger('mouseover')
+      getDataTest('action-card', ' .ant-card-extra .anticon-more').eq(1).trigger('mouseover')
       getDataTest('action__resolve_success').click({force: true})
 
       // Finish Failed
       let promptReturn
       promptReturn = 'It failed.'
       cy.window().then((win) => cy.stub(win, 'prompt').returns(promptReturn))
-      getDataTest('active_action__what').eq(1).trigger('mouseover')
+      getDataTest('action-card', ' .ant-card-extra .anticon-more').eq(1).trigger('mouseover')
       getDataTest('action__resolve_failure').click({force: true})
 
 
