@@ -73,7 +73,7 @@ export default function ActionForm({ action, onSubmit, onCancel } : props) {
                 size="small"
                 type="primary"
                 htmlType="submit"
-                data-test="new-action__submit"
+                data-test="action-form__submit"
             >
                 { action!.id ? 'Update' : 'Add'}
             </Button>
@@ -82,7 +82,7 @@ export default function ActionForm({ action, onSubmit, onCancel } : props) {
                 size="small"
                 htmlType="reset"
                 className="cancel"
-                data-test="add_action__cancel"
+                data-test="action-form__cancel"
                 onClick={onCancel}
             >
                 Cancel

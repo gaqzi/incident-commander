@@ -183,6 +183,7 @@ export default function Action({action}: props) {
         <Card 
           type="inner" 
           title={action.what}
+          data-test="action-card"
           className={["action-card", (action.status == 'Active' ? '' : 'action-card-completed')].join(' ')}
           extra={<>
               { action.link &&
