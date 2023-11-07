@@ -77,6 +77,11 @@ form [type='text'], form textarea, form select {
   color: white;
 }
 
+/* Fix for really long lines that blow past the edge of the parent box. We want this to wrap */
+.ant-collapse-header-text {
+  flex: inherit !important;
+}
+
 svg { vertical-align: baseline; }
 
 /*body {*/

@@ -263,7 +263,7 @@ export default function Action({action}: props) {
                   <Collapse
                     ghost
                     collapsible="header"
-                    defaultActiveKey={['1']}
+                    defaultActiveKey={['0']} // set to 1 to default to expanded
                     items={[
                       {
                         key: '1',
