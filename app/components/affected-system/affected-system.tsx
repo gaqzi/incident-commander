@@ -86,17 +86,6 @@ export default function AffectedSystem({affectedSystem}: {affectedSystem: Affect
 
             {
                     <section>
-                        {
-                          showNewActionForm &&
-                          <div className="mb-4 pb-4 border-solid border-b-4 border-slate-400">
-                              <ActionForm
-                                action={{affectedSystemId: affectedSystem.id}}
-                                onCancel={()=>{setShowNewActionForm(false)}}
-                                onSubmit={addAction}
-                              />
-                          </div>
-                        }
-
                         <section>
                             <ul data-test="actions__active" className="grid grid-cols-3 gap-4">
                                 {
@@ -109,13 +98,31 @@ export default function AffectedSystem({affectedSystem}: {affectedSystem: Affect
                                     })
                                 }
 
+                                {
+                                !showNewActionForm &&
                                 <li key={`${affectedSystem.id}_add_action`}>
                                     <Button type={affectedSystem.status == 'Active' ? 'primary' : 'default'} data-test="actions__active__add_action" size="large" key="btn_add_action" icon={<PlusOutlined/>} onClick={() => { setShowNewActionForm(true) }}>
                                         Add Action
                                     </Button>
                                 </li>
+                                }
+
+                                {
+                                showNewActionForm &&
+                                <li key='affected-system__add-action_form'>
+                                    <Card type="inner" title="Adding action...">
+                                        <ActionForm
+                                            action={{affectedSystemId: affectedSystem.id}}
+                                            onCancel={()=>{setShowNewActionForm(false)}}
+                                            onSubmit={addAction}
+                                        />
+                                    </Card>
+                                </li>
+                                }
                             </ul>
                         </section>
+
+
 
                         { 
                             affectedSystem.actions!.filter(a => a.status != 'Active').length > 0
