@@ -4,8 +4,8 @@ import ActionForm from "@/app/components/action/action-form";
 import {Children, Component, PropsWithChildren, useContext, useState} from "react";
 import {IncidentDispatchContext, NotificationsContext} from "@/app/contexts/incident-context";
 import CountdownTimer from "@/app/components/countdown-timer";
-import {Button, Card, Collapse, CollapseProps, ConfigProvider, Input, Popover, Radio, Space, Timeline, Tooltip} from "antd";
-import {DeleteOutlined, CheckOutlined, ClockCircleOutlined, EditOutlined, LikeOutlined, DislikeOutlined, CheckCircleOutlined, MoreOutlined, MenuOutlined } from "@ant-design/icons";
+import {Button, Card, Collapse, CollapseProps, ConfigProvider, Input, Popover, Radio, Space, Tag, Timeline, Tooltip} from "antd";
+import {LinkOutlined, DeleteOutlined, CheckOutlined, ClockCircleOutlined, EditOutlined, LikeOutlined, DislikeOutlined, CheckCircleOutlined, MoreOutlined, MenuOutlined } from "@ant-design/icons";
 import {uuidv4} from "lib0/random";
 import TextArea from "antd/es/input/TextArea";
 import TimelineEntry from "../timeline-entry/timeline-entry";
@@ -187,7 +187,7 @@ export default function Action({action}: props) {
           className={["action-card", (action.status == 'Active' ? '' : 'action-card-completed')].join(' ')}
           extra={<>
               { action.link &&
-                <span><a className="ml-1" target="_blank" href={action.link} data-test="active_action__link">Link</a></span>
+                <Tag icon={<LinkOutlined />} color="blue"><a className="ml-1" target="_blank" href={action.link} data-test="active_action__link">Link</a></Tag>
               }
 
               <ButtonsPopover>
