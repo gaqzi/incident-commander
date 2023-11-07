@@ -110,7 +110,7 @@ export default function AffectedSystem({affectedSystem}: {affectedSystem: Affect
                                 }
 
                                 <li key={`${affectedSystem.id}_add_action`}>
-                                    <Button data-test="actions__active__add_action" size="large" key="btn_add_action" icon={<PlusOutlined/>} onClick={() => { setShowNewActionForm(true) }}>
+                                    <Button type={affectedSystem.status == 'Active' ? 'primary' : 'default'} data-test="actions__active__add_action" size="large" key="btn_add_action" icon={<PlusOutlined/>} onClick={() => { setShowNewActionForm(true) }}>
                                         Add Action
                                     </Button>
                                 </li>
