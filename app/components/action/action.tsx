@@ -5,7 +5,7 @@ import {Children, Component, PropsWithChildren, useContext, useState} from "reac
 import {IncidentDispatchContext, NotificationsContext} from "@/app/contexts/incident-context";
 import CountdownTimer from "@/app/components/countdown-timer";
 import {Button, Card, Collapse, CollapseProps, ConfigProvider, Input, Popover, Radio, Space, Timeline, Tooltip} from "antd";
-import {CheckOutlined, ClockCircleOutlined, EditOutlined, LikeOutlined, DislikeOutlined, CheckCircleOutlined, MoreOutlined, MenuOutlined } from "@ant-design/icons";
+import {DeleteOutlined, CheckOutlined, ClockCircleOutlined, EditOutlined, LikeOutlined, DislikeOutlined, CheckCircleOutlined, MoreOutlined, MenuOutlined } from "@ant-design/icons";
 import {uuidv4} from "lib0/random";
 import TextArea from "antd/es/input/TextArea";
 
@@ -131,6 +131,7 @@ export default function Action({action}: props) {
     }
 
     const [timelineEntryText, setTimelineEntryText] = useState('')
+
     const addTimelineEntry = () => {
       const timelineEntry = {
         id: `timeline_entry_${uuidv4()}`,
@@ -140,6 +141,10 @@ export default function Action({action}: props) {
       }
       incidentReducer([{type: 'add_action_timeline_item', payload: timelineEntry }])
       setTimelineEntryText('')
+    }
+
+    const deleteTimelineEntry = () => {
+
     }
 
     const timelineTimestampClasses = "text-xs  font-light"
@@ -152,16 +157,45 @@ export default function Action({action}: props) {
     //   ...
     // ]
     */
-    const TimelineItemComp = ({i}: {i: TimelineItem}) => {
+    const TimelineItemComponent = ({i}: {i: TimelineItem}) => {
       return (
-        <>{i.text}<br/><span className={timelineTimestampClasses}>{i.timestampUtc}</span></>
+        <Popover 
+          placement="right"
+          content={
+            <>
+              <Button 
+                className="block mb-1" 
+                type="link"
+                size="middle"
+                icon={<EditOutlined/>} 
+                onClick={onEditClick}
+                data-test="action__edit"
+                >
+                  Edit Entry
+              </Button>
+              <Button 
+                className="block mb-1" 
+                type="link"
+                size="middle"
+                icon={<DeleteOutlined/>} 
+                onClick={ () => incidentReducer([{type: 'remove_action_timeline_item', payload: i.id}]) }
+                data-test="action__edit"
+                >
+                  Delete Entry
+              </Button>
+            </>
+          } 
+        >
+          {i.text}<br/>
+          <span className={timelineTimestampClasses}>{i.timestampUtc}</span>
+        </Popover>
       )
 
     }
 
     const timelineItems = (action.timeline || [])
       .map(i => { return { 
-          children: <TimelineItemComp i={i} />,
+          children: <TimelineItemComponent i={i} />, 
           headline: i.text,
         } 
       })
