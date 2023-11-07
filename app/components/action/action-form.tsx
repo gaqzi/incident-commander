@@ -1,7 +1,7 @@
 'use client'
 
 import {useForm} from "react-hook-form";
-import {Button} from "antd";
+import {Button, Space} from "antd";
 
 interface props {
     action?: Action | any // TODO: fix this
@@ -69,24 +69,26 @@ export default function ActionForm({ action, onSubmit, onCancel } : props) {
                 {...register("affectedSystemId")}
             />
 
-            <Button
-                size="small"
-                type="primary"
-                htmlType="submit"
-                data-test="action-form__submit"
-            >
-                { action!.id ? 'Update' : 'Add'}
-            </Button>
+            <Space size="small">
+                <Button
+                    size="small"
+                    type="primary"
+                    htmlType="submit"
+                    data-test="action-form__submit"
+                >
+                    { action!.id ? 'Update' : 'Add'}
+                </Button>
 
-            <Button
-                size="small"
-                htmlType="reset"
-                className="cancel"
-                data-test="action-form__cancel"
-                onClick={onCancel}
-            >
-                Cancel
-            </Button>
+                <Button
+                    size="small"
+                    htmlType="reset"
+                    className="cancel"
+                    data-test="action-form__cancel"
+                    onClick={onCancel}
+                >
+                    Cancel
+                </Button>
+            </Space>
         </form>
     )
 }
