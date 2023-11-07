@@ -8,6 +8,7 @@ import {Button, Card, Collapse, CollapseProps, ConfigProvider, Input, Popover, R
 import {DeleteOutlined, CheckOutlined, ClockCircleOutlined, EditOutlined, LikeOutlined, DislikeOutlined, CheckCircleOutlined, MoreOutlined, MenuOutlined } from "@ant-design/icons";
 import {uuidv4} from "lib0/random";
 import TextArea from "antd/es/input/TextArea";
+import TimelineEntry from "../timeline-entry/timeline-entry";
 
 
 const NOTIFICATION_REMEMBERING_LOCALSTORAGE_KEY = 'previousNotifications'
@@ -143,11 +144,6 @@ export default function Action({action}: props) {
       setTimelineEntryText('')
     }
 
-    const deleteTimelineEntry = () => {
-
-    }
-
-    const timelineTimestampClasses = "text-xs  font-light"
     /* Make a list that looks like...
     // [
     //   { 
@@ -157,45 +153,9 @@ export default function Action({action}: props) {
     //   ...
     // ]
     */
-    const TimelineItemComponent = ({i}: {i: TimelineItem}) => {
-      return (
-        <Popover 
-          placement="right"
-          content={
-            <>
-              <Button 
-                className="block mb-1" 
-                type="link"
-                size="middle"
-                icon={<EditOutlined/>} 
-                onClick={onEditClick}
-                data-test="action__edit"
-                >
-                  Edit Entry
-              </Button>
-              <Button 
-                className="block mb-1" 
-                type="link"
-                size="middle"
-                icon={<DeleteOutlined/>} 
-                onClick={ () => incidentReducer([{type: 'remove_action_timeline_item', payload: i.id}]) }
-                data-test="action__edit"
-                >
-                  Delete Entry
-              </Button>
-            </>
-          } 
-        >
-          {i.text}<br/>
-          <span className={timelineTimestampClasses}>{i.timestampUtc}</span>
-        </Popover>
-      )
-
-    }
-
     const timelineItems = (action.timeline || [])
       .map(i => { return { 
-          children: <TimelineItemComponent i={i} />, 
+          children: <TimelineEntry i={i} />, 
           headline: i.text,
         } 
       })
