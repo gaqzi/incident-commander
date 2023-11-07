@@ -1,7 +1,7 @@
 'use client'
 
 import {useContext, useEffect, useState} from "react";
-import {Button, Popover} from "antd";
+import {Button, Popover, Space} from "antd";
 import {useForm} from "react-hook-form";
 import { IncidentDispatchContext } from "../contexts/incident-context";
 
@@ -120,13 +120,15 @@ export default function CountdownTimer({id, action, label, onEditClick, onComple
     }
 
     <Popover content={
-        <>
+        <Space size="small">
             <Button data-test="countdown-timer__restart" size="small" onClick={()=>restart()}>Restart</Button>
+
             {
                 action.timer!.isRunning && <Button data-test="countdown-timer__cancel" size="small" onClick={cancel}>Cancel</Button>
             }
+
             <Button data-test="countdown-timer__edit" size="small" onClick={onEditClick}>Edit</Button>
-        </>
+        </Space>
     }>
         {
           !showForm &&

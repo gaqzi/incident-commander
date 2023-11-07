@@ -46,7 +46,7 @@ ul li {
 }
 
 /* Tailwind's Base has a lot of conflicts with some Ant Design styles, but we like Base's input styling so we will add that back under form */
-form [type='text'], form textarea, form select {
+form [type='text'], form [type='url'], form textarea, form select {
   background-color: #fff;
   border-color: #6b7280;
   border-width: 1px;
