@@ -299,8 +299,16 @@ const addTimelineEntryToAction = (incident: Incident, timelineItem: TimelineItem
 }
 
 const editTimelineEntryForAction = (incident: Incident, timelineItem: TimelineItem) => {
+    let updatedIncident = JSON.parse(JSON.stringify(incident))
+    const { systemIndex, actionIndex, timelineEntryIndex } = getIndexesForActionTimelineEntryId(incident, timelineItem.id)
 
-    return incident
+    if (systemIndex != -1 && actionIndex != -1 && timelineEntryIndex != -1) {
+        const affectedSystem = updatedIncident.affectedSystems[systemIndex]
+        const action = affectedSystem.actions![actionIndex]
+        action.timeline[timelineEntryIndex] = timelineItem
+    }
+
+    return updatedIncident
 }
 
 const removeTimelineEntryFromAction = (incident: Incident, id: string) => {
