@@ -37,6 +37,32 @@ type IncidentEvents =
     | AddActionTimelineItem | EditActionTimelineItem | RemoveActionTimelineItem
 
 
+const getIndexesForActionTimelineEntryId = (incident: Incident, id: string) => {
+    let systemIndex = -1
+    let actionIndex = -1
+    let timelineEntryIndex = -1
+
+    incident.affectedSystems.forEach((system, sIndex) => {
+        if (!system.actions) {
+            return
+        }
+
+        system.actions.forEach((action, aIndex) => {
+            if (!action.timeline) {
+                return
+            }
+
+            let i = action.timeline.findIndex(t => t.id == id)
+            if (i != -1) {
+                systemIndex = sIndex
+                actionIndex = aIndex
+                timelineEntryIndex = i
+            }
+        })
+    })
+
+    return { systemIndex, actionIndex, timelineEntryIndex }
+}
 
 const getIndexesForActionId = (incident: Incident, id: string) => {
     let systemIndex = -1
@@ -268,18 +294,26 @@ const addTimelineEntryToAction = (incident: Incident, timelineItem: TimelineItem
             }
         }
     }
-    
+
     return updatedIncident
 }
 
-const editTimelineEntryforAction = (incident: Incident, timelineItem: TimelineItem) => {
+const editTimelineEntryForAction = (incident: Incident, timelineItem: TimelineItem) => {
 
     return incident
 }
 
 const removeTimelineEntryFromAction = (incident: Incident, id: string) => {
+    let updatedIncident = JSON.parse(JSON.stringify(incident))
+    const { systemIndex, actionIndex, timelineEntryIndex } = getIndexesForActionTimelineEntryId(incident, id)
 
-    return incident
+    if (systemIndex != -1 && actionIndex != -1 && timelineEntryIndex != -1) {
+        const affectedSystem = updatedIncident.affectedSystems[systemIndex]
+        const action = affectedSystem.actions![actionIndex]
+        action.timeline = action.timeline!.filter((_, idx) => idx != timelineEntryIndex )
+    }
+
+    return updatedIncident
 }
 
 
