@@ -42,10 +42,10 @@ export default function AffectedSystemForm( { affectedSystem, onSubmit, onCancel
 
             { 
                 ! affectedSystem?.id &&
-                <div className="flex flex-col mb-2">
+                <div>
                     <label htmlFor="summaryAddDefaultActions">Add default actions?</label>
                     <input
-                        className="ml-2 block"
+                        className="ml-2 inline"
                         type="checkbox"
                         data-test="new-affected-system__add-default-actions"
                         {...register("addDefaultActions")}
