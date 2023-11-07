@@ -4,7 +4,7 @@ import ActionForm from "@/app/components/action/action-form";
 import {Children, Component, PropsWithChildren, useContext, useState} from "react";
 import {IncidentDispatchContext, NotificationsContext} from "@/app/contexts/incident-context";
 import CountdownTimer from "@/app/components/countdown-timer";
-import {Button, Collapse, CollapseProps, ConfigProvider, Input, Popover, Radio, Space, Timeline, Tooltip} from "antd";
+import {Button, Card, Collapse, CollapseProps, ConfigProvider, Input, Popover, Radio, Space, Timeline, Tooltip} from "antd";
 import {CheckOutlined, ClockCircleOutlined, EditOutlined, LikeOutlined, DislikeOutlined, CheckCircleOutlined, MoreOutlined, MenuOutlined } from "@ant-design/icons";
 import {uuidv4} from "lib0/random";
 import TextArea from "antd/es/input/TextArea";
@@ -145,12 +145,26 @@ export default function Action({action}: props) {
     const timelineTimestampClasses = "text-xs  font-light"
     /* Make a list that looks like...
     // [
-    //   { children: (<>Our timeline content</>) }
+    //   { 
+            children: (<>Our timeline content</>),
+            headline: '...'  // (for displaying when its the most recent entry and timeline is collapsed)
+          }
     //   ...
     // ]
     */
+    const TimelineItemComp = ({i}: {i: TimelineItem}) => {
+      return (
+        <>{i.text}<br/><span className={timelineTimestampClasses}>{i.timestampUtc}</span></>
+      )
+
+    }
+
     const timelineItems = (action.timeline || [])
-      .map(i => { return { children: (<>{i.text}<br/><span className={timelineTimestampClasses}>{i.timestampUtc}</span></>) } })
+      .map(i => { return { 
+          children: <TimelineItemComp i={i} />,
+          headline: i.text,
+        } 
+      })
       .reverse()
 
     const addTimelineForm =
@@ -170,8 +184,23 @@ export default function Action({action}: props) {
         </Space.Compact>
     
 
+    const cardHeaderBg = action.status == 'Active' ? 'blue' : '#666666';
     return (
-        <section>
+        <Card 
+          type="inner" 
+          title={action.what}
+          className={["action-card", (action.status == 'Active' ? '' : 'action-card-completed')].join(' ')}
+          extra={<>
+              { action.link &&
+                <span><a className="ml-1" target="_blank" href={action.link} data-test="active_action__link">Link</a></span>
+              }
+
+              <ButtonsPopover>
+                <MoreOutlined title="Actions..." className="p-2" />
+              </ButtonsPopover>
+            </>
+          }
+        >
             {showForm &&
               <div className=""><ActionForm action={action} onSubmit={updateAction} onCancel={cancelForm}/></div>
             }
@@ -179,27 +208,17 @@ export default function Action({action}: props) {
             {!showForm &&
               <div className="flex flex-row">
                 <div className="basis-11/12">
-                {/* What & Who ------------- */}
-                <ButtonsPopover>
-                    {icon()}
+                  {/* What & Who ------------- */}
+                  {icon()}
 
-                    <span className="ml-1">
-                          <span className="what font-bold" data-test="active_action__what">{action.what}</span>
-
-                          {
-                            action.link &&
-                            <span> - <a className="ml-1" target="_blank" href={action.link} data-test="active_action__link">link</a></span>
-                          }
-
-
-                        {
-                          action.who ?
-                          <span><br/>@<span className="who italic" data-test="active_action__who">{action.who}</span></span>
-                          :
-                          <span className="italic"><br/>Unassigned</span>
-                        }
-                    </span>
-                </ButtonsPopover>
+                  <span className="ml-1">
+                      {
+                        action.who ?
+                        <span>@<span className="who italic" data-test="active_action__who">{action.who}</span></span>
+                        :
+                        <span className="italic">Unassigned</span>
+                      }
+                  </span>
 
                 {/* Timer ------------------ */}
                 <span className="action-group">
@@ -254,7 +273,7 @@ export default function Action({action}: props) {
                     items={[
                       {
                         key: '1',
-                        label: `Timeline`,
+                        label: `Notes: ${timelineItems[0]?.headline || ''}` + (timelineItems.length <= 1 ? '' : ` [+ ${timelineItems.length - 1} more]` ),
                         children: <>{addTimelineForm}<div className=""><Timeline className="mt-2" items={timelineItems} /></div></>,
                       },
                     ]}
@@ -263,15 +282,8 @@ export default function Action({action}: props) {
 
                 </span>
                 </div>
-
-                {/* Side Menu ----------------- */}
-                <div className="basis-1/12">
-                  <ButtonsPopover>
-                    <MoreOutlined title="Actions..." className="p-2" />
-                  </ButtonsPopover>
-                </div>
               </div>
             }
-        </section>
+        </Card>
     )
 }
