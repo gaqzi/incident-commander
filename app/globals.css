@@ -71,6 +71,12 @@ form [type='text'], form textarea, form select {
   white-space: pre-wrap !important;
 }
 
+/* Can't figure out how to get the ConfigProvider + style token to style an Inner Card's header bg, so doing it custom here */
+.action-card-completed .ant-card-head {
+  background: rgba(0, 0, 0, 0.6);
+  color: white;
+}
+
 svg { vertical-align: baseline; }
 
 /*body {*/
