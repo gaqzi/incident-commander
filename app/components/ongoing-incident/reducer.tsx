@@ -318,7 +318,7 @@ const removeTimelineEntryFromAction = (incident: Incident, id: string) => {
     if (systemIndex != -1 && actionIndex != -1 && timelineEntryIndex != -1) {
         const affectedSystem = updatedIncident.affectedSystems[systemIndex]
         const action = affectedSystem.actions![actionIndex]
-        action.timeline = action.timeline!.filter((_, idx) => idx != timelineEntryIndex )
+        action.timeline = action.timeline!.filter((_: TimelineItem, idx: number) => idx != timelineEntryIndex )
     }
 
     return updatedIncident
