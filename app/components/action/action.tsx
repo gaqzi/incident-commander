@@ -5,7 +5,7 @@ import {Children, Component, PropsWithChildren, useContext, useState} from "reac
 import {IncidentDispatchContext, NotificationsContext} from "@/app/contexts/incident-context";
 import CountdownTimer from "@/app/components/countdown-timer";
 import {Button, Card, Collapse, CollapseProps, ConfigProvider, Input, Popover, Radio, Space, Tag, Timeline, Tooltip} from "antd";
-import {LinkOutlined, DeleteOutlined, CheckOutlined, ClockCircleOutlined, EditOutlined, LikeOutlined, DislikeOutlined, CheckCircleOutlined, MoreOutlined, MenuOutlined } from "@ant-design/icons";
+import {CaretDownOutlined, CaretRightOutlined, LinkOutlined, RightOutlined, DeleteOutlined, CheckOutlined, ClockCircleOutlined, EditOutlined, LikeOutlined, DislikeOutlined, CheckCircleOutlined, MoreOutlined, MenuOutlined } from "@ant-design/icons";
 import {uuidv4} from "lib0/random";
 import TextArea from "antd/es/input/TextArea";
 import TimelineEntry from "../timeline-entry/timeline-entry";
@@ -144,23 +144,6 @@ export default function Action({action}: props) {
       setTimelineEntryText('')
     }
 
-    /* Make a list that looks like...
-    // [
-    //   { 
-            children: (<>Our timeline content</>),
-            headline: '...'  // (for displaying when its the most recent entry and timeline is collapsed)
-          }
-    //   ...
-    // ]
-    */
-    const timelineItems = (action.timeline || [])
-      .map(i => { return { 
-          children: <TimelineEntry i={i} />, 
-          headline: i.text,
-        } 
-      })
-      .reverse()
-
     const addTimelineForm =
         <Space.Compact style={{ width: '100%' }}>
           <TextArea 
@@ -176,9 +159,48 @@ export default function Action({action}: props) {
             Add
           </Button> 
         </Space.Compact>
-    
 
-    const cardHeaderBg = action.status == 'Active' ? 'blue' : '#666666';
+    const [timelineExpanded, setTimelineExpanded] = useState(false)
+
+    let allTimelineItems: any[] = (action.timeline || [])
+      .map(i => { return { 
+          children: <TimelineEntry i={i} />, 
+        } 
+      })
+      .reverse()
+    allTimelineItems.splice(0, 0, 
+      {
+        color: 'gray',
+        children: (addTimelineForm),
+      },
+    )
+    allTimelineItems.splice(4, 0, 
+      {
+        color: 'gray',
+        dot: <CaretDownOutlined />,
+        children: (<span className="p0 m0 cursor-pointer" type="link" onClick={() => setTimelineExpanded((v)=>!v) }>Hide older entries </span>),
+      }
+    )
+
+    let collapsedTimelineItems: any[] = [
+        {
+          color: 'gray',
+          children: (addTimelineForm),
+        },
+    ]
+    if (action.timeline && action.timeline.length > 0) {
+        collapsedTimelineItems = collapsedTimelineItems.concat([
+        ...allTimelineItems.slice(1,4),
+        {
+          color: 'gray',
+          dot: <CaretRightOutlined />,
+          children: (<Tag className="cursor-pointer" onClick={() => setTimelineExpanded((v)=>!v) }>Show {allTimelineItems.length - 5} more entries ...</Tag>),
+        },
+      ])
+    }
+
+    const timelineItems = timelineExpanded ? allTimelineItems : collapsedTimelineItems
+
     return (
         <Card 
           type="inner" 
@@ -251,29 +273,7 @@ export default function Action({action}: props) {
                     }
 
                 {/* Timeline ------------------ */}
-                <ConfigProvider
-                  theme={{
-                    components: {
-                      Collapse: {
-                        headerPadding: 0,
-                        contentPadding: 0,
-                      },
-                    },
-                  }}
-                >
-                  <Collapse
-                    ghost
-                    collapsible="header"
-                    defaultActiveKey={['0']} // set to 1 to default to expanded
-                    items={[
-                      {
-                        key: '1',
-                        label: `Notes: ${timelineItems[0]?.headline || ''}` + (timelineItems.length <= 1 ? '' : ` [+ ${timelineItems.length - 1} more]` ),
-                        children: <>{addTimelineForm}<div className=""><Timeline className="mt-2" items={timelineItems} /></div></>,
-                      },
-                    ]}
-                  />
-                </ConfigProvider>
+                <Timeline className="mt-2" items={timelineItems} /> 
 
                 </span>
                 </div>
