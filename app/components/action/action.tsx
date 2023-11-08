@@ -212,6 +212,13 @@ export default function Action({action}: props) {
                 <Tag icon={<LinkOutlined />} color="blue"><a className="ml-1" target="_blank" href={action.link} data-test="active_action__link">Link</a></Tag>
               }
 
+              {
+                  action.status != 'Active' &&
+                  <Tag color="#999" bordered={false}>
+                    {icon()} <span>{action.status}</span>
+                  </Tag>
+              }
+
               <ButtonsPopover>
                 <MoreOutlined title="Actions..." className="p-2" />
               </ButtonsPopover>
@@ -223,12 +230,27 @@ export default function Action({action}: props) {
             }
 
             {!showForm &&
-              <div className="flex flex-row">
-                <div className="basis-11/12">
-                  {/* What & Who ------------- */}
-                  {icon()}
+              <div>
 
-                  <span className="ml-1">
+
+              <div className="flex flex-row">
+                <div>
+
+                {/* Status ------------------ */}
+                    {
+                        action.status == 'Failure' &&
+                        <div>
+                          <span>{action.status}</span> reason: <span>{action.resolution}</span>
+                        </div>
+                    }
+                    </div>
+                </div>
+
+              <div className="flex flex-row justify-between">
+                <div>
+                  {/* What & Who ------------- */}
+
+                  <span>
                       {
                         action.who ?
                         <span>@<span className="who italic" data-test="active_action__who">{action.who}</span></span>
@@ -236,13 +258,15 @@ export default function Action({action}: props) {
                         <span className="italic">Unassigned</span>
                       }
                   </span>
-
+                </div>
+                <div>
                 {/* Timer ------------------ */}
-                <span className="action-group">
+                {/* <span className="action-group"> */}
                     {
                         action.timer &&
                         <div className="block">
                           <ClockCircleOutlined title="Timer" />
+
                           <div className="ml-2 inline-block">
                             <CountdownTimer
                             onEditClick={()=>{setShowForm(true)}}
@@ -264,19 +288,14 @@ export default function Action({action}: props) {
                           </div>
                         </div>
                     }
+                </div>
+              </div>
 
-                {/* Status ------------------ */}
-                    {
-                        action.status != 'Active' &&
-                        <>Completed: <span>{action.status}</span> <span className="block">{action.resolution}</span>
-                        </>
-                    }
+
 
                 {/* Timeline ------------------ */}
-                <Timeline className="mt-2" items={timelineItems} /> 
+                <Timeline className="mt-4" items={timelineItems} /> 
 
-                </span>
-                </div>
               </div>
             }
         </Card>
