@@ -178,7 +178,7 @@ export default function Action({action}: props) {
       {
         color: 'gray',
         dot: <CaretDownOutlined />,
-        children: (<span className="p0 m0 cursor-pointer" type="link" onClick={() => setTimelineExpanded((v)=>!v) }>Hide older entries </span>),
+        children: (<span className="p0 m0 cursor-pointer" onClick={() => setTimelineExpanded((v)=>!v) }>Hide older entries </span>),
       }
     )
 
