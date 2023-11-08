@@ -265,7 +265,6 @@ export default function Action({action}: props) {
                     {
                         action.timer &&
                         <div className="block">
-                          <ClockCircleOutlined title="Timer" />
 
                           <div className="ml-2 inline-block">
                             <CountdownTimer

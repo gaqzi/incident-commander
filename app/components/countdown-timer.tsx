@@ -1,7 +1,8 @@
 'use client'
 
 import {useContext, useEffect, useState} from "react";
-import {Button, Popover, Space} from "antd";
+import {Button, Popover, Space, Tag} from "antd";
+import {ClockCircleOutlined} from "@ant-design/icons";
 import {useForm} from "react-hook-form";
 import { IncidentDispatchContext } from "../contexts/incident-context";
 
@@ -132,10 +133,11 @@ export default function CountdownTimer({id, action, label, onEditClick, onComple
     }>
         {
           !showForm &&
-          <span data-test="countdown-display" className={ action.timer!.isRunning && minutes == 0 && seconds == 0 ? "animate-ping bg-red-500 text-white" : "" }>
+          <Tag data-test="countdown-display" className={ action.timer!.isRunning && minutes == 0 && seconds == 0 ? "animate-pulse bg-red-500 text-white cursor-pointer" : "cursor-pointer" }>
+            <ClockCircleOutlined title="Timer" />
             <span className="minutes">{minutes}</span>m
             <span className="seconds">{seconds}</span>s
-        </span>
+        </Tag>
         }
     </Popover>
     </div>
