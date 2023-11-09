@@ -133,7 +133,7 @@ export default function CountdownTimer({id, action, label, onEditClick, onComple
     }>
         {
           !showForm &&
-          <Tag data-test="countdown-display" className={ action.timer!.isRunning && minutes == 0 && seconds == 0 ? "animate-pulse bg-red-500 text-white cursor-pointer" : "cursor-pointer" }>
+          <Tag data-test="countdown-display" className={ action.timer!.isRunning && minutes == 0 && seconds == 0 ? "animate-pulse bg-red-500 text-white cursor-pointer m-0" : "cursor-pointer m-0" }>
             <ClockCircleOutlined title="Timer" />
             <span className="minutes">{minutes}</span>m
             <span className="seconds">{seconds}</span>s
