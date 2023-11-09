@@ -10,3 +10,4 @@ socket_relay_server/fly.toml
 *.swp
 .parcel-cache/
 .next/
+.env.local
