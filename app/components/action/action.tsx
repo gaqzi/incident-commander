@@ -276,7 +276,7 @@ export default function Action({action}: props) {
                         action.timer &&
                         <div className="block">
 
-                          <div className="ml-2 inline-block">
+                          <div className="inline-block">
                             <CountdownTimer
                             onEditClick={()=>{setShowForm(true)}}
                             id={`countdown-${action.id}`}
