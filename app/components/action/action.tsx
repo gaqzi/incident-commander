@@ -160,7 +160,7 @@ export default function Action({action}: props) {
              onChange={(e)=>setTimelineEntryText(e.target.value)}
              onKeyDown={(e)=>{ if(e.key === 'Enter'){ addTimelineEntry(); e.preventDefault() } }}
              value={timelineEntryText}
-             placeholder="Add action timeline note" 
+             placeholder="Add a timeline note" 
           /> 
 
           <Button type="default" onClick={addTimelineEntry}>

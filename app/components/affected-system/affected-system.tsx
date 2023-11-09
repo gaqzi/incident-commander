@@ -87,7 +87,7 @@ export default function AffectedSystem({affectedSystem}: {affectedSystem: Affect
             {
                     <section>
                         <section>
-                            <ul data-test="actions__active" className="grid grid-cols-3 gap-4">
+                            <ul data-test="actions__active" className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
                                 {
                                     affectedSystem.actions?.filter(a => a.status == 'Active').map((action) => {
                                         return (
