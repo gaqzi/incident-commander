@@ -5,7 +5,7 @@ import {Children, Component, PropsWithChildren, useContext, useState} from "reac
 import {IncidentDispatchContext, NotificationsContext} from "@/app/contexts/incident-context";
 import CountdownTimer from "@/app/components/countdown-timer";
 import {Button, Card, Collapse, CollapseProps, ConfigProvider, Input, Popover, Radio, Space, Tag, Timeline, Tooltip} from "antd";
-import Icon, {CaretDownOutlined, CaretRightOutlined, LinkOutlined, RightOutlined, DeleteOutlined, CheckOutlined, ClockCircleOutlined, EditOutlined, LikeOutlined, DislikeOutlined, CheckCircleOutlined, MoreOutlined, MenuOutlined } from "@ant-design/icons";
+import Icon, {SettingOutlined, CaretDownOutlined, CaretRightOutlined, LinkOutlined, RightOutlined, DeleteOutlined, CheckOutlined, ClockCircleOutlined, EditOutlined, LikeOutlined, DislikeOutlined, CheckCircleOutlined, MoreOutlined, MenuOutlined } from "@ant-design/icons";
 import {uuidv4} from "lib0/random";
 import TextArea from "antd/es/input/TextArea";
 import TimelineEntry from "../timeline-entry/timeline-entry";
@@ -230,7 +230,7 @@ export default function Action({action}: props) {
               }
 
               <ButtonsPopover>
-                <MoreOutlined title="Actions..." className="p-2" />
+                <Tag icon={<SettingOutlined />}></Tag>
               </ButtonsPopover>
             </>
           }
