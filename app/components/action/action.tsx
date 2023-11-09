@@ -170,6 +170,7 @@ export default function Action({action}: props) {
         </Space.Compact>
 
     const [timelineExpanded, setTimelineExpanded] = useState(false)
+    const NUM_TIMELINE_ENTRIES_TO_SHOW_COLLAPSED = 3
 
     let allTimelineItems: any[] = (action.timeline || [])
       .map(i => { return { 
@@ -183,13 +184,15 @@ export default function Action({action}: props) {
         children: (addTimelineForm),
       },
     )
-    allTimelineItems.splice(4, 0, 
-      {
-        color: 'gray',
-        dot: <CaretDownOutlined />,
-        children: (<span className="p0 m0 cursor-pointer" onClick={() => setTimelineExpanded((v)=>!v) }>Hide older entries </span>),
-      }
-    )
+    if (action.timeline && action.timeline.length > NUM_TIMELINE_ENTRIES_TO_SHOW_COLLAPSED) {
+      allTimelineItems.splice(NUM_TIMELINE_ENTRIES_TO_SHOW_COLLAPSED + 1, 0, 
+        {
+          color: 'gray',
+          dot: <CaretDownOutlined />,
+          children: (<span className="p0 m0 cursor-pointer" onClick={() => setTimelineExpanded((v)=>!v) }>Hide older entries </span>),
+        }
+      )
+    }
 
     let collapsedTimelineItems: any[] = [
         {
@@ -199,11 +202,16 @@ export default function Action({action}: props) {
     ]
     if (action.timeline && action.timeline.length > 0) {
         collapsedTimelineItems = collapsedTimelineItems.concat([
-        ...allTimelineItems.slice(1,4),
+        ...allTimelineItems.slice(1, NUM_TIMELINE_ENTRIES_TO_SHOW_COLLAPSED + 1),
+        ])
+    }
+
+    if (action.timeline && action.timeline.length > 3) {
+        collapsedTimelineItems = collapsedTimelineItems.concat([
         {
           color: 'gray',
           dot: <CaretRightOutlined />,
-          children: (<Tag className="cursor-pointer" onClick={() => setTimelineExpanded((v)=>!v) }>Show {allTimelineItems.length - 5} more entries ...</Tag>),
+          children: (<Tag className="cursor-pointer" onClick={() => setTimelineExpanded((v)=>!v) }>Show {allTimelineItems.length - (NUM_TIMELINE_ENTRIES_TO_SHOW_COLLAPSED + 2)} more entries ...</Tag>),
         },
       ])
     }
