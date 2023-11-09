@@ -231,7 +231,7 @@ export default function Action({action}: props) {
               }
 
               <ButtonsPopover>
-                <Tag className="mr-0" icon={<SettingOutlined />}></Tag>
+                <Tag data-test="action__more" className="mr-0" icon={<SettingOutlined />}></Tag>
               </ButtonsPopover>
             </>
           }

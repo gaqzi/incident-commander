@@ -283,7 +283,7 @@ describe('Ongoing Incident: Managing Actions', () => {
     addActionToIncident({ what })
 
     const newWhat = 'new what'
-    getDataTest('action-card', ' .ant-card-extra .anticon-more').trigger('mouseover')
+    getDataTest('action__more').trigger('mouseover')
     getDataTest('action__edit').click()
     getDataTest('new-action__what').clear().type(newWhat)
     getDataTest('action-form__submit').click()
@@ -298,7 +298,7 @@ describe('Ongoing Incident: Managing Actions', () => {
     addActionToIncident({ link: linkVal })
 
     const newLinkVal = 'http://example.com'
-    getDataTest('action-card', ' .ant-card-extra .anticon-more').trigger('mouseover')
+    getDataTest('action__more').trigger('mouseover')
     getDataTest('action__edit').click()
     getDataTest('new-action__link').clear().type(newLinkVal)
 
@@ -377,7 +377,7 @@ describe('Ongoing Incident: Managing Actions', () => {
     getDataTest('actions__inactive', 'li').should('not.exist')
 
     // click mark as success
-    getDataTest('action-card', ' .ant-card-extra .anticon-more').first().trigger('mouseover')
+    getDataTest('action__more').first().trigger('mouseover')
     getDataTest('action__resolve_success').first().click({force: true})
 
     getDataTest('actions__inactive', 'li')
@@ -393,7 +393,7 @@ describe('Ongoing Incident: Managing Actions', () => {
       cy.stub(win, 'prompt').returns(failureReason)
     })
 
-    getDataTest('action-card', ' .ant-card-extra .anticon-more').first().trigger('mouseover')
+    getDataTest('action__more').first().trigger('mouseover')
     getDataTest('action__resolve_failure').first().click({force: true})
 
     getDataTest('actions__inactive', 'li')
@@ -403,7 +403,7 @@ describe('Ongoing Incident: Managing Actions', () => {
 
 
     // click mark as chore
-    getDataTest('action-card', ' .ant-card-extra .anticon-more').first().trigger('mouseover')
+    getDataTest('action__more').first().trigger('mouseover')
     getDataTest('action__resolve_chore').first().click({force: true})
 
     getDataTest('actions__inactive', 'li')
@@ -533,16 +533,16 @@ describe('Ongoing Incident: Status Updates', () => {
 
       // Finish Chore and Succeeded
       // promptReturn = 'It worked.'
-      getDataTest('action-card', ' .ant-card-extra .anticon-more').eq(1).trigger('mouseover')
+      getDataTest('action__more').eq(1).trigger('mouseover')
       getDataTest('action__resolve_chore').click({force: true})
-      getDataTest('action-card', ' .ant-card-extra .anticon-more').eq(1).trigger('mouseover')
+      getDataTest('action__more').eq(1).trigger('mouseover')
       getDataTest('action__resolve_success').click({force: true})
 
       // Finish Failed
       let promptReturn
       promptReturn = 'It failed.'
       cy.window().then((win) => cy.stub(win, 'prompt').returns(promptReturn))
-      getDataTest('action-card', ' .ant-card-extra .anticon-more').eq(1).trigger('mouseover')
+      getDataTest('action__more').eq(1).trigger('mouseover')
       getDataTest('action__resolve_failure').click({force: true})
 
 
