@@ -6,6 +6,7 @@ import {IncidentDispatchContext, NotificationsContext} from "@/app/contexts/inci
 import CountdownTimer from "@/app/components/countdown-timer";
 import {Button, Card, Collapse, CollapseProps, ConfigProvider, Input, Popover, Radio, Space, Tag, Timeline, Tooltip} from "antd";
 import Icon, {SettingOutlined, CaretDownOutlined, CaretRightOutlined, LinkOutlined, RightOutlined, DeleteOutlined, CheckOutlined, ClockCircleOutlined, EditOutlined, LikeOutlined, DislikeOutlined, CheckCircleOutlined, MoreOutlined, MenuOutlined } from "@ant-design/icons";
+import type { CustomIconComponentProps } from '@ant-design/icons/lib/components/Icon';
 import {uuidv4} from "lib0/random";
 import TextArea from "antd/es/input/TextArea";
 import TimelineEntry from "../timeline-entry/timeline-entry";
