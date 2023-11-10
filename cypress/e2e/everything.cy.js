@@ -501,6 +501,23 @@ describe('Ongoing Incident: Managing Actions', () => {
     getDataTest('action__timeline').should('not.contain.text', 'Note A')
     getDataTest('action__timeline__collapse_button').should('not.exist')
     getDataTest('action__timeline__expand_button').should('be.visible')
+
+    // We can delete a timeline entry. Let's delete D and see A come back on screen and D disappear...
+    getDataTest('action__timeline__entry').eq(0).trigger('mouseover')
+    getDataTest('action__timeline__entry__delete').click()
+    getDataTest('action__timeline').should('not.contain.text', 'Note D')
+    getDataTest('action__timeline').should('contain.text', 'Note C')
+    getDataTest('action__timeline').should('contain.text', 'Note B')
+    getDataTest('action__timeline').should('contain.text', 'Note A')
+
+    // We can also edit a timeline entry...
+    getDataTest('action__timeline__entry').eq(0).trigger('mouseover')
+    getDataTest('action__timeline__entry__edit').click()
+    getDataTest('action__timeline__entry__form__text').clear().type('Updated Note C Text')
+    getDataTest('action__timeline__entry__form__timestamp').clear().type('Updated Note C Timestamp Value') // Yes, timestamps are just strings with no validation right now
+    getDataTest('action__timeline__entry__form__submit').click()
+    getDataTest('action__timeline__entry__text').eq(0).invoke('text').should('eq', 'Updated Note C Text')
+    getDataTest('action__timeline__entry__timestamp').eq(0).invoke('text').should('eq', 'Updated Note C Timestamp Value')
   })
 })
 

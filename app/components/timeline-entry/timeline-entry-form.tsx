@@ -22,7 +22,7 @@ export default function TimelineEntryForm({ timelineItem, onSubmit, onCancel } :
                     autoFocus
                     className="block"
                     type="text"
-                    data-test="timeline-entry__text"
+                    data-test="action__timeline__entry__form__text"
                     {...register("text")}
                 />
             </div>
@@ -32,7 +32,7 @@ export default function TimelineEntryForm({ timelineItem, onSubmit, onCancel } :
                 <input
                     className="block"
                     type="text"
-                    data-test="timeline-entry__text"
+                    data-test="action__timeline__entry__form__timestamp"
                     {...register("timestampUtc")}
                 />
             </div>
@@ -41,7 +41,7 @@ export default function TimelineEntryForm({ timelineItem, onSubmit, onCancel } :
                 size="small"
                 type="primary"
                 htmlType="submit"
-                data-test="timeline-form__submit"
+                data-test="action__timeline__entry__form__submit"
             >
                 { timelineItem!.id ? 'Update' : 'Add'}
             </Button>
