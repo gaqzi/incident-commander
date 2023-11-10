@@ -1,4 +1,4 @@
-/* @tailwind base;
+@tailwind base;
 
 @layer base {
   h1 {
@@ -13,7 +13,7 @@
   a {
     @apply text-blue-600 underline;
   }
-} */
+}
 
 @tailwind components;
 @tailwind utilities;
@@ -36,14 +36,6 @@ body {
   padding: 20px;
 }
 
-ul {
-  margin: 0;
-  padding: 0;
-}
-
-ul li {
-  list-style-type: none;
-}
 
 /* Tailwind's Base has a lot of conflicts with some Ant Design styles, but we like Base's input styling so we will add that back under form */
 form [type='text'], form [type='url'], form textarea, form select {
