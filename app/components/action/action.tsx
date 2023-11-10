@@ -157,6 +157,7 @@ export default function Action({action}: props) {
         <Space.Compact style={{ width: '100%' }}>
           <TextArea 
              autoSize 
+             data-test="action__timeline_form__text"
              className="rounded-none mb-2"
              onChange={(e)=>setTimelineEntryText(e.target.value)}
              onKeyDown={(e)=>{ if(e.key === 'Enter'){ addTimelineEntry(); e.preventDefault() } }}
@@ -164,7 +165,11 @@ export default function Action({action}: props) {
              placeholder="Add a timeline note" 
           /> 
 
-          <Button type="default" onClick={addTimelineEntry}>
+          <Button 
+            type="default" 
+            onClick={addTimelineEntry}
+            data-test="action__timeline_form__add_button"
+          >
             Add
           </Button> 
         </Space.Compact>
@@ -189,7 +194,15 @@ export default function Action({action}: props) {
         {
           color: 'gray',
           dot: <CaretDownOutlined />,
-          children: (<span className="p0 m0 cursor-pointer" onClick={() => setTimelineExpanded((v)=>!v) }>Hide older entries </span>),
+          children: (
+            <span 
+              data-test="action__timeline__collapse_button"
+              className="p0 m0 cursor-pointer" 
+              onClick={() => setTimelineExpanded((v)=>!v) }
+            >
+              Hide older entries
+            </span>
+          ),
         }
       )
     }
@@ -211,7 +224,15 @@ export default function Action({action}: props) {
         {
           color: 'gray',
           dot: <CaretRightOutlined />,
-          children: (<Tag className="cursor-pointer" onClick={() => setTimelineExpanded((v)=>!v) }>Show {allTimelineItems.length - (NUM_TIMELINE_ENTRIES_TO_SHOW_COLLAPSED + 2)} more entries ...</Tag>),
+          children: (
+            <Tag 
+              data-test="action__timeline__expand_button" 
+              className="cursor-pointer" 
+              onClick={() => setTimelineExpanded((v)=>!v) }
+              >
+                Show {allTimelineItems.length - (NUM_TIMELINE_ENTRIES_TO_SHOW_COLLAPSED + 2)} more entries ...
+            </Tag>
+           ),
         },
       ])
     }
@@ -312,7 +333,7 @@ export default function Action({action}: props) {
 
 
                 {/* Timeline ------------------ */}
-                <Timeline className="mt-4" items={timelineItems} /> 
+                <Timeline data-test="action__timeline" className="mt-4" items={timelineItems} /> 
 
               </div>
             }

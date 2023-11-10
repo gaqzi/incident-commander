@@ -452,6 +452,56 @@ describe('Ongoing Incident: Managing Actions', () => {
       expect(this.finishedSecs).to.eq(0)
     })
   })
+
+  it.only('lets you add, edit, and remove timeline entries for the action, and it paginates them', () => {
+    addActionToIncident({ what: 'Some Action' })
+    getDataTest('action__timeline', 'li').should('have.length', 1) // This is the new item input box
+
+    // Enter key adds entry and clears the text box
+    getDataTest('action__timeline_form__text').should('have.value', '')
+    getDataTest('action__timeline_form__text').clear().type('Note A{enter}')
+    getDataTest('action__timeline').should('contain.text', 'Note A')
+    getDataTest('action__timeline_form__text').should('have.value', '')
+
+    // We have 1 entry in timeline. Don't show collapse and expand buttons until we have 4 entries total (first 3 will be visible)...
+    getDataTest('action__timeline__expand_button').should('not.exist')
+    getDataTest('action__timeline__collapse_button').should('not.exist')
+
+    // Make 2 more entries. Collapse and expand buttons should still be hidden.
+    getDataTest('action__timeline_form__text').clear().type('Note B{enter}')
+    getDataTest('action__timeline').should('contain.text', 'Note B')
+    getDataTest('action__timeline').should('contain.text', 'Note A')
+    getDataTest('action__timeline__expand_button').should('not.exist')
+    getDataTest('action__timeline__collapse_button').should('not.exist')
+
+    getDataTest('action__timeline_form__text').clear().type('Note C{enter}')
+    getDataTest('action__timeline').should('contain.text', 'Note C')
+    getDataTest('action__timeline').should('contain.text', 'Note B')
+    getDataTest('action__timeline').should('contain.text', 'Note A')
+    getDataTest('action__timeline__expand_button').should('not.exist')
+    getDataTest('action__timeline__collapse_button').should('not.exist')
+
+    // Here is 4th entry. After this we should see expand button and entry A should have dropped into the collapsed section
+    getDataTest('action__timeline_form__text').clear().type('Note D{enter}')
+    getDataTest('action__timeline').should('contain.text', 'Note D')
+    getDataTest('action__timeline').should('contain.text', 'Note C')
+    getDataTest('action__timeline').should('contain.text', 'Note B')
+    getDataTest('action__timeline').should('not.contain.text', 'Note A')
+    getDataTest('action__timeline__expand_button').should('be.visible')
+    getDataTest('action__timeline__collapse_button').should('not.exist')
+
+    // Click the expand button and we should see note A, and expand button should be gone, replaced by collapse button
+    getDataTest('action__timeline__expand_button').click()
+    getDataTest('action__timeline').should('contain.text', 'Note A')
+    getDataTest('action__timeline__expand_button').should('not.exist')
+    getDataTest('action__timeline__collapse_button').should('be.visible')
+
+    // And clicking on collapse should re-hide old notes and the collapse button, and show the expand button
+    getDataTest('action__timeline__collapse_button').click()
+    getDataTest('action__timeline').should('not.contain.text', 'Note A')
+    getDataTest('action__timeline__collapse_button').should('not.exist')
+    getDataTest('action__timeline__expand_button').should('be.visible')
+  })
 })
 
 describe('Ongoing Incident: Managing Resources', () => {
