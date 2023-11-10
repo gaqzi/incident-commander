@@ -96,7 +96,7 @@ export default function IncidentSummary({incident, showForm}: {incident: Inciden
                 // We want all active actions
                 const activeActions = system.actions?.filter(a => a.status == 'Active')
                 // And all resolved actions that are not a Chore
-                const resolvedActions = system.actions?.filter(a => a.status == 'Success' || a.status == 'Failure')
+                const resolvedActions = system.actions?.filter(a => ['Success', 'Failure'].includes(a.status))
                 if (activeActions!.length > 0) {
                     lines.push(`    *Actions:*`)
                     activeActions!.forEach(action => {
@@ -132,6 +132,12 @@ export default function IncidentSummary({incident, showForm}: {incident: Inciden
                             line += ` -- ${action.resolution}`
                         }
                         lines.push(line)
+                        // Include all timeline entries for this action
+                        if (action.timeline && action.timeline.length > 0) {
+                            action.timeline.reverse().forEach(entry => {
+                                lines.push(`        - ${entry.text}`)
+                            })
+                        }
                     })
                 }
             }

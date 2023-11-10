@@ -601,7 +601,9 @@ describe('Ongoing Incident: Status Updates', () => {
       // Make Inactives
       addActionToIncident({ what: '1 Chore', who: 'Person 1', link: 'http://one.com/', minutes: 0 })
       addActionToIncident({ what: '2 Succeeded', who: 'Person 2', link: 'http://two.com/', minutes: 0 })
+      getDataTest('action__timeline_form__text').eq(2).clear().type('Succeeded Note A{enter}')
       addActionToIncident({ what: '3 Failed', who: 'Person 3', link: 'http://three.com/', minutes: 0 })
+      getDataTest('action__timeline_form__text').eq(3).clear().type('Failed Note A{enter}')
 
       // Finish Chore and Succeeded
       // promptReturn = 'It worked.'
@@ -646,7 +648,9 @@ describe('Ongoing Incident: Status Updates', () => {
               `\n` +
               `\n    *Past Actions:*` +
               `\n    - ✔️ 2 Succeeded (@Person 2) [More info](http://two.com/)` +
-              `\n    - ❌ 3 Failed (@Person 3) [More info](http://three.com/) -- It failed.` 
+              `\n        - Succeeded Note A` +
+              `\n    - ❌ 3 Failed (@Person 3) [More info](http://three.com/) -- It failed.` +
+              `\n        - Failed Note A`
 
       getDataTest('button-tech-update')
         .click()
