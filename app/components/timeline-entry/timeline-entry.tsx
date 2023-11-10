@@ -36,7 +36,7 @@ export default function TimelineEntry ({i}: {i: TimelineItem}) {
                     size="middle"
                     icon={<EditOutlined/>} 
                     onClick={ () => setShowForm(true) }
-                    data-test="action__edit"
+                    data-test="action__timeline__entry__edit"
                     >
                         Edit Entry
                     </Button>
@@ -46,15 +46,17 @@ export default function TimelineEntry ({i}: {i: TimelineItem}) {
                     size="middle"
                     icon={<DeleteOutlined/>} 
                     onClick={ () => incidentReducer([{type: 'remove_action_timeline_item', payload: i.id}]) }
-                    data-test="action__edit"
+                    data-test="action__timeline__entry__delete"
                     >
                         Delete Entry
                     </Button>
                 </>
                 } 
             >
-                {i.text}<br/>
-                <span className={timelineTimestampClasses}>{i.timestampUtc}</span>
+                <div data-test="action__timeline__entry">
+                    <div data-test="action__timeline__entry__text">{i.text}</div>
+                    <span data-test="action__timeline__entry__timestamp" className={timelineTimestampClasses}>{i.timestampUtc}</span>
+                </div>
             </Popover>
         }
     </>
