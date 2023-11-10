@@ -27,7 +27,7 @@ export default function TimelineEntry ({i}: {i: TimelineItem}) {
 
         { !showForm &&
             <Popover 
-                placement="right"
+                placement="left"
                 content={
                 <>
                     <Button 
