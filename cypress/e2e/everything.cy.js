@@ -453,7 +453,7 @@ describe('Ongoing Incident: Managing Actions', () => {
     })
   })
 
-  it.only('lets you add, edit, and remove timeline entries for the action, and it paginates them', () => {
+  it('lets you add, edit, and remove timeline entries for the action, and it paginates them', () => {
     addActionToIncident({ what: 'Some Action' })
     getDataTest('action__timeline', 'li').should('have.length', 1) // This is the new item input box
 
@@ -592,6 +592,11 @@ describe('Ongoing Incident: Status Updates', () => {
 
       // Make Actives
       addActionToIncident({ what: '0 Active', who: 'Person 0', link: 'http://zero.com/', minutes: 0 })
+      // and add a few timeline entries to it...
+      getDataTest('action__timeline_form__text').eq(0).clear().type('Active Note A{enter}')
+      getDataTest('action__timeline_form__text').eq(0).clear().type('Active Note B{enter}')
+      getDataTest('action__timeline_form__text').eq(0).clear().type('Active Note C{enter}')
+      getDataTest('action__timeline_form__text').eq(0).clear().type('Active Note D{enter}')
 
       // Make Inactives
       addActionToIncident({ what: '1 Chore', who: 'Person 1', link: 'http://one.com/', minutes: 0 })
@@ -634,6 +639,10 @@ describe('Ongoing Incident: Status Updates', () => {
               `\n- 🔴 ${what}` +
               `\n    *Actions:*` +
               `\n    - 0 Active (@Person 0) [More info](http://zero.com/)` +
+              `\n        - Active Note D` +
+              `\n        - Active Note C` +
+              `\n        - Active Note B` +
+              `\n        - Active Note A` +
               `\n` +
               `\n    *Past Actions:*` +
               `\n    - ✔️ 2 Succeeded (@Person 2) [More info](http://two.com/)` +

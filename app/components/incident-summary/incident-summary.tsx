@@ -108,6 +108,12 @@ export default function IncidentSummary({incident, showForm}: {incident: Inciden
                             line += ` [More info](${action.link})`
                         }
                         lines.push(line)
+                        // Include all timeline entries for this action
+                        if (action.timeline && action.timeline.length > 0) {
+                            action.timeline.reverse().forEach(entry => {
+                                lines.push(`        - ${entry.text}`)
+                            })
+                        }
                     })
                 }
                 if (resolvedActions!.length > 0) {
