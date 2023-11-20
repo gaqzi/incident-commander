@@ -4,7 +4,7 @@
   "private": true,
   "devDependencies": {
     "@tailwindcss/forms": "^0.5.3",
-    "@types/gtag.js": "^0.0.14",
+    "@types/gtag.js": "^0.0.18",
     "@types/node": "20.8.10",
     "@types/quill": "^2.0.13",
     "buffer": "^6.0.3",
