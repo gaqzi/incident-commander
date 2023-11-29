@@ -17,10 +17,12 @@
     "testdouble": "^3.20.1"
   },
   "scripts": {
-    "cy:run" : "cypress run",
-    "cy:parallel" : "cypress-parallel -s cy:run -t 32 -d cypress/e2e -a '\"--config baseUrl=http://localhost:5432/\"'",
+    "cy:run": "cypress run",
+    "cy:parallel": "cypress-parallel -s cy:run -t 32 -d cypress/e2e -a '\"--config baseUrl=http://localhost:5432/\"'",
     "dev": "next dev -p 5432",
     "dev:e2e": "cypress open",
+    "dev:multiplayer": "cd socket_relay_server && npm start",
+    "dev:all": "concurrently --names 'WEB_UI,E2E_TESTS,MULTIPLAYER_SERVER' --kill-others 'npm run dev' 'npm run dev:e2e' 'npm run dev:multiplayer'",
     "build": "next build",
     "start": "next start",
     "lint": "next lint"
@@ -30,6 +32,7 @@
     "@types/react-dom": "18.2.17",
     "antd": "^5.11.2",
     "autoprefixer": "10.4.16",
+    "concurrently": "^8.2.2",
     "cypress-parallel": "^0.13.0",
     "dayjs": "^1.11.10",
     "eslint": "8.52.0",
