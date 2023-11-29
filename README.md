@@ -10,7 +10,12 @@ Features:
 - Making it easy to copy business & tech summaries to your clipboard so you can keep others updated
 
 
-[Demo](https://gaqzi.github.io/incident-commander/)
+## See a fully-working demo deployment of the tool
+Feel free to try out the tool at our hosted copy. Please note that we don't make any effort to persist any data you create in the demo tool.
+
+**[Use the demo tool](https://gaqzi.github.io/incident-commander/)**
+
+There is also a video on the demo page with a narrated walkthrough of the features.
 
 ## How the tool works
 The tool is a client-side web app. Once it loads the web page, it can work completely offline. 
