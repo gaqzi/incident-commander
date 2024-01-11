@@ -1,8 +1,12 @@
-IMAGE_NAME = yjs-socket-relay-server
-DOCKERFILE_PATH = ./Dockerfile
+.PHONY: build run test lint clean docker run-docker
 
-build-docker:
-	docker build -t $(IMAGE_NAME) -f $(DOCKERFILE_PATH) .
+CONTAINER_ENGINE?=docker
+IMAGE_NAME?=incom-tool-socket-server
+export CONTAINER_ENGINE _
+export IMAGE_NAME _
+
+docker:
+	$(CONTAINER_ENGINE) build -t $(IMAGE_NAME) . --progress=plain
 
 run-docker:
-	docker run -p 1234:1234 -d $(IMAGE_NAME)
+	$(CONTAINER_ENGINE) run -p 8080:1234 -d $(IMAGE_NAME)
