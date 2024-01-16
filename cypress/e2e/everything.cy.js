@@ -342,7 +342,7 @@ describe('Ongoing Incident: Managing Actions', () => {
 
     // expect them to be higher
     cy.then(function () {
-      expect(this.restartMins * 60 + this.restartSecs).to.be.above(this.waitedMins * 60 + this.waitedSecs)
+      expect(this.restartMins * 60 + this.restartSecs).to.be.above(this.waitedMins * 60 + this.waitedSecs, 'expected to have increased time after restarting the timer')
     })
 
     // now set new value to timer
@@ -360,8 +360,8 @@ describe('Ongoing Incident: Managing Actions', () => {
     // expect them to be what we just set
     cy.then(function () {
       // doing a range here just because we'r dealing with timing code
-      expect(this.newMins * 60 + this.newSecs).to.be.greaterThan(newMinutes * 60 - 10)
-      expect(this.newMins * 60 + this.newSecs).to.be.lessThan(newMinutes * 60 + 1)
+      expect(this.newMins * 60 + this.newSecs).to.be.greaterThan(newMinutes * 60 - 10, 'expected to have updated the countdown after setting a new value')
+      expect(this.newMins * 60 + this.newSecs).to.be.lessThan(newMinutes * 60 + 1, 'expected to have updated the countdown after setting a new value')
     })
   })
 
