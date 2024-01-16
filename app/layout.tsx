@@ -1,8 +1,9 @@
 'use client'
 
 import './globals.css'
+import './quill.bubble.css'
+
 import { Inter } from 'next/font/google'
-import Link from "next/link";
 import Script from "next/script"
 
 import type { MenuProps } from 'antd';
@@ -61,7 +62,6 @@ export default function RootLayout({
 
     return (
     <html lang="en">
-      <head></head>
       { process.env.NEXT_PUBLIC_GA_ID && 
         <>
             <Script async src={gtag} />

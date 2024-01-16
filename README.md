@@ -1,155 +1,38 @@
 Incident Commander
 ==================
-_Helps you manage your incident by showing what's going on and helping you
-summarize for updates_
+This Incident Commander tool helps you keep track of everything that's going on when you're managing an incident.
 
-[Demo](https://gaqzi.github.io/incident-commander/)
+Features:
+- Keeping track of all the current issues affecting your systems
+- Managing a list of actions per issue
+- Tracking who is working on what action(s)
+- Reminding you when to ask for updates from people
+- Making it easy to copy business & tech summaries to your clipboard so you can keep others updated
 
-# Goals
 
-When I end up being an [incident commander] I need to:
+## See a fully-working demo deployment of the tool
+Feel free to try out the tool at our hosted copy. Please note that we don't make any effort to persist any data you create in the demo tool.
 
-1. Keep stakeholders updated (business impact etc.)
-2. Keep everyone that is debugging up-to-date
-3. Keep track of all the various streams of research and when I last got an
-   update
+**[Use the demo tool](https://gaqzi.github.io/incident-commander/)**
 
-This is done by:
+There is also a video on the demo page with a narrated walkthrough of the features.
 
-- Updating our internal status page with business updates
-- Updating the channel with current status
-    - Our current actions
-        - Escalating to vendor
-        - Researching if a system change occurred in subsystem X
-    - Results of previous explorations
-        - Explored a change in X but after reverting [link to thread] it did
-          nothing
+## How the tool works
+The tool is a client-side web app. Once it loads the web page, it can work completely offline. 
 
-Today I do this by a combination of text editor (what's going on), Slack
-reminders, and being meticulous about my process. I wonder if doing a small
-UI with clear operations and template outputs I could:
+In order to support 'multiplayer' interactions (multiple people editing the same incident at the same time), the tool uses [a WebSocket relay server](./socket_relay_server/) to sync [Y.js CRDT changes](https://github.com/yjs/yjs) between all parties viewing the same incident. 
 
-- Get a timeline
-- Generate an accurate status update (business + tech) where I don't miss data
-- Provide consistency across commanders
-- Simplify onboarding of new commanders
+## How to run your own copy of the tool
 
-[incident commander]: https://www.atlassian.com/incident-management/incident-response/incident-commander
+1. Deploy your own copy of the Socket Relay Server
 
-## MVP
+    a. The socket relay server for the demo is deployed on [Fly.io](https://fly.io/). If you want an easy way to deploy your own, try that. See [Fly.io's speedrun docs page](https://fly.io/docs/speedrun/) for info on how to launch your own copy of the relay server.
 
-![Mockup](docs/images/incident-commander-mockup.light.excalidraw.png#gh-light-mode-only)
-![Mockup](docs/images/incident-commander-mockup.dark.excalidraw.png#gh-dark-mode-only)
+    b. ```cp .env.example .env```
+    
+    c. Take the URL of your deployed relay server and put it in the `NEXT_PUBLIC_YJS_SOCKET_SERVER` var in `.env`.
 
-1. [x] Specify what the incident is about
-    - [X] Since 00:00 UTC we are seeing [problem] in [impacted area]
-      with [impact]
-    - [x] Update the state (Investigating / Identified / Monitoring / Resolved)
-2. [x] Add actions that we are taking
-    - [X] Specify who is taking an action and how long between updates
-    - [x] Allow actions to have a link to something
-3. [x] Keep a list of current active
-    - [x] Finish action and don't provide in summary (escalation successful,
-      for example doesn't need to be mentioned, it will lead to a new action)
-    - [x] Issue a reminder when checkin time has come to give an update
-        - [X] Visually show a countdown
-        - [x] Local notification? Some sound? More of something?
-4. [X] Keep a list of past actions
-    - [x] Shown and what resolution they had. Will be part of the big tech
-      update but at the bottom of it.
-    - [x] Distinguish between actions and tasks
-5. [x] Buttons to export (goes into the clipboard)
-    - [x] Business update: Doesn't have any formatting
-    - [x] Business + Text Update: Uses Slack formatting
-6. [ ] Store the incident locally
-    - [ ] Restore the current incident on page reload
-    - [ ] List all local incidents and select another one
-    - [ ] Create a new incident
+2. Run `npm run build` to build a static copy of the app suitable for deploying wherever you want. We use GitHub pages for this. See our [GitHub deployment workflow](./.github/workflows/test-and-deploy.yml) for inspiration.
 
-Post MVP:
-
-- Escalation policy and impact calculation: Specify how to escalate and
-  when depending on the impact. Ideally with a list of people to add into
-  OpsGenie.
-
-# Feature descriptions
-
-Trying to explain the _underlying idea_ of the functionality of this tool.
-To explain where the authors are coming from and what they're aiming to
-solve, with the aim to provide context to explain what we want and what we
-don't want.
-
-And to make it simpler _to change_ since the reason behind
-something is available, so if a different way is proposed, and it fulfils
-the original purpose, then why not?
-
-## Fundamentals
-
-To shorten the incident resolution by simplifying the juggling of tasks for
-the incident commander and by providing all required information in a
-consistent format for the incident responders.
-
-### Roles
-
-- **Incident commander:** The person coordinating the efforts and possibly
-  making decisions on what to try when
-- **Incident responder:** A person that is helping to resolve the incident
-  by finding the root cause, implementing a mitigation, or providing
-  information
-- **Stakeholder:** A catch-all term for people who care about the
-  resolution of the incident but are not participating in the resolution.
-    - Note: some stakeholders might also end up being responders as we learn
-      more and need to find more people
-
-## Reports / Updates
-
-1. **Business:** No fluff, what is the impact, where is it happening, since
-   when, and what the impact is. The current status of what we're doing but
-   not super detailed. Non-techie.
-2. **Tech:** Starts with business and then adds on more details about the
-   current actions and any previous non-task actions that didn't pan out
-   (with why they didn't)
-3. **Timeline:** A complete report with any changes laid out
-   chronologically. Can be the basis of an incident report.
-
-## Actions
-
-In the system we distinguish between types of action, but for brevity in
-the UI they will in aggregate be referred to as actions for the most part.
-
-1. **Task:** Any action that isn't aimed at directly resolving the
-   incident, for example: escalate to someone or get a piece of
-   information (how do we measure impact?)
-    - Are not needed for the tech updates but are needed for the timeline to
-      show what we've done and how long it took. For example, an escalation
-      to a critical team that took longer than the SLA requires needs to
-      be seen and discussed but not during the incident.
-2. **Action:** This could be what we need to know the problem or to
-   implement a mitigation. Actively working towards the resolution of the
-   incident.
-
-When an action completes it is either a _success_ or _failure_. A
-successful action can optionally add information to it. A failed task requires
-an explanation for why it failed with an optional link to somewhere with more
-details.
-
-For example, a successful task for which metric to use to measure could
-include a link to where the to find it. And a failed actions needs to include
-an explanation of why so if we need to later re-examine what we've tried we can
-do so.
-
-## Technical Implementation Notes
-### Multiplayer via Yjs and WebRTC
-This project uses [Yjs](https://github.com/yjs/yjs) and WebRTC (via [y-webrtc provider](https://github.com/yjs/y-webrtc)) to allow for multiple people to participate in updating an Incident in realtime.
-
-`y-webrtc` lets participants communicate in a peer-to-peer fashion, but it requires a WebRTC signaling server for the peers to establish connections with each other. `y-webrtc` comes with a sample signaling server which you can use to deploy easily to a cloud hosting service like [fly.io](https://fly.io). 
-
-Once you have a `y-webrtc` signaling server deployed somewhere, you will need to pass the server's URL as an environment variable to `parcel` via the WEBRTC_SIGNALING_SERVER env var in order to get them inserted into the bundled JavaScript output. Parcel supports `.env` files. So, copy `.env.example` to `.env` and set the value appropriately then run `npx parcel index.html` and you should be all set.
-
-## Testing
-We use Cypress for browser testing.
-
-```
-npx parcel index.html -p 5432 # runs the hot-reloading app in dev mode
-npx cypress open # stars cypress. then go and click on a test to run it
-```
+## How to develop the tool
+See the [CONTRIBUTING](./CONTRIBUTING.md) file.

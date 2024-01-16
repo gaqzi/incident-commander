@@ -6,110 +6,22 @@ import * as Y from 'yjs'
 import { IndexeddbPersistence } from 'y-indexeddb'
 import { WebsocketProvider } from 'y-websocket'
 import {incidentReducer} from "@/app/components/ongoing-incident/reducer";
-
 import IncidentSummary from "@/app/components/incident-summary/incident-summary";
 import AffectedSystem from "@/app/components/affected-system/affected-system";
 import AffectedSystemForm from "@/app/components/affected-system/affected-system-form";
-import {NotificationsContext, IncidentDispatchContext, nullDispatch} from "@/app/contexts/incident-context";
+import {NotificationsContext, IncidentDispatchContext, nullDispatch, YDocContext, YDocMultiplayerProviderContext } from "@/app/contexts/incident-context";
 import ResourceLink from "@/app/components/resource-link/resource-link";
 import { Button, Modal } from "antd"
 import {PlusOutlined} from "@ant-design/icons";
 import {uuidv4} from "lib0/random";
 
-let initialDefault = {
-    affectedSystems: [],
-    summary: {
-        _isNew: true,
-        impact: "",
-        whenUtcString: "Thu, 01 Jan 1970 00:00:00 GMT",
-        what: "",
-        where: "",
-        status: "Investigating",
-        resourceLinks:[]
-    }
-};
-const defaultIncident =  {
-        affectedSystems: [
-        {
-            id: 'system_1',
-            what: 'This is the first affected system',
-            status: 'Active',
-            actions: [
-                {
-                    id: 'action_1',
-                    what: 'Some action here',
-                    status: 'Active',
-                    isMitigating: false,
-                    timerDurationInMinutes: 5,
-                    who: 'Gabe',
-                    link: 'https://example.com',
-                },
-                {
-                    id: 'action_2',
-                    what: 'Yet another action description a bit longer',
-                    status: 'Active',
-                    isMitigating: true,
-                    timerDurationInMinutes: 7,
-                    who: 'Bjorn',
-                },
-                {
-                    id: 'action_3',
-                    what: 'And one more thing',
-                    status: 'Failure',
-                    isMitigating: false,
-                    timerDurationInMinutes: 10,
-                    who: 'Gabe',
-                },
-            ]
-        },
-        {
-            id: 'system_2',
-            what: 'Here is another issue',
-            status: 'Active',
-            actions: [
-                {
-                    id: 'action_4',
-                    what: 'Do something important',
-                    status: 'Active',
-                    isMitigating: false,
-                    who: 'Bjorn',
-                }
-            ]
-        },
-        {
-            id: 'system_3',
-            what: 'This one is fixed',
-            status: 'Resolved',
-            actions: [
-                {
-                    id: 'action_5',
-                    what: 'We tried doing something and it worked',
-                    status: 'Success',
-                    isMitigating: true,
-                    who: 'Gabe',
-                }
-            ]
-        },
+const ydoc = new Y.Doc()
 
-    ],
-    summary: {
-        impact: "10% order loss",
-        whenUtcString: new Date(Date.parse('2023-02-20 11:22:33 GMT')).toUTCString(),
-        what: "A big problem",
-        where: "Some important thing",
-        status: "Investigating",
-        resourceLinks:[
-            { id: 'link_1', name: 'Example link', url: 'https://example1.com'},
-            { id: 'link_2', name: 'Another link', url: 'https://example2.com'},
-            { id: 'link_3', name: 'One more really long title link', url: 'https://example3.com'},
-        ],
-    }
-}
 
 
 // Multiplayer Stuff ===================
 
-function setupMultiplayer(dispatch: any) {
+function setupMultiplayer(dispatch: any, setYdocProvider: any) {
     // If we don't have a room and password, create them and refresh window so they're on the query string
     const params = new URLSearchParams(window.location.search)
     if (!params.get('room')) {
@@ -125,7 +37,7 @@ function setupMultiplayer(dispatch: any) {
     const websocket_host = params.get('yjs_socket_host') || process.env.NEXT_PUBLIC_YJS_SOCKET_SERVER
     const room = params.get('room') as string
 
-    const ydoc = new Y.Doc()
+    // const ydoc = new Y.Doc()
 
     // We persist the document content across sessions
     const indexeddbProvider = new IndexeddbPersistence(room, ydoc)
@@ -135,6 +47,7 @@ function setupMultiplayer(dispatch: any) {
     // TODO: what if we can't store to localstorage? Should we throw a warning, error?
 
     const websocketProvider = new WebsocketProvider(websocket_host as string, room, ydoc)
+    setYdocProvider(websocketProvider)
     websocketProvider.on('status', (event: any) => {
         console.log('YJS WebSocket Provider: ', event.status) // logs "connected" or "disconnected"
     })
@@ -169,11 +82,27 @@ const multiplayerDispatch = (ydocEvents: any, events: any[] = []) => {
 // End Multiplayer Stuff ===================
 
 
-export default function OngoingIncident() {
+export default function OngoingIncident({incidentId}: {incidentId: string}) {
+    const initialDefault = {
+        affectedSystems: [],
+        id: incidentId,
+        summary: {
+            _isNew: true,
+            impact: "",
+            whenUtcString: "Thu, 01 Jan 1970 00:00:00 GMT",
+            what: "",
+            where: "",
+            status: "Investigating",
+            resourceLinks:[]
+        }
+    };
+
+
     const [incident, dispatch] = useReducer(incidentReducer, initialDefault)
     let isMultiplayer = false
     const [dispatcher, setDispatcher] = useState({} as any) // TODO: hack, fix this?
     const [supportsNotifications, setSupportsNotifications] = useState(false)
+    const [ydocProvider, setYdocProvider] = useState({} as WebsocketProvider)
 
     // Setup Single or Multiplayer Dispatching
     useEffect(() => {
@@ -185,7 +114,7 @@ export default function OngoingIncident() {
             setDispatcher(()=>{return singleplayerDispatch.bind(null, dispatch)})
         } else {
             isMultiplayer = true
-            let ydocEvents = setupMultiplayer(dispatch)
+            let ydocEvents = setupMultiplayer(dispatch, setYdocProvider)
             setDispatcher(()=>{return multiplayerDispatch.bind(null, ydocEvents)})
         }
         if (typeof Notification !== 'undefined' && Notification.permission == 'granted') {
@@ -229,6 +158,8 @@ export default function OngoingIncident() {
     return (
         <NotificationsContext.Provider value={notificationPermission}>
         <IncidentDispatchContext.Provider value={dispatcher}>
+        <YDocContext.Provider value={ydoc}>
+        <YDocMultiplayerProviderContext.Provider value={ydocProvider}>
             {/*<button id="debug-create-incident">DEBUG: Create Incident</button>*/}
 
             { 
@@ -278,7 +209,7 @@ export default function OngoingIncident() {
                             }
                         </section>
 
-                        <ul className="grid grid-cols-3 gap-4">
+                        <ul className="grid grid-cols-1 gap-4">
                             {
                                 incident.affectedSystems.filter(s => s.status == 'Active').map(s => {
                                     return <li key={s.id}>
@@ -292,10 +223,10 @@ export default function OngoingIncident() {
                     { 
                         incident.affectedSystems.filter(s => s.status == 'Resolved').length > 0 
                         &&
-                        <section className="mt-8 border-t-2 border-dotted border-slate-200" data-test="affected-systems__listing__past">
+                        <section className="mt-8 border-0 border-t-2 border-dotted border-slate-200" data-test="affected-systems__listing__past">
                             <h3 className="mt-4 mb-2">Resolved Issues</h3>
 
-                            <ul className="grid grid-cols-3 gap-4">
+                            <ul className="grid grid-cols-1 gap-4">
                                 {
                                     incident.affectedSystems.filter(s => s.status == 'Resolved').map(s => {
                                         return <li key={s.id}>
@@ -308,6 +239,8 @@ export default function OngoingIncident() {
                     }
                     </>
             }
+        </YDocMultiplayerProviderContext.Provider>
+        </YDocContext.Provider>
         </IncidentDispatchContext.Provider>
         </NotificationsContext.Provider>
     )

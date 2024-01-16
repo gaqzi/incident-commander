@@ -44,19 +44,14 @@ function addResourceLink(name, url) {
   getDataTest('resource-link__submit').click()
 }
 
-function addActionToIncident ({ what = 'action-what', who = 'action-who', link = 'http://example.com', minutes = 10, isMitigating = false }) {
+function addActionToIncident ({ what = 'action-what', who = 'action-who', link = 'http://example.com', minutes = 10}) {
   getDataTest('actions__active__add_action').click()
   getDataTest('new-action__what').type(what)
   getDataTest('new-action__who').type(who)
   getDataTest('new-action__link').type(link)
   getDataTest('new-action__minutes-between-updates').clear().type(minutes)
-  if (isMitigating) {
-    getDataTest('new-action__is-mitigating').check()
-  } else {
-    getDataTest('new-action__is-mitigating').uncheck()
-  }
 
-  getDataTest('new-action__submit').click()
+  getDataTest('action-form__submit').click()
 }
 
 describe('Creating a New Incident', () => {
@@ -84,7 +79,7 @@ describe('Creating a New Incident', () => {
       .should('have.lengthOf', 1)
       .should('contain.text', what)
 
-      .find('[data-test="actions__active"] li')
+      .find('[data-test="actions__active"] li.action')
       .should('have.lengthOf', 0)
 
     getDataTest('affected-systems__listing__past', 'li')
@@ -169,7 +164,7 @@ describe('Ongoing Incident: Managing the Summary', () => {
   })
 })
 
-describe('Ongoing Incident: Managing Affected Components', () => {
+describe('Ongoing Incident: Collaborating in the shared notepad', () => {
   const what = 'This is the what'
   const when = 'This is the when'
   const where = 'This is the where'
@@ -180,7 +175,26 @@ describe('Ongoing Incident: Managing Affected Components', () => {
     submitIncident(what, when, where, impact, false)
   })
 
-  it('lets you add another affected component', () => {
+  it('lets you write in a notepad', () => {
+    // Note: we aren't simulating anything in multiplayer for these tests, so the fact that this is a multiplayer notepad isnt tested yet
+    getDataTest('notes').type('Hello there')
+    getDataTest('notes').should('have.text', 'Hello there')
+  })
+})
+
+
+describe('Ongoing Incident: Managing Affected Systems', () => {
+  const what = 'This is the what'
+  const when = 'This is the when'
+  const where = 'This is the where'
+  const impact = 'This is the impact'
+
+  beforeEach(() => {
+    cy.visit(URL) // TODO: dont use hardcoded port
+    submitIncident(what, when, where, impact, false)
+  })
+
+  it('lets you add another affected system', () => {
     const newWhat = 'Another what'
     getDataTest('btn-add-affected-system').click()
     getDataTest('new-affected-system__what').type(newWhat)
@@ -191,7 +205,7 @@ describe('Ongoing Incident: Managing Affected Components', () => {
       .should('contain.text', newWhat)
   })
 
-  it('lets you edit the text of an add affected component', () => {
+  it('lets you edit the text of an add affected system', () => {
     // Showing the form
     getDataTest('affected-systems__listing__active').should('contain.text', what)
     // getDataTest('summary__input__what').should('not.exist')
@@ -206,7 +220,7 @@ describe('Ongoing Incident: Managing Affected Components', () => {
       .should('contain.text', newWhat)
   })
 
-  it('lets you resolve an affected component', () => {
+  it('lets you resolve and unresolve an affected system', () => {
     getDataTest('affected-systems__listing__active', '>ul>li').should('have.length', 1)
     getDataTest('affected-systems__listing__past', '>ul>li').should('not.exist')
 
@@ -219,6 +233,15 @@ describe('Ongoing Incident: Managing Affected Components', () => {
     getDataTest('affected-systems__listing__active', '>ul>li').should('not.exist')
     getDataTest('affected-systems__listing__past', '>ul>li').should('have.length', 1)
     getDataTest('affected-systems__listing__past').should('contain.text', what)
+
+    getDataTest('affected-systems__listing__past')
+      .contains(what)
+      .trigger('mouseover')
+      .get('[data-test="button-unresolve-affected-system"]')
+      .click()
+
+    getDataTest('affected-systems__listing__active', '>ul>li').should('have.length', 1)
+    getDataTest('affected-systems__listing__past', '>ul>li').should('not.exist')
   })
 })
 
@@ -234,20 +257,19 @@ describe('Ongoing Incident: Managing Actions', () => {
   })
 
   it('lets you add an action', () => {
-    getDataTest('actions__active', 'li').should('not.exist')
+    getDataTest('actions__active', 'li.action').should('not.exist')
 
     const what = 'a new action'
     const who = 'john doe'
     const link = 'http://example.com'
     const minutes = 10
-    addActionToIncident({ who, what, link, minutes, isMitigating: false })
+    addActionToIncident({ who, what, link, minutes })
 
-    getDataTest('actions__active', '>li').should('have.lengthOf', 1)
+    getDataTest('actions__active', '>li.action').should('have.lengthOf', 1)
     const action = getDataTest('actions__active').within(el => el.get('li')).first()
     action.should('contain.text', what)
     action.should('contain.text', who)
     action.within(el => el.get(`a[href="${link}"]`)).should('be.visible')
-    action.within(el => el.get('input[data-test="action__is-mitigating"')).should('not.be.checked')
   })
 
   it('allows you to start typing the what without clicking on the field', () => {
@@ -261,12 +283,12 @@ describe('Ongoing Incident: Managing Actions', () => {
     addActionToIncident({ what })
 
     const newWhat = 'new what'
-    getDataTest('active_action__what').trigger('mouseover')
+    getDataTest('action__more').trigger('mouseover')
     getDataTest('action__edit').click()
     getDataTest('new-action__what').clear().type(newWhat)
-    getDataTest('new-action__submit').click()
+    getDataTest('action-form__submit').click()
 
-    getDataTest('active_action__what')
+    getDataTest('action-card', '>.ant-card-head')
       .should('not.contain.text', what)
       .should('contain.text', newWhat)
   })
@@ -276,11 +298,11 @@ describe('Ongoing Incident: Managing Actions', () => {
     addActionToIncident({ link: linkVal })
 
     const newLinkVal = 'http://example.com'
-    getDataTest('active_action__link').trigger('mouseover')
+    getDataTest('action__more').trigger('mouseover')
     getDataTest('action__edit').click()
     getDataTest('new-action__link').clear().type(newLinkVal)
 
-    getDataTest('new-action__submit').click()
+    getDataTest('action-form__submit').click()
 
     getDataTest('active_action__link').should('have.attr', 'href', newLinkVal)
   })
@@ -328,7 +350,7 @@ describe('Ongoing Incident: Managing Actions', () => {
     getCountdownDisplay().trigger('mouseover')
     getDataTest('countdown-timer__edit').click()
     getDataTest('new-action__minutes-between-updates').clear().type(newMinutes)
-    getDataTest('new-action__submit').click()
+    getDataTest('action-form__submit').click()
     cy.wait(1 * 1000)
 
     // get the new values
@@ -343,26 +365,20 @@ describe('Ongoing Incident: Managing Actions', () => {
     })
   })
 
-  it('lets you toggle an active action as mitigating or not', () => {
-    addActionToIncident({ isMitigating: false })
-    getDataTest('action__is-mitigating').should('not.exist')
+  it('lets you finish an action as a chore, success, or failure, and cancels their timers', () => {
+    const getCountdownDisplay = () => {
+      return getDataTest('actions__active', '[data-test="countdown-display-wrapper"]').first()
+    }
 
-    getDataTest('active_action__what').trigger('mouseover')
-    getDataTest('action__edit').click()
-    getDataTest('new-action__is-mitigating').check()
-    getDataTest('new-action__submit').click()
-    getDataTest('action__is-mitigating').should('exist')
-  })
-
-  it('lets you finish an action as a success or a failure', () => {
-    addActionToIncident({ what: 'Will be a success' })
-    addActionToIncident({ what: 'Will be a failure' })
+    addActionToIncident({ what: 'Will be a success', minutes: 2 })
+    addActionToIncident({ what: 'Will be a failure', minutes: 2 })
+    addActionToIncident({ what: 'Will be a chore', minutes: 2 })
 
     getDataTest('actions__inactive', 'li').should('not.exist')
 
     // click mark as success
-    getDataTest('active_action__what').first().trigger('mouseover')
-    getDataTest('active_action__succeeded').first().click()
+    getDataTest('action__more').first().trigger('mouseover')
+    getDataTest('action__resolve_success').first().click({force: true})
 
     getDataTest('actions__inactive', 'li')
       .should('contain.text', 'Will be a success')
@@ -377,13 +393,131 @@ describe('Ongoing Incident: Managing Actions', () => {
       cy.stub(win, 'prompt').returns(failureReason)
     })
 
-    getDataTest('active_action__what').first().trigger('mouseover')
-    getDataTest('active_action__failed').first().click()
+    getDataTest('action__more').first().trigger('mouseover')
+    getDataTest('action__resolve_failure').first().click({force: true})
 
     getDataTest('actions__inactive', 'li')
       .should('contain.text', 'Will be a failure')
       .should('contain.text', 'Failure')
-      .should('contain.text', failureReason) // TODO
+      .should('contain.text', failureReason)
+
+
+    // click mark as chore
+    getDataTest('action__more').first().trigger('mouseover')
+    getDataTest('action__resolve_chore').first().click({force: true})
+
+    getDataTest('actions__inactive', 'li')
+      .should('contain.text', 'Will be a success')
+      .should('contain.text', 'Success')
+      .should('contain.text', 'Will be a failure')
+      .should('contain.text', 'Failure')
+      .should('contain.text', 'Will be a chore')
+      .should('contain.text', 'Chore')
+
+
+    cy.wait(1 * 1000)
+
+    // capture first inactive action timer value
+    getDataTest('actions__inactive', '[data-test="countdown-display-wrapper"]').eq(0).within(() => {
+      cy.get('.minutes').invoke('text').then(parseInt).as('finishedMins')
+      cy.get('.seconds').invoke('text').then(parseInt).as('finishedSecs')
+    })
+    // expect timer values to be 0m0s
+    cy.then(function () {
+      expect(this.finishedMins).to.eq(0)
+      expect(this.finishedSecs).to.eq(0)
+    })
+
+    // capture next inactive action timer value
+    getDataTest('actions__inactive', '[data-test="countdown-display-wrapper"]').eq(1).within(() => {
+      cy.get('.minutes').invoke('text').then(parseInt).as('finishedMins')
+      cy.get('.seconds').invoke('text').then(parseInt).as('finishedSecs')
+    })
+
+    // expect timer values to be 0m0s
+    cy.then(function () {
+      expect(this.finishedMins).to.eq(0)
+      expect(this.finishedSecs).to.eq(0)
+    })
+
+    // capture last inactive action timer value
+    getDataTest('actions__inactive', '[data-test="countdown-display-wrapper"]').eq(2).within(() => {
+      cy.get('.minutes').invoke('text').then(parseInt).as('finishedMins')
+      cy.get('.seconds').invoke('text').then(parseInt).as('finishedSecs')
+    })
+
+    // expect timer values to be 0m0s
+    cy.then(function () {
+      expect(this.finishedMins).to.eq(0)
+      expect(this.finishedSecs).to.eq(0)
+    })
+  })
+
+  it('lets you add, edit, and remove timeline entries for the action, and it paginates them', () => {
+    addActionToIncident({ what: 'Some Action' })
+    getDataTest('action__timeline', 'li').should('have.length', 1) // This is the new item input box
+
+    // Enter key adds entry and clears the text box
+    getDataTest('action__timeline_form__text').should('have.value', '')
+    getDataTest('action__timeline_form__text').clear().type('Note A{enter}')
+    getDataTest('action__timeline').should('contain.text', 'Note A')
+    getDataTest('action__timeline_form__text').should('have.value', '')
+
+    // We have 1 entry in timeline. Don't show collapse and expand buttons until we have 4 entries total (first 3 will be visible)...
+    getDataTest('action__timeline__expand_button').should('not.exist')
+    getDataTest('action__timeline__collapse_button').should('not.exist')
+
+    // Make 2 more entries. Collapse and expand buttons should still be hidden.
+    getDataTest('action__timeline_form__text').clear().type('Note B{enter}')
+    getDataTest('action__timeline').should('contain.text', 'Note B')
+    getDataTest('action__timeline').should('contain.text', 'Note A')
+    getDataTest('action__timeline__expand_button').should('not.exist')
+    getDataTest('action__timeline__collapse_button').should('not.exist')
+
+    getDataTest('action__timeline_form__text').clear().type('Note C{enter}')
+    getDataTest('action__timeline').should('contain.text', 'Note C')
+    getDataTest('action__timeline').should('contain.text', 'Note B')
+    getDataTest('action__timeline').should('contain.text', 'Note A')
+    getDataTest('action__timeline__expand_button').should('not.exist')
+    getDataTest('action__timeline__collapse_button').should('not.exist')
+
+    // Here is 4th entry. After this we should see expand button and entry A should have dropped into the collapsed section
+    getDataTest('action__timeline_form__text').clear().type('Note D{enter}')
+    getDataTest('action__timeline').should('contain.text', 'Note D')
+    getDataTest('action__timeline').should('contain.text', 'Note C')
+    getDataTest('action__timeline').should('contain.text', 'Note B')
+    getDataTest('action__timeline').should('not.contain.text', 'Note A')
+    getDataTest('action__timeline__expand_button').should('be.visible')
+    getDataTest('action__timeline__collapse_button').should('not.exist')
+
+    // Click the expand button and we should see note A, and expand button should be gone, replaced by collapse button
+    getDataTest('action__timeline__expand_button').click()
+    getDataTest('action__timeline').should('contain.text', 'Note A')
+    getDataTest('action__timeline__expand_button').should('not.exist')
+    getDataTest('action__timeline__collapse_button').should('be.visible')
+
+    // And clicking on collapse should re-hide old notes and the collapse button, and show the expand button
+    getDataTest('action__timeline__collapse_button').click()
+    getDataTest('action__timeline').should('not.contain.text', 'Note A')
+    getDataTest('action__timeline__collapse_button').should('not.exist')
+    getDataTest('action__timeline__expand_button').should('be.visible')
+
+    // We can delete a timeline entry. Let's delete D and see A come back on screen and D disappear...
+    getDataTest('action__timeline__entry').eq(0).trigger('mouseover')
+    getDataTest('action__timeline__entry__delete').click()
+    getDataTest('action__timeline').should('not.contain.text', 'Note D')
+    getDataTest('action__timeline').should('contain.text', 'Note C')
+    getDataTest('action__timeline').should('contain.text', 'Note B')
+    getDataTest('action__timeline').should('contain.text', 'Note A')
+
+    // We can also edit a timeline entry...
+    getDataTest('action__timeline__entry').eq(0).trigger('mouseover')
+    getDataTest('action__timeline__entry__edit').click()
+    getDataTest('action__timeline__entry__form__text').clear().type('Updated Note C Text')
+    getDataTest('action__timeline__entry__form__timestamp').clear().type('Updated Note C Timestamp Value') // Yes, timestamps are just strings with no validation right now
+    getDataTest('action__timeline__entry__form__submit').click()
+    getDataTest('action__timeline__entry__text').eq(0).invoke('text').should('eq', 'Updated Note C Text')
+    getDataTest('action__timeline__entry__timestamp').eq(0).invoke('text').should('eq', 'Updated Note C Timestamp Value')
   })
 })
 
@@ -457,32 +591,33 @@ describe('Ongoing Incident: Status Updates', () => {
       addResourceLink('Link Two', 'http://two.com')
 
       // Make Actives
-      addActionToIncident({ what: '0 Active and Mitigating', who: 'Person 0', link: 'http://zero.com/', minutes: 0, isMitigating: true })
-      addActionToIncident({ what: '1 Active and Not-Mitigating', who: 'Person 1', link: 'http://one.com/', minutes: 0, isMitigating: true })
+      addActionToIncident({ what: '0 Active', who: 'Person 0', link: 'http://zero.com/', minutes: 0 })
+      // and add a few timeline entries to it...
+      getDataTest('action__timeline_form__text').eq(0).clear().type('Active Note A{enter}')
+      getDataTest('action__timeline_form__text').eq(0).clear().type('Active Note B{enter}')
+      getDataTest('action__timeline_form__text').eq(0).clear().type('Active Note C{enter}')
+      getDataTest('action__timeline_form__text').eq(0).clear().type('Active Note D{enter}')
 
-      // Make Failds
-      addActionToIncident({ what: '2 Failed and Mitigating', who: 'Person 2', link: 'http://two.com/', minutes: 0, isMitigating: true })
-      addActionToIncident({ what: '3 Failed and Not-Mitigating', who: 'Person 3', link: 'http://three.com/', minutes: 0, isMitigating: false })
+      // Make Inactives
+      addActionToIncident({ what: '1 Chore', who: 'Person 1', link: 'http://one.com/', minutes: 0 })
+      addActionToIncident({ what: '2 Succeeded', who: 'Person 2', link: 'http://two.com/', minutes: 0 })
+      getDataTest('action__timeline_form__text').eq(2).clear().type('Succeeded Note A{enter}')
+      addActionToIncident({ what: '3 Failed', who: 'Person 3', link: 'http://three.com/', minutes: 0 })
+      getDataTest('action__timeline_form__text').eq(3).clear().type('Failed Note A{enter}')
 
-      // Make Succeededs
-      addActionToIncident({ what: '4 Succeeded and Mitigating', who: 'Person 4', link: 'http://four.com/', minutes: 0, isMitigating: true })
-      addActionToIncident({ what: '5 Succeeded and Not-Mitigating', who: 'Person 5', link: 'http://five.com/', minutes: 0, isMitigating: false })
+      // Finish Chore and Succeeded
+      // promptReturn = 'It worked.'
+      getDataTest('action__more').eq(1).trigger('mouseover')
+      getDataTest('action__resolve_chore').click({force: true})
+      getDataTest('action__more').eq(1).trigger('mouseover')
+      getDataTest('action__resolve_success').click({force: true})
 
-      // Mark the succeededs as succeeded
+      // Finish Failed
       let promptReturn
-      promptReturn = 'It worked.'
-      getDataTest('active_action__what').eq(4).trigger('mouseover')
-      getDataTest('active_action__succeeded').click()
-      getDataTest('active_action__what').eq(4).trigger('mouseover')
-      getDataTest('active_action__succeeded').click()
-
-      // Mark the failds as failed
       promptReturn = 'It failed.'
       cy.window().then((win) => cy.stub(win, 'prompt').returns(promptReturn))
-      getDataTest('active_action__what').eq(2).trigger('mouseover')
-      getDataTest('active_action__failed').click()
-      getDataTest('active_action__what').eq(2).trigger('mouseover')
-      getDataTest('active_action__failed').click()
+      getDataTest('action__more').eq(1).trigger('mouseover')
+      getDataTest('action__resolve_failure').click({force: true})
 
 
       let clipboardText = ''
@@ -491,8 +626,8 @@ describe('Ongoing Incident: Status Updates', () => {
       })
 
       // All active actions should show up
-      // All mitigating non-active actions should show up
-      // Non-mitigating are only important while they are active, so we don't keep them for the stateless update once they are finished
+      // All non-Chore non-active actions should show up
+      // Chores are only important while they are active, so we don't keep them for the stateless update once they are finished
       const expected = '' +
               `Tech Update` +
               `\n*Investigating*` +
@@ -505,12 +640,17 @@ describe('Ongoing Incident: Status Updates', () => {
               `\n*Current status:*` +
               `\n- 🔴 ${what}` +
               `\n    *Actions:*` +
-              `\n    - 0 Active and Mitigating (@Person 0) [More info](http://zero.com/)` +
-              `\n    - 1 Active and Not-Mitigating (@Person 1) [More info](http://one.com/)` +
+              `\n    - 0 Active (@Person 0) [More info](http://zero.com/)` +
+              `\n        - Active Note D` +
+              `\n        - Active Note C` +
+              `\n        - Active Note B` +
+              `\n        - Active Note A` +
               `\n` +
               `\n    *Past Actions:*` +
-              `\n    - ❌ 2 Failed and Mitigating (@Person 2) [More info](http://two.com/) -- It failed.` +
-              `\n    - ✔️ 4 Succeeded and Mitigating (@Person 4) [More info](http://four.com/)`
+              `\n    - ✔️ 2 Succeeded (@Person 2) [More info](http://two.com/)` +
+              `\n        - Succeeded Note A` +
+              `\n    - ❌ 3 Failed (@Person 3) [More info](http://three.com/) -- It failed.` +
+              `\n        - Failed Note A`
 
       getDataTest('button-tech-update')
         .click()

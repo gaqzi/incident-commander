@@ -31,10 +31,17 @@ declare global {
         who?: string
         link?: string
         timer?: Timer
-        isMitigating: boolean
         status: string
         resolution?: string
         affectedSystemId?: string
+        timeline?: TimelineItem[]
+    }
+
+    type TimelineItem = {
+        id: string
+        parentId: string
+        timestampUtc: string
+        text: string
     }
      
     type Timer = {
@@ -66,5 +73,11 @@ declare global {
         status: string
         resourceLinks: ResourceLink[]
         addDefaultActions?: boolean
+    }
+
+    type Incident = {
+        id: string
+        summary: IncidentSummary
+        affectedSystems: AffectedSystem[]
     }
 }

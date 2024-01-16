@@ -1,11 +1,23 @@
 'use client'
 
 import ActionForm from "@/app/components/action/action-form";
-import {useContext, useState} from "react";
+import {Children, Component, PropsWithChildren, useContext, useState} from "react";
 import {IncidentDispatchContext, NotificationsContext} from "@/app/contexts/incident-context";
 import CountdownTimer from "@/app/components/countdown-timer";
-import {Button, Popover, Tooltip} from "antd";
-import {CheckOutlined, ClockCircleOutlined, CloseOutlined, EditOutlined, InfoCircleOutlined, CheckCircleOutlined, MoreOutlined, MenuOutlined } from "@ant-design/icons";
+import {Button, Card, Collapse, CollapseProps, ConfigProvider, Input, Popover, Radio, Space, Tag, Timeline, Tooltip} from "antd";
+import Icon, {SettingOutlined, CaretDownOutlined, CaretRightOutlined, LinkOutlined, RightOutlined, DeleteOutlined, CheckOutlined, ClockCircleOutlined, EditOutlined, LikeOutlined, DislikeOutlined, CheckCircleOutlined, MoreOutlined, MenuOutlined } from "@ant-design/icons";
+import type { CustomIconComponentProps } from '@ant-design/icons/lib/components/Icon';
+import {uuidv4} from "lib0/random";
+import TextArea from "antd/es/input/TextArea";
+import TimelineEntry from "../timeline-entry/timeline-entry";
+
+const ExternalLinkSvg = () => (
+  <svg xmlns="http://www.w3.org/2000/svg"  viewBox="0 0 30 30" width="15px" height="15px" fill="currentColor"><path d="M 25.980469 2.9902344 A 1.0001 1.0001 0 0 0 25.869141 3 L 20 3 A 1.0001 1.0001 0 1 0 20 5 L 23.585938 5 L 13.292969 15.292969 A 1.0001 1.0001 0 1 0 14.707031 16.707031 L 25 6.4140625 L 25 10 A 1.0001 1.0001 0 1 0 27 10 L 27 4.1269531 A 1.0001 1.0001 0 0 0 25.980469 2.9902344 z M 6 7 C 4.9069372 7 4 7.9069372 4 9 L 4 24 C 4 25.093063 4.9069372 26 6 26 L 21 26 C 22.093063 26 23 25.093063 23 24 L 23 14 L 23 11.421875 L 21 13.421875 L 21 16 L 21 24 L 6 24 L 6 9 L 14 9 L 16 9 L 16.578125 9 L 18.578125 7 L 16 7 L 14 7 L 6 7 z"/></svg>
+)
+
+const ExternalLinkIcon = (props: Partial<CustomIconComponentProps>) => (
+  <Icon component={ExternalLinkSvg} {...props} />
+)
 
 
 const NOTIFICATION_REMEMBERING_LOCALSTORAGE_KEY = 'previousNotifications'
@@ -28,6 +40,8 @@ interface props {
     action: Action
 }
 
+
+
 export default function Action({action}: props) {
     const [showForm, setShowForm] = useState(false)
     const incidentReducer = useContext(IncidentDispatchContext)
@@ -47,6 +61,14 @@ export default function Action({action}: props) {
         setShowForm(true)
     }
 
+    const unresolveAction = () => {
+        incidentReducer([{type: 'unresolve_action', payload: action.id}])
+    }
+
+    const resolveActionChore = () => {
+        incidentReducer([{type: 'resolve_action_chore', payload: action.id}])
+    }
+
     const resolveActionSuccess = () => {
         incidentReducer([{type: 'resolve_action_success', payload: action.id}])
     }
@@ -59,84 +81,232 @@ export default function Action({action}: props) {
         incidentReducer([{type: 'resolve_action_failure', payload: { actionId: action.id, resolution } }])
     }
 
+    const updateActionStatus = (e: any) => {
+      switch(e.target.value) {
+        case 'Active': unresolveAction(); break;
+        case 'Chore': resolveActionChore(); break;
+        case 'Success': resolveActionSuccess(); break;
+        case 'Failure': resolveActionFailure(); break;
+        default: console.error(`Don't know how to handle updating action to status ${e.target.value}`)
+      }
+    }
+
+
+    const ButtonsPopover = (props: PropsWithChildren) => {
+      return <Popover content={
+        <>
+          <Button 
+            className="block mb-1" 
+            type="link"
+            size="middle"
+            icon={<EditOutlined/>} 
+            onClick={onEditClick}
+            data-test="action__edit"
+            >
+              Edit Action
+          </Button>
+
+          <Radio.Group defaultValue={action.status} buttonStyle="solid" onChange={updateActionStatus}>
+            <Radio.Button value="Active" data-test="action__reactivate">
+              Active
+            </Radio.Button>
+
+            <Radio.Button value="Chore" data-test="action__resolve_chore">
+              <CheckOutlined className="mr-1" /> Was Chore
+            </Radio.Button>
+
+            <Radio.Button value="Success" data-test="action__resolve_success">
+              <LikeOutlined className="mr-1" /> This Helped
+            </Radio.Button>
+
+            <Radio.Button value="Failure" data-test="action__resolve_failure">
+              <DislikeOutlined className="mr-1" /> This Didn&apos;t Help
+            </Radio.Button>
+          </Radio.Group>
+        </>
+        }
+        >
+          {props.children}
+        </Popover>
+    }
+
+    const icon = () => {
+      switch (action.status) {
+        case 'Active':  return <></>;
+        case 'Chore':   return <CheckOutlined />;
+        case 'Success': return <LikeOutlined />;
+        case 'Failure': return <DislikeOutlined />;
+        default:        return <></>;
+      }
+    }
+
+    const [timelineEntryText, setTimelineEntryText] = useState('')
+
+    const addTimelineEntry = () => {
+      const timelineEntry = {
+        id: `timeline_entry_${uuidv4()}`,
+        parentId: action.id,
+        timestampUtc: new Date().toUTCString(),
+        text: timelineEntryText,
+      }
+      incidentReducer([{type: 'add_action_timeline_item', payload: timelineEntry }])
+      setTimelineEntryText('')
+    }
+
+    const addTimelineForm =
+        <Space.Compact style={{ width: '100%' }}>
+          <TextArea 
+             autoSize 
+             data-test="action__timeline_form__text"
+             className="rounded-none mb-2"
+             onChange={(e)=>setTimelineEntryText(e.target.value)}
+             onKeyDown={(e)=>{ if(e.key === 'Enter'){ addTimelineEntry(); e.preventDefault() } }}
+             value={timelineEntryText}
+             placeholder="Add a timeline note" 
+          /> 
+
+          <Button 
+            type="default" 
+            onClick={addTimelineEntry}
+            data-test="action__timeline_form__add_button"
+          >
+            Add
+          </Button> 
+        </Space.Compact>
+
+    const [timelineExpanded, setTimelineExpanded] = useState(false)
+    const NUM_TIMELINE_ENTRIES_TO_SHOW_COLLAPSED = 3
+
+    let allTimelineItems: any[] = (action.timeline || [])
+      .map(i => { return { 
+          children: <TimelineEntry i={i} />, 
+        } 
+      })
+      .reverse()
+    allTimelineItems.splice(0, 0, 
+      {
+        color: 'gray',
+        children: (addTimelineForm),
+      },
+    )
+    if (action.timeline && action.timeline.length > NUM_TIMELINE_ENTRIES_TO_SHOW_COLLAPSED) {
+      allTimelineItems.splice(NUM_TIMELINE_ENTRIES_TO_SHOW_COLLAPSED + 1, 0, 
+        {
+          color: 'gray',
+          dot: <CaretDownOutlined />,
+          children: (
+            <span 
+              data-test="action__timeline__collapse_button"
+              className="p0 m0 cursor-pointer" 
+              onClick={() => setTimelineExpanded((v)=>!v) }
+            >
+              Hide older entries
+            </span>
+          ),
+        }
+      )
+    }
+
+    let collapsedTimelineItems: any[] = [
+        {
+          color: 'gray',
+          children: (addTimelineForm),
+        },
+    ]
+    if (action.timeline && action.timeline.length > 0) {
+        collapsedTimelineItems = collapsedTimelineItems.concat([
+        ...allTimelineItems.slice(1, NUM_TIMELINE_ENTRIES_TO_SHOW_COLLAPSED + 1),
+        ])
+    }
+
+    if (action.timeline && action.timeline.length > 3) {
+        collapsedTimelineItems = collapsedTimelineItems.concat([
+        {
+          color: 'gray',
+          dot: <CaretRightOutlined />,
+          children: (
+            <Tag 
+              data-test="action__timeline__expand_button" 
+              className="cursor-pointer" 
+              onClick={() => setTimelineExpanded((v)=>!v) }
+              >
+                Show {allTimelineItems.length - (NUM_TIMELINE_ENTRIES_TO_SHOW_COLLAPSED + 2)} more entries ...
+            </Tag>
+           ),
+        },
+      ])
+    }
+
+    const timelineItems = timelineExpanded ? allTimelineItems : collapsedTimelineItems
+
     return (
-        <section>
+        <Card 
+          type="inner" 
+          title={action.what}
+          data-test="action-card"
+          className={["action-card", (action.status == 'Active' ? '' : 'action-card-completed')].join(' ')}
+          extra={<>
+              { action.link &&
+                  <a className="ml-1" target="_blank" href={action.link} data-test="active_action__link">
+                <Tag icon={<ExternalLinkIcon />} color="blue">Link</Tag>
+                  </a>
+              }
+
+              {
+                  action.status != 'Active' &&
+                  <Tag color="#999" bordered={false}>
+                    {icon()} <span>{action.status}</span>
+                  </Tag>
+              }
+
+              <ButtonsPopover>
+                <Tag data-test="action__more" className="mr-0" icon={<SettingOutlined />}></Tag>
+              </ButtonsPopover>
+            </>
+          }
+        >
             {showForm &&
               <div className=""><ActionForm action={action} onSubmit={updateAction} onCancel={cancelForm}/></div>
             }
+
             {!showForm &&
+              <div>
+
+
               <div className="flex flex-row">
-                <div className="basis-11/12">
-                <Popover
-                  content={
-                      <>
-                          <Button 
-                            className="block" 
-                            size="small" 
-                            icon={<EditOutlined/>} 
-                            onClick={onEditClick}
-                            data-test="action__edit"
-                            >
-                              Edit Action
-                          </Button>
+                <div>
 
-                          <Button
-                            className="block finish action success"
-                            icon={<CheckOutlined/>}
-                            size="small"
-                            data-test="active_action__succeeded"
-                            onClick={resolveActionSuccess}
-                        >
-                            Mark Success
-                        </Button>
+                {/* Status ------------------ */}
+                    {
+                        action.status == 'Failure' &&
+                        <div>
+                          <span>{action.status}</span> reason: <span>{action.resolution}</span>
+                        </div>
+                    }
+                    </div>
+                </div>
 
-                        <Button
-                        className="block finish action failed"
-                        icon={<CloseOutlined/>}
-                        size="small"
-                        data-test="active_action__failed"
-                        onClick={resolveActionFailure}
-                        >
-                            Mark Failure
-                        </Button>
-                      </>
-                  }
-                >
-                  {
-                    action.isMitigating?
-                    <Tooltip title="This might mitigate things" className="mr-2">
-                      <CheckCircleOutlined title="Is Mitigating" data-test="action__is-mitigating" />
-                    </Tooltip>
-                    :
-                    <Tooltip title="We want more info" className="mr-2">
-                      <InfoCircleOutlined title="Provides Info" />
-                    </Tooltip>
-                  }
+              <div className="flex flex-row justify-between">
+                <div>
+                  {/* What & Who ------------- */}
 
-                    <span className="description">
-                          <span className="what" data-test="active_action__what">{action.what}</span>
-
-                          {
-                            action.link &&
-                            <span> - <a className="ml-1" target="_blank" href={action.link} data-test="active_action__link">link</a></span>
-                          }
-
-
-                        {
-                          action.who ?
-                          <span><br/>@<span className="who italic" data-test="active_action__who">{action.who}</span></span>
-                          :
-                          <span className="italic"><br/>Unassigned</span>
-                        }
-                    </span>
-                </Popover>
-
-                <span className="action-group">
+                  <span>
+                      {
+                        action.who ?
+                        <span>@<span className="who italic" data-test="active_action__who">{action.who}</span></span>
+                        :
+                        <span className="italic">Unassigned</span>
+                      }
+                  </span>
+                </div>
+                <div>
+                {/* Timer ------------------ */}
+                {/* <span className="action-group"> */}
                     {
                         action.timer &&
                         <div className="block">
-                          <ClockCircleOutlined title="Timer" />
-                          <div className="ml-2 inline-block">
+
+                          <div className="inline-block">
                             <CountdownTimer
                             onEditClick={()=>{setShowForm(true)}}
                             id={`countdown-${action.id}`}
@@ -157,58 +327,16 @@ export default function Action({action}: props) {
                           </div>
                         </div>
                     }
-
-                    {
-                        action.status != 'Active' &&
-                        <>
-                          <span className="block">{action.status}</span>
-                          <span className="block">{action.resolution}</span>
-                        </>
-                    }
-                </span>
-                </div>
-
-                <div className="basis-1/12">
-                  <Popover
-                    content={
-                        <>
-                            <Button 
-                              className="block" 
-                              size="small" 
-                              icon={<EditOutlined/>} 
-                              onClick={onEditClick}
-                              data-test="action__edit"
-                              >
-                                Edit Action
-                            </Button>
-
-                            <Button
-                              className="block finish action success"
-                              icon={<CheckOutlined/>}
-                              size="small"
-                              data-test="active_action__succeeded"
-                              onClick={resolveActionSuccess}
-                          >
-                              Mark Success
-                          </Button>
-
-                          <Button
-                          className="block finish action failed"
-                          icon={<CloseOutlined/>}
-                          size="small"
-                          data-test="active_action__failed"
-                          onClick={resolveActionFailure}
-                          >
-                              Mark Failure
-                          </Button>
-                        </>
-                    }
-                  >
-                    <MoreOutlined title="Actions..." className="p-2" />
-                  </Popover>
                 </div>
               </div>
+
+
+
+                {/* Timeline ------------------ */}
+                <Timeline data-test="action__timeline" className="mt-4" items={timelineItems} /> 
+
+              </div>
             }
-        </section>
+        </Card>
     )
 }

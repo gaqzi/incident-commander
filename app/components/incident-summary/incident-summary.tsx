@@ -1,14 +1,14 @@
 'use client'
 
 import ResourceLink from "@/app/components/resource-link/resource-link";
-import {useContext, useState, useEffect} from "react";
-import {IncidentDispatchContext} from "@/app/contexts/incident-context";
+import {useContext, useState, useEffect, useCallback} from "react";
+import {IncidentDispatchContext, YDocContext, YDocMultiplayerProviderContext} from "@/app/contexts/incident-context";
 import ResourceLinkForm from "@/app/components/resource-link/resource-link-form";
 import IncidentSummaryForm from "@/app/components/incident-summary/incident-summary-form";
 import { Button, Modal, Popover, Tooltip } from "antd"
 import {EditOutlined, PlusOutlined} from "@ant-design/icons";
-import {Incident} from "@/app/components/ongoing-incident/reducer";
 import {uuidv4} from "lib0/random";
+import { QuillBinding } from 'y-quill'
 
 export default function IncidentSummary({incident, showForm}: {incident: Incident, showForm: boolean}) {
     const summary = incident.summary
@@ -18,6 +18,35 @@ export default function IncidentSummary({incident, showForm}: {incident: Inciden
     useEffect(()=>{
         setShowSummaryForm(incident.summary._isNew)
     }, [incident])
+
+
+    const ydoc = useContext(YDocContext)
+    const ydocProvider = useContext(YDocMultiplayerProviderContext)
+    const ytext = ydoc.getText(`${incident.id}__quill`)
+
+    const editorRef = useCallback(async (node: any) => {
+        if (node !== null) {
+
+        // We need to load Quill dynamically here because it only works client-side
+        const Quill = (await import('quill')).default
+        const QuillCursors = (await import('quill-cursors')).default
+        Quill.register('modules/cursors', QuillCursors)
+
+        const editor = new Quill(node, {
+            modules: {
+              cursors: true,
+              toolbar: false,
+              history: {
+                userOnly: true
+              }
+            },
+            placeholder: 'Type notes here if you need them...',
+            theme: 'snow' // or 'bubble'
+          })
+        
+        new QuillBinding(ytext, editor, ydocProvider!['awareness'])
+        }
+    }, [])
 
     const updateSummary = (data: any) => { // TODO: fix sig
         setShowSummaryForm(false)
@@ -64,9 +93,10 @@ export default function IncidentSummary({incident, showForm}: {incident: Inciden
             lines.push(`- ${statusIcon} ${system.what}`)
 
             if (includeActions) {
-                // Note: We always still skip all actions where isMitigating is false
+                // We want all active actions
                 const activeActions = system.actions?.filter(a => a.status == 'Active')
-                const resolvedActions = system.actions?.filter(a => a.status != 'Active' && a.isMitigating)
+                // And all resolved actions that are not a Chore
+                const resolvedActions = system.actions?.filter(a => ['Success', 'Failure'].includes(a.status))
                 if (activeActions!.length > 0) {
                     lines.push(`    *Actions:*`)
                     activeActions!.forEach(action => {
@@ -78,6 +108,12 @@ export default function IncidentSummary({incident, showForm}: {incident: Inciden
                             line += ` [More info](${action.link})`
                         }
                         lines.push(line)
+                        // Include all timeline entries for this action
+                        if (action.timeline && action.timeline.length > 0) {
+                            action.timeline.reverse().forEach(entry => {
+                                lines.push(`        - ${entry.text}`)
+                            })
+                        }
                     })
                 }
                 if (resolvedActions!.length > 0) {
@@ -96,6 +132,12 @@ export default function IncidentSummary({incident, showForm}: {incident: Inciden
                             line += ` -- ${action.resolution}`
                         }
                         lines.push(line)
+                        // Include all timeline entries for this action
+                        if (action.timeline && action.timeline.length > 0) {
+                            action.timeline.reverse().forEach(entry => {
+                                lines.push(`        - ${entry.text}`)
+                            })
+                        }
                     })
                 }
             }
@@ -177,8 +219,14 @@ export default function IncidentSummary({incident, showForm}: {incident: Inciden
                             { summary.resourceLinks.map(l => <li key={l.url} className="inline-block mr-4"><ResourceLink resourceLink={l}/> </li>) }
                         </ul>
                     </div>
+
+                    <h3 className="mt-2">Notes</h3>
+                    <section className="border-solid border-2 border-slate-200">
+                        <div ref={editorRef} data-test="notes"></div>
+                    </section>
                 </>
             }
+
 
         </div>
     )
