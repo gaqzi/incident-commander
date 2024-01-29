@@ -50,7 +50,7 @@
     "y-indexeddb": "^9.0.12",
     "y-quill": "^0.1.5",
     "y-webrtc": "^10.3.0",
-    "y-websocket": "^1.5.0",
+    "y-websocket": "^1.5.3",
     "yjs": "^13.6.11"
   }
 }
