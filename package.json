@@ -14,7 +14,7 @@
     "parcel": "^2.11.0",
     "process": "^0.11.10",
     "standard": "^17.1.0",
-    "testdouble": "^3.20.1"
+    "testdouble": "^3.20.2"
   },
   "scripts": {
     "cy:run": "cypress run",
