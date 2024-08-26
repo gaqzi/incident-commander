@@ -1,6 +1,6 @@
 'use client'
 
-import {useEffect, useReducer, useState} from 'react'
+import {useContext, useEffect, useReducer, useState} from 'react'
 import {useForm} from 'react-hook-form'
 import * as Y from 'yjs'
 import { IndexeddbPersistence } from 'y-indexeddb'
@@ -11,12 +11,11 @@ import AffectedSystem from "@/app/components/affected-system/affected-system";
 import AffectedSystemForm from "@/app/components/affected-system/affected-system-form";
 import {NotificationsContext, IncidentDispatchContext, nullDispatch, YDocContext, YDocMultiplayerProviderContext } from "@/app/contexts/incident-context";
 import ResourceLink from "@/app/components/resource-link/resource-link";
-import { Button, Modal } from "antd"
+import { Button, Modal, Tag, Tooltip } from "antd"
 import {PlusOutlined} from "@ant-design/icons";
 import {uuidv4} from "lib0/random";
 
 const ydoc = new Y.Doc()
-
 
 
 // Multiplayer Stuff ===================
@@ -48,9 +47,6 @@ function setupMultiplayer(dispatch: any, setYdocProvider: any) {
 
     const websocketProvider = new WebsocketProvider(websocket_host as string, room, ydoc)
     setYdocProvider(websocketProvider)
-    websocketProvider.on('status', (event: any) => {
-        console.log('YJS WebSocket Provider: ', event.status) // logs "connected" or "disconnected"
-    })
     // TODO: If we can't connect to the socket server, show an error dialog for now I guess?
 
     // Multi-user collab events with YJS
@@ -80,6 +76,41 @@ const multiplayerDispatch = (ydocEvents: any, events: any[] = []) => {
     ydocEvents.push(events)
 }
 // End Multiplayer Stuff ===================
+
+const MultiplayerStatus = () => {
+    const [multiplayerStatusLabel, setMultiplayerStatusLabel] = useState('disconnected')
+    const ydocProvider = useContext(YDocMultiplayerProviderContext)
+
+    useEffect(() => {
+        ydocProvider.on && ydocProvider.on('status', (event: any) => {
+            setMultiplayerStatusLabel(event.status)
+            // console.log('YJS WebSocket Provider: ', event.status) // logs "connected" or "disconnected"
+        })
+
+        ydocProvider.on && ydocProvider.on('connection-error', (event: any) => {
+            setMultiplayerStatusLabel('error')
+        })
+    }, [ydocProvider])
+
+    const tooltipByStatus = {
+        'disconnected': 'Could not connect to YJS socket host: ' + ydocProvider.url,
+        'connecting': 'Trying to connect to ' + ydocProvider.url,
+        'connected': 'You can send this page\'s URL to others to collaborate with them in realtime!',
+        'error': 'Server closed connection with an error. Try reloading the page maybe?',
+    }
+
+    return (
+        // @ts-ignore
+        <Tooltip title={tooltipByStatus[multiplayerStatusLabel]}>
+            <Tag
+                color={multiplayerStatusLabel == 'connected' ? 'cyan' : 'red'}
+                className={"ml-2"}
+            >
+                Multiplayer Status: { multiplayerStatusLabel }
+            </Tag>
+        </Tooltip>
+    )
+}
 
 
 export default function OngoingIncident({incidentId}: {incidentId: string}) {
@@ -160,86 +191,90 @@ export default function OngoingIncident({incidentId}: {incidentId: string}) {
         <IncidentDispatchContext.Provider value={dispatcher}>
         <YDocContext.Provider value={ydoc}>
         <YDocMultiplayerProviderContext.Provider value={ydocProvider}>
-            {/*<button id="debug-create-incident">DEBUG: Create Incident</button>*/}
+                {/*<button id="debug-create-incident">DEBUG: Create Incident</button>*/}
 
-            { 
-                supportsNotifications &&
                 <header>
-                    <Button onClick={toggleNotifications}>
-                        {
-                            notificationPermission
-                                ? 'Disable Notifications'
-                                : 'Enable Notifications'
-                        }
-                    </Button>
+                    {
+                        supportsNotifications &&
+                      <Button onClick={toggleNotifications}>
+                          {
+                              notificationPermission
+                                  ? 'Disable Notifications'
+                                  : 'Enable Notifications'
+                          }
+                      </Button>
+                    }
+
+                    <MultiplayerStatus />
                 </header>
-            }
 
-            <div className="mt-2">
-                <IncidentSummary incident={incident} showForm={incident.summary._isNew}></IncidentSummary>
-            </div>
+                <div className="mt-2">
+                    <IncidentSummary incident={incident} showForm={incident.summary._isNew}></IncidentSummary>
+                </div>
 
-            
-            {
-                ! incident.summary._isNew &&
-                <>
+
+                {
+                    !incident.summary._isNew &&
+                  <>
                     <section className="mt-8" data-test="affected-systems__listing__active">
-                        <h3 className="mb-2">Ongoing Issues
+                      <h3 className="mb-2">Ongoing Issues
 
-                        {
-                            ! affectedSystemFormVisible &&
-                            <Button data-test="btn-add-affected-system" type="text" size="small" icon={<PlusOutlined/>} onClick={addAffectedSystemClick}>Add Issue</Button>
-                        }
-                        </h3>
+                          {
+                              !affectedSystemFormVisible &&
+                            <Button data-test="btn-add-affected-system" type="text" size="small" icon={<PlusOutlined/>}
+                                    onClick={addAffectedSystemClick}>Add Issue</Button>
+                          }
+                      </h3>
 
-                        <section className="affected-systems__new">
-                            {
-                                <Modal
-                                    title="Add Affected System"
-                                    open={affectedSystemFormVisible}
-                                    onCancel={onAffectedSystemFormCancel}
-                                    footer={null}
-                                >
-                                    <AffectedSystemForm
-                                        affectedSystem={null}
-                                        onSubmit={addAffectedSystem}
-                                        onCancel={onAffectedSystemFormCancel}
-                                    />
-                                </Modal>
-                            }
-                        </section>
+                      <section className="affected-systems__new">
+                          {
+                              <Modal
+                                  title="Add Affected System"
+                                  open={affectedSystemFormVisible}
+                                  onCancel={onAffectedSystemFormCancel}
+                                  footer={null}
+                              >
+                                  <AffectedSystemForm
+                                      affectedSystem={null}
+                                      onSubmit={addAffectedSystem}
+                                      onCancel={onAffectedSystemFormCancel}
+                                  />
+                              </Modal>
+                          }
+                      </section>
 
-                        <ul className="grid grid-cols-1 gap-4">
-                            {
-                                incident.affectedSystems.filter(s => s.status == 'Active').map(s => {
-                                    return <li key={s.id}>
-                                        <AffectedSystem affectedSystem={s} />
-                                    </li>
-                                })
-                            }
-                        </ul>
+                      <ul className="grid grid-cols-1 gap-4">
+                          {
+                              incident.affectedSystems.filter(s => s.status == 'Active').map(s => {
+                                  return <li key={s.id}>
+                                      <AffectedSystem affectedSystem={s}/>
+                                  </li>
+                              })
+                          }
+                      </ul>
                     </section>
 
-                    { 
-                        incident.affectedSystems.filter(s => s.status == 'Resolved').length > 0 
-                        &&
-                        <section className="mt-8 border-0 border-t-2 border-dotted border-slate-200" data-test="affected-systems__listing__past">
-                            <h3 className="mt-4 mb-2">Resolved Issues</h3>
+                      {
+                          incident.affectedSystems.filter(s => s.status == 'Resolved').length > 0
+                          &&
+                        <section className="mt-8 border-0 border-t-2 border-dotted border-slate-200"
+                                 data-test="affected-systems__listing__past">
+                          <h3 className="mt-4 mb-2">Resolved Issues</h3>
 
-                            <ul className="grid grid-cols-1 gap-4">
-                                {
-                                    incident.affectedSystems.filter(s => s.status == 'Resolved').map(s => {
-                                        return <li key={s.id}>
-                                            <AffectedSystem affectedSystem={s} />
-                                        </li>
-                                    })
-                                }
-                            </ul>
+                          <ul className="grid grid-cols-1 gap-4">
+                              {
+                                  incident.affectedSystems.filter(s => s.status == 'Resolved').map(s => {
+                                      return <li key={s.id}>
+                                          <AffectedSystem affectedSystem={s}/>
+                                      </li>
+                                  })
+                              }
+                          </ul>
                         </section>
-                    }
-                    </>
-            }
-        </YDocMultiplayerProviderContext.Provider>
+                      }
+                  </>
+                }
+            </YDocMultiplayerProviderContext.Provider>
         </YDocContext.Provider>
         </IncidentDispatchContext.Provider>
         </NotificationsContext.Provider>
