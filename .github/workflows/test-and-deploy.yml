@@ -69,6 +69,20 @@ jobs:
           path: cypress/videos/**/*.mp4
         if: failure()
 
+  # Adding because sometimes next.js fails to build when a dependency gets bumped,
+  # so it's best to always force a build
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+      - run: npm install
+      - run: rm next.config.js && mv next.config.js.gh_pages next.config.js
+      - run: npm run build
+        env:
+          NEXT_PUBLIC_YJS_SOCKET_SERVER: 'wss://long-river-3855.fly.dev'
+          NEXT_PUBLIC_GA_ID: 'G-B85SXM3GRK'
+
   deploy:
     environment:
       name: github-pages
@@ -77,6 +91,7 @@ jobs:
     needs:
       - lint
       - end-to-end-tests
+      - build
       # - unit-tests
     if: github.ref_name == 'master'
 
