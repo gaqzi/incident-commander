@@ -35,7 +35,7 @@
     "concurrently": "^8.2.2",
     "cypress-parallel": "^0.14.0",
     "dayjs": "^1.11.10",
-    "eslint": "8.52.0",
+    "eslint": "9.9.1",
     "eslint-config-next": "14.0.2",
     "next": "13.4.19",
     "postcss": "8.4.31",
