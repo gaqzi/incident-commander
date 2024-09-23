@@ -5,7 +5,7 @@
   "devDependencies": {
     "@tailwindcss/forms": "^0.5.7",
     "@types/gtag.js": "^0.0.20",
-    "@types/node": "22.5.0",
+    "@types/node": "22.5.5",
     "@types/quill": "^2.0.13",
     "buffer": "^6.0.3",
     "chai": "^5.1.1",
