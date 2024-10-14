@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "devDependencies": {
-    "@tailwindcss/forms": "^0.5.7",
+    "@tailwindcss/forms": "^0.5.9",
     "@types/gtag.js": "^0.0.20",
     "@types/node": "22.5.5",
     "@types/quill": "^2.0.13",
