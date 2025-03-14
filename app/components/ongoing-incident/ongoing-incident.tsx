@@ -85,20 +85,8 @@ const multiplayerDispatch = (ydocEvents: any, events: any[] = []) => {
 }
 // End Multiplayer Stuff ===================
 
-const MultiplayerStatus = () => {
-    const [multiplayerStatusLabel, setMultiplayerStatusLabel] = useState('disconnected')
+const MultiplayerStatus = ({ status }: { status: string }) => {
     const ydocProvider = useContext(YDocMultiplayerProviderContext)
-
-    useEffect(() => {
-        ydocProvider.on && ydocProvider.on('status', (event: any) => {
-            setMultiplayerStatusLabel(event.status)
-            // console.log('YJS WebSocket Provider: ', event.status) // logs "connected" or "disconnected"
-        })
-
-        ydocProvider.on && ydocProvider.on('connection-error', (event: any) => {
-            setMultiplayerStatusLabel('error')
-        })
-    }, [ydocProvider])
 
     const tooltipByStatus = {
         'disconnected': 'Could not connect to YJS socket host: ' + ydocProvider.url,
@@ -109,12 +97,12 @@ const MultiplayerStatus = () => {
 
     return (
         // @ts-ignore
-        <Tooltip title={tooltipByStatus[multiplayerStatusLabel]}>
+        <Tooltip title={tooltipByStatus[status]}>
             <Tag
-                color={multiplayerStatusLabel == 'connected' ? 'cyan' : 'red'}
+                color={status == 'connected' ? 'cyan' : 'red'}
                 className={"ml-2"}
             >
-                Multiplayer Status: { multiplayerStatusLabel }
+                Multiplayer Status: { status }
             </Tag>
         </Tooltip>
     )
@@ -142,6 +130,7 @@ export default function OngoingIncident({incidentId}: {incidentId: string}) {
     const [dispatcher, setDispatcher] = useState({} as any) // TODO: hack, fix this?
     const [supportsNotifications, setSupportsNotifications] = useState(false)
     const [ydocProvider, setYdocProvider] = useState({} as WebsocketProvider)
+    const [multiplayerStatus, setMultiplayerStatus] = useState('disconnected')
 
     // Setup Single or Multiplayer Dispatching
     useEffect(() => {
@@ -162,6 +151,38 @@ export default function OngoingIncident({incidentId}: {incidentId: string}) {
             });
         }
     }, [])
+
+    // Listen for multiplayer status changes
+    useEffect(() => {
+        if (!ydocProvider || !ydocProvider.on) return
+
+        const handleStatusChange = (event: any) => {
+            console.log('Multiplayer status changed:', event.status)
+            // Update the state with the new status
+            setMultiplayerStatus(event.status)
+        }
+
+        const handleConnectionError = () => {
+            console.log('Multiplayer connection error')
+            setMultiplayerStatus('error')
+        }
+
+        // Check if we're already connected
+        if (ydocProvider.wsconnected) {
+            console.log('WebSocket already connected on mount')
+            setMultiplayerStatus('connected')
+        }
+
+        ydocProvider.on('status', handleStatusChange)
+        ydocProvider.on('connection-error', handleConnectionError)
+
+        return () => {
+            if (ydocProvider.off) {
+                ydocProvider.off('status', handleStatusChange)
+                ydocProvider.off('connection-error', handleConnectionError)
+            }
+        }
+    }, [ydocProvider])
 
     const { register, handleSubmit, reset, formState: { errors } } = useForm({
         defaultValues: incident
@@ -194,6 +215,9 @@ export default function OngoingIncident({incidentId}: {incidentId: string}) {
     }
 
 
+    // Log current status in render
+    console.log('Rendering with multiplayer status:', multiplayerStatus)
+
     return (
         <UserProvider>
         <NotificationsContext.Provider value={notificationPermission}>
@@ -208,7 +232,7 @@ export default function OngoingIncident({incidentId}: {incidentId: string}) {
                         {!incident.summary._isNew && (
                             <div className="mb-4">
                                 <Suspense fallback={<div>Loading users...</div>}>
-                                    <CurrentUsersComponent />
+                                    <CurrentUsersComponent multiplayerStatus={multiplayerStatus} />
                                 </Suspense>
                             </div>
                         )}
@@ -227,7 +251,7 @@ export default function OngoingIncident({incidentId}: {incidentId: string}) {
                       </Button>
                     }
 
-                    <MultiplayerStatus />
+                    <MultiplayerStatus status={multiplayerStatus} />
                         </header>
 
                         <div className="mt-2">
