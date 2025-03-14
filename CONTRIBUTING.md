@@ -4,12 +4,14 @@
 
 The app consists of two parts: a Node.js socket relay server powering the 'multiplayer' part and a Next.js static website powering the web UI part.
 
-To start a copy of the relay server (defaults to port 1234), a local Next.js dev server with hot reloading, and the Cypress end-to-end testing launcher, run ```npm run dev:all```. 
+To start a copy of the relay server (defaults to port 1234), a local Next.js dev server with hot reloading, and the Playwright end-to-end testing in watch mode, run ```npm run dev:all```. 
 
 Press `Ctrl-c` to kill it all when you're done.
 
 ## Testing
-We use Cypress for browser testing. See [`./cypress/e2e/everything.cy.js`](./cypress/e2e/everything.cy.js) for all of the tests. Yes, we could/should make this nicer in the fullness of time. =-)
+We use Playwright for browser testing. See the [`./tests/e2e/`](./tests/e2e/) directory for all of the tests, organized by feature.
+
+For more details on running and writing tests, see the [tests README](./tests/README.md).
 
 See [how to run a local dev instance](#how-to-run-a-local-dev-instance-of-the-tool) above to get tests and a dev server to run locally.
 
