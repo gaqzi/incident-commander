@@ -15,35 +15,15 @@ interface ConnectedUser extends UserInfo {
   isCurrentUser: boolean
 }
 
-export default function CurrentUsers() {
+interface CurrentUsersProps {
+  multiplayerStatus?: string
+}
+
+export default function CurrentUsers({ multiplayerStatus = 'disconnected' }: CurrentUsersProps) {
   const { userInfo, isUserInfoSet } = useUserContext()
   const [connectedUsers, setConnectedUsers] = useState<ConnectedUser[]>([])
   const [isUserFormVisible, setIsUserFormVisible] = useState<boolean>(false)
   const ydocProvider = useContext(YDocMultiplayerProviderContext)
-  const [multiplayerStatus, setMultiplayerStatus] = useState<string>('disconnected')
-
-  // Listen for multiplayer status changes
-  useEffect(() => {
-    if (!ydocProvider || !ydocProvider.on) return
-
-    const handleStatusChange = (event: any) => {
-      setMultiplayerStatus(event.status)
-    }
-
-    ydocProvider.on('status', handleStatusChange)
-    
-    // Check initial connection status
-    try {
-      // We don't have direct access to the status, so we'll rely on the event
-      // The initial state is already set to 'disconnected'
-    } catch (error) {
-      console.error('Error checking WebSocket status:', error)
-    }
-
-    return () => {
-      ydocProvider.off('status', handleStatusChange)
-    }
-  }, [ydocProvider])
 
   // Show user form if user info is not set and multiplayer is connected
   useEffect(() => {
