@@ -1,6 +1,8 @@
 'use client'
 
-import {useContext, useEffect, useReducer, useState} from 'react'
+import {useContext, useEffect, useReducer, useState, Suspense} from 'react'
+import { UserProvider } from '@/app/contexts/user-context'
+import dynamic from 'next/dynamic'
 import {useForm} from 'react-hook-form'
 import * as Y from 'yjs'
 import { IndexeddbPersistence } from 'y-indexeddb'
@@ -14,6 +16,12 @@ import ResourceLink from "@/app/components/resource-link/resource-link";
 import { Button, Modal, Tag, Tooltip } from "antd"
 import {PlusOutlined} from "@ant-design/icons";
 import {uuidv4} from "lib0/random";
+
+// Dynamically import the CurrentUsers component to avoid SSR issues
+const CurrentUsersComponent = dynamic(
+  () => import('@/app/components/current-users/current-users'),
+  { ssr: false }
+)
 
 const ydoc = new Y.Doc()
 
@@ -187,13 +195,27 @@ export default function OngoingIncident({incidentId}: {incidentId: string}) {
 
 
     return (
+        <UserProvider>
         <NotificationsContext.Provider value={notificationPermission}>
         <IncidentDispatchContext.Provider value={dispatcher}>
         <YDocContext.Provider value={ydoc}>
         <YDocMultiplayerProviderContext.Provider value={ydocProvider}>
                 {/*<button id="debug-create-incident">DEBUG: Create Incident</button>*/}
 
-                <header>
+                <div className="flex flex-row">
+                    <div className="w-1/4 pr-4">
+                        {/* Only show current users if not in new incident mode */}
+                        {!incident.summary._isNew && (
+                            <div className="mb-4">
+                                <Suspense fallback={<div>Loading users...</div>}>
+                                    <CurrentUsersComponent />
+                                </Suspense>
+                            </div>
+                        )}
+                    </div>
+                    
+                    <div className="w-3/4">
+                        <header>
                     {
                         supportsNotifications &&
                       <Button onClick={toggleNotifications}>
@@ -206,11 +228,11 @@ export default function OngoingIncident({incidentId}: {incidentId: string}) {
                     }
 
                     <MultiplayerStatus />
-                </header>
+                        </header>
 
-                <div className="mt-2">
-                    <IncidentSummary incident={incident} showForm={incident.summary._isNew}></IncidentSummary>
-                </div>
+                        <div className="mt-2">
+                            <IncidentSummary incident={incident} showForm={incident.summary._isNew}></IncidentSummary>
+                        </div>
 
 
                 {
@@ -274,9 +296,12 @@ export default function OngoingIncident({incidentId}: {incidentId: string}) {
                       }
                   </>
                 }
+                    </div>
+                </div>
             </YDocMultiplayerProviderContext.Provider>
         </YDocContext.Provider>
         </IncidentDispatchContext.Provider>
         </NotificationsContext.Provider>
+        </UserProvider>
     )
 }
