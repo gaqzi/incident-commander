@@ -23,9 +23,8 @@
     "test:debug": "playwright test --debug",
     "test:headed": "playwright test --headed",
     "dev": "next dev -p 5432",
-    "dev:test": "playwright test --project=chromium --watch",
     "dev:multiplayer": "cd socket_relay_server && npm start",
-    "dev:all": "concurrently --names 'WEB_UI,E2E_TESTS,MULTIPLAYER_SERVER' --kill-others 'npm run dev' 'npm run dev:test' 'npm run dev:multiplayer'",
+    "dev:all": "concurrently --names 'WEB_UI,E2E_TESTS,MULTIPLAYER_SERVER' --kill-others 'npm run dev' 'npm run test:ui' 'npm run dev:multiplayer'",
     "build": "next build",
     "start": "next start",
     "lint": "next lint"
