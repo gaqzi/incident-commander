@@ -32,6 +32,23 @@ export default function CurrentUsers({ multiplayerStatus = 'disconnected' }: Cur
     }
   }, [isUserInfoSet, multiplayerStatus])
 
+  // Ensure the user form is shown when needed, even after incident creation
+  useEffect(() => {
+    const checkUserForm = () => {
+      if (!isUserInfoSet && multiplayerStatus === 'connected') {
+        setIsUserFormVisible(true)
+      }
+    }
+    
+    // Check immediately
+    checkUserForm()
+    
+    // Also set up an interval to periodically check
+    const intervalId = setInterval(checkUserForm, 2000)
+    
+    return () => clearInterval(intervalId)
+  }, [isUserInfoSet, multiplayerStatus])
+
   // Update connected users when awareness changes
   useEffect(() => {
     if (!ydocProvider || !ydocProvider.awareness || multiplayerStatus !== 'connected') return

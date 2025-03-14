@@ -1,11 +1,11 @@
 import { test, expect } from '@playwright/test';
 import { getDataTest } from '../utils/selectors.js';
-import { submitIncident } from '../utils/actions.js';
+import { submitIncident, submitUserInfo } from '../utils/actions.js';
 
 // This is an example test showing how to test multiplayer features
 // It's currently skipped (test.skip) because it requires the multiplayer server to be running
 // and may be flaky due to timing issues with real-time collaboration
-test.skip('two users can collaborate in the shared notepad', async ({ browser }) => {
+test('two users can collaborate in the shared notepad', async ({ browser }) => {
   // Create two browser contexts (simulating two different users)
   const userAContext = await browser.newContext();
   const userBContext = await browser.newContext();
@@ -17,7 +17,8 @@ test.skip('two users can collaborate in the shared notepad', async ({ browser })
   // Navigate both users to the application
   // Note: We're not using the disableMultiplayer flag here since we want to test multiplayer
   await userAPage.goto('/incident/ongoing');
-  await userBPage.goto('/incident/ongoing');
+  
+  await userAPage.waitForTimeout(1000)
   
   // User A creates an incident
   const what = 'Multiplayer Test Incident';
@@ -26,8 +27,16 @@ test.skip('two users can collaborate in the shared notepad', async ({ browser })
   const impact = 'Testing Multiplayer';
   
   await submitIncident(userAPage, what, when, where, impact, false);
+
+  // User A submits their information
+  await submitUserInfo(userAPage, 'User A', 'Team A');
   
   // Wait for User B to see the incident (may need to adjust timing)
+  await userBPage.goto(userAPage.url());
+  await userBPage.waitForSelector('text=Multiplayer Status: connected', { timeout: 10000 });
+  
+  // User B submits their information
+  await submitUserInfo(userBPage, 'User B', 'Team B');
   await userBPage.waitForSelector('[data-test="affected-systems__listing__active"]');
   
   // Verify both users see the same incident details
@@ -68,7 +77,7 @@ test.skip('two users can collaborate in the shared notepad', async ({ browser })
 });
 
 // Example of testing adding actions in multiplayer mode
-test.skip('two users can collaborate on actions', async ({ browser }) => {
+test('two users can collaborate on actions', async ({ browser }) => {
   // Create two browser contexts
   const userAContext = await browser.newContext();
   const userBContext = await browser.newContext();
@@ -78,12 +87,24 @@ test.skip('two users can collaborate on actions', async ({ browser }) => {
   
   // Navigate both users to the application
   await userAPage.goto('/incident/ongoing');
-  await userBPage.goto('/incident/ongoing');
+  await userAPage.waitForTimeout(1000)
   
   // User A creates an incident
   await submitIncident(userAPage, 'Action Test', 'Now', 'Test', 'Testing Actions', false);
   
+  // User A submits their information
+  await submitUserInfo(userAPage, 'User A', 'Team A');
+
+  // Wait for User B to see the incident (may need to adjust timing)
+  await userBPage.goto(userAPage.url());
+  await userBPage.waitForSelector('text=Multiplayer Status: connected', { timeout: 10000 });
+  
   // Wait for User B to see the incident
+  await userBPage.waitForSelector('text=Multiplayer Status: connected', { timeout: 10000 });
+  
+  // User B submits their information
+  await submitUserInfo(userBPage, 'User B', 'Team B');
+  
   await userBPage.waitForSelector('[data-test="affected-systems__listing__active"]');
   
   // User A adds an action

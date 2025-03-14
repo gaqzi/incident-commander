@@ -51,6 +51,8 @@ export async function submitIncident(page, what, when, where, impact, shouldUseD
   
   const submitButton = await getDataTest(page, 'summary__submit');
   await submitButton.click();
+
+  await page.waitForSelector('[data-test="affected-systems__listing__active"]', { timeout: 10000 });
 }
 
 /**
@@ -102,5 +104,24 @@ export async function addActionToIncident(page, { what = 'action-what', who = 'a
   await minutesField.fill(String(minutes));
   
   const submitButton = await getDataTest(page, 'action-form__submit');
+  await submitButton.click();
+}
+
+/**
+ * Submits user information in the user form
+ * @param {import('@playwright/test').Page} page - The page to interact with
+ * @param {string} name - User's name
+ * @param {string} team - User's team
+ */
+export async function submitUserInfo(page, name, team) {
+  // Fill in the form
+  const nameField = await page.locator('input[placeholder="Enter your name"]');
+  await nameField.fill(name);
+  
+  const teamField = await page.locator('input[placeholder="Enter your team"]');
+  await teamField.fill(team);
+  
+  // Submit the form
+  const submitButton = page.locator('button[type="submit"]');
   await submitButton.click();
 }
