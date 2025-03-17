@@ -1,7 +1,7 @@
 'use client'
 
-import { useState, useEffect } from 'react'
-import { Form, Input, Button, Modal } from 'antd'
+import { useState, useEffect, useCallback, useRef } from 'react'
+import { Form, Input, Button, Modal, InputRef } from 'antd'
 import { UserInfo, useUserContext } from '@/app/contexts/user-context'
 
 interface UserFormProps {
@@ -32,12 +32,19 @@ export default function UserForm({
     onClose()
   }
 
+  const nameInputRef = useRef<InputRef>(null);
+
   return (
     <Modal
       title={isEditing ? "Edit Your Information" : "Enter Your Information"}
       open={isVisible}
       onCancel={onClose}
       footer={null}
+      afterOpenChange={(isOpen: boolean)=>{
+        if (isOpen) {
+            nameInputRef.current?.focus()
+        }
+      }}
     >
       <Form
         form={form}
@@ -50,7 +57,10 @@ export default function UserForm({
           label="Your Name"
           rules={[{ required: true, message: 'Please enter your name' }]}
         >
-          <Input placeholder="Enter your name" />
+          <Input 
+            placeholder="Enter your name" 
+            ref={nameInputRef}
+          />
         </Form.Item>
         
         <Form.Item
