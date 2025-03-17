@@ -66,6 +66,8 @@ jobs:
           run: npx playwright install chromium --with-deps
         - name: Run Playwright tests (Chromium only)
           run: npx playwright test --project=chromium
+          env: 
+            NEXT_PUBLIC_YJS_SOCKET_SERVER: 'wss://long-river-3855.fly.dev'
         - uses: actions/upload-artifact@v4
           if: ${{ !cancelled() }}
           with:
