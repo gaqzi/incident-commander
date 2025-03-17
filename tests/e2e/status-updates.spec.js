@@ -4,7 +4,7 @@ import { submitIncident, addResourceLink, addActionToIncident } from '../utils/a
 
 const URL = '/incident/ongoing?disableMultiplayer=true';
 
-test.describe('Ongoing Incident: Status Updates', () => {
+test.describe.serial('Ongoing Incident: Status Updates', () => {
   const what = 'This is the what';
   const when = 'This is the when';
   const where = 'This is the where';
@@ -15,7 +15,7 @@ test.describe('Ongoing Incident: Status Updates', () => {
     await submitIncident(page, what, when, where, impact, false);
   });
 
-  test.describe('Business Update', () => {
+  test.describe.serial('Business Update', () => {
     test('provides the current status of the incident, the summary, and the currently affected components', async ({ page }) => {
       // Mock the clipboard API
       await page.evaluate(() => {
@@ -40,7 +40,7 @@ test.describe('Ongoing Incident: Status Updates', () => {
     });
   });
 
-  test.describe('Tech Update', () => {
+  test.describe.serial('Tech Update', () => {
     test('provides the status, summary, resources, affected components, current actions', async ({ page }) => {
       // Mock the clipboard API
       await page.evaluate(() => {
