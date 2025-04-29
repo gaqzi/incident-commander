@@ -127,9 +127,10 @@ test.describe.serial('Ongoing Incident: Status Updates', () => {
       const successButton = await getDataTest(page, 'action__resolve_success');
       await successButton.click({ force: true });
 
-      // Mock the prompt for failure reason
-      await page.evaluate(() => {
-        window.prompt = () => 'It failed.';
+      // Set up dialog handler BEFORE clicking the button
+      await page.on('dialog', dialog => {
+        // Enter the text and accept the dialog
+        dialog.accept('It failed.');
       });
 
       // Mark as failure
