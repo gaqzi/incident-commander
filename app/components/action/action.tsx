@@ -41,11 +41,25 @@ interface props {
 }
 
 
+// This CardTitle component is so we can add a doubleclick handler to a AntD Card Title
+interface CardTitleProps {
+  title: React.ReactNode;
+  onDoubleClick: () => void;
+}
+const CardTitle: React.FC<CardTitleProps> = ({ title, onDoubleClick }) => (
+  <div onDoubleClick={onDoubleClick}>
+    {title}
+  </div>
+);
 
 export default function Action({action}: props) {
     const [showForm, setShowForm] = useState(false)
     const incidentReducer = useContext(IncidentDispatchContext)
     const notificationPermission = useContext(NotificationsContext)
+    
+    const handleTitleDoubleClick = () => {
+        setShowForm(v => !v)
+    };
     const updateAction = (data: Action) => {
       setShowForm(false)
       if (data.timer && data.timer.durationInMinutes! >= 0 && data.timer.durationInMinutes != action.timer?.durationInMinutes) {
@@ -242,7 +256,7 @@ export default function Action({action}: props) {
     return (
         <Card 
           type="inner" 
-          title={action.what}
+          title={<CardTitle title={action.what} onDoubleClick={handleTitleDoubleClick} />}
           data-test="action-card"
           className={["action-card", (action.status == 'Active' ? '' : 'action-card-completed')].join(' ')}
           extra={<>
