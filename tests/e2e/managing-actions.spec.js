@@ -109,6 +109,36 @@ test.describe('Ongoing Incident: Managing Actions', () => {
     await expect(linkElement).toHaveAttribute('href', newLinkVal);
   });
 
+  test('lets you edit an action by double-clicking the title', async ({ page }) => {
+    // Add an action
+    const actionWhat = 'original action text';
+    await addActionToIncident(page, { what: actionWhat });
+
+    // Double-click the action title to open edit form
+    const actionCard = await getDataTest(page, 'action-card');
+    const actionTitle = actionCard.locator('.ant-card-head-title');
+    await actionTitle.dblclick();
+
+    // Verify the edit form is now visible
+    const whatField = await getDataTest(page, 'new-action__what');
+    await expect(whatField).toBeVisible();
+    await expect(whatField).toHaveValue(actionWhat);
+
+    // Update the text
+    const newWhat = 'updated action text';
+    await whatField.clear();
+    await whatField.fill(newWhat);
+    
+    // Submit the form
+    const submitButton = await getDataTest(page, 'action-form__submit');
+    await submitButton.click();
+
+    // Verify the action was updated
+    const updatedActionCard = await getDataTest(page, 'action-card', '>.ant-card-head');
+    await expect(updatedActionCard).not.toContainText(actionWhat);
+    await expect(updatedActionCard).toContainText(newWhat);
+  });
+
   test('lets you add, edit, and remove timeline entries for the action, and it paginates them', async ({ page }) => {
     // Add an action
     await addActionToIncident(page, { what: 'Some Action' });
