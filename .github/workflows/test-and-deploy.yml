@@ -68,7 +68,7 @@ jobs:
           run: npx playwright test --project=chromium
           env: 
             NEXT_PUBLIC_YJS_SOCKET_SERVER: 'wss://long-river-3855.fly.dev'
-        - uses: actions/upload-artifact@v4
+        - uses: actions/upload-artifact@v5
           if: ${{ !cancelled() }}
           with:
             name: playwright-report
